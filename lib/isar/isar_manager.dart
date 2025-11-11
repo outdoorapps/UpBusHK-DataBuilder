@@ -11,6 +11,8 @@ import 'package:upbushk_data_builder/isar/models/track.dart';
 
 import 'models/company_bus_route.dart';
 
+Isar get isar => GetIt.I<Isar>();
+
 class IsarManager {
   /// This must be called before any data is read
   /// For future reference: for any schema change, putting an updated database

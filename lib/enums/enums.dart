@@ -6,7 +6,7 @@ enum Bound {
   @JsonValue('O')
   outbound;
 
-  String get kmbLabel => this == inbound ? 'inbound' : 'outbound';
+  String get label => this == inbound ? 'inbound' : 'outbound';
 }
 
 enum Region { HKI, KLN, NT }

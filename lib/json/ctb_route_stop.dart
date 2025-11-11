@@ -32,21 +32,23 @@ class CtbRouteStopResponse {
 /// Citybus (CTB) Route–Stop record
 @JsonSerializable()
 class CtbRouteStop {
-  final Company co;
+  @JsonKey(name: 'co')
+  final Company company;
   final String route;
   final Bound dir;
   final int seq;
-  final String stop;
+  @JsonKey(name: 'stop')
+  final String stopId;
 
   @JsonKey(name: 'data_timestamp')
   final String dataTimestamp;
 
   CtbRouteStop({
-    required this.co,
+    required this.company,
     required this.route,
     required this.dir,
     required this.seq,
-    required this.stop,
+    required this.stopId,
     required this.dataTimestamp,
   });
 

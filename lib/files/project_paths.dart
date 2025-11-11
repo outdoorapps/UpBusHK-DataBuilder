@@ -20,7 +20,8 @@ class ProjectPaths {
   static String get busFarePath => '${govDataDir.path}/FARE_BUS.xml';
 
   /// Ensures all required folders exist before use.
-  static Future<void> initDirectories() async {
+  static Future<bool> initDirectories() async {
+    bool created = false;
     for (final dir in [
       resourcesDir,
       govDataDir,
@@ -31,7 +32,9 @@ class ProjectPaths {
       if (!await dir.exists()) {
         await dir.create(recursive: true);
         stdout.writeln('Created ${dir.path}');
+        created = true;
       }
     }
+    return created;
   }
 }

@@ -1,4 +1,5 @@
 import 'package:upbushk_data_builder/json/ctb_route.dart';
+import 'package:upbushk_data_builder/json/ctb_route_stop.dart';
 import 'package:upbushk_data_builder/json/kmb_route.dart';
 import 'package:upbushk_data_builder/json/kmb_route_stop.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
@@ -24,8 +25,18 @@ class DataServices {
 
   static Future<List<CtbRoute>> getCtbRoutes() async {
     final response = await WebServices.safeApiCall(
-          () => WebServices.gov.getCtbRoutes(),
+      () => WebServices.gov.getCtbRoutes(),
     );
     return response?.data ?? [];
+  }
+
+  static Future<List<CtbRouteStop>> getCtbRouteStops(
+    String number,
+    String bound,
+  ) async {
+    final response = await WebServices.safeApiCall(
+      () => WebServices.gov.getCtbRouteStops(number, bound),
+    );
+    return response?.stops ?? [];
   }
 }
