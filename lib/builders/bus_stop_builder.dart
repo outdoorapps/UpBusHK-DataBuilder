@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:synchronized/synchronized.dart';
+import 'package:upbushk_data_builder/builders/mtrb_parser.dart';
 import 'package:upbushk_data_builder/enums/company.dart';
+import 'package:upbushk_data_builder/files/project_paths.dart';
 import 'package:upbushk_data_builder/isar/models/bus_stop.dart';
 import 'package:upbushk_data_builder/isar/models/company_bus_route.dart';
 import 'package:upbushk_data_builder/isar/models/lat_lng.dart';
@@ -157,6 +159,16 @@ class BusStopBuilder {
   }
 
   static Future<List<BusStop>> buildMtrbStops() async {
-    return [];
+    final mtrbRouteMap = await MtrbParser.parseMtrbData(
+      ProjectPaths.mtrbDataPath,
+    );
+
+    final List<BusStop> busStops = [];
+    mtrbRouteMap.forEach((_, boundMap) {
+      boundMap.forEach((_, stops) {
+        busStops.addAll(stops);
+      });
+    });
+    return busStops;
   }
 }
