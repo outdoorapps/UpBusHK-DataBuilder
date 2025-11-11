@@ -77,8 +77,13 @@ Future<void> _buildBusStops() async {
       .findAll();
   final ctbStops = await BusStopBuilder.buildCtbStops(ctbCompanyBusRoute);
 
-  final nlbStops = await BusStopBuilder.buildNlbStops();
-  final mtrbStops = await BusStopBuilder.buildNlbStops();
+  final nlbCompanyBusRoute = await isar.companyBusRoutes
+      .filter()
+      .companyEqualTo(Company.NLB)
+      .findAll();
+  final nlbStops = await BusStopBuilder.buildNlbStops(nlbCompanyBusRoute);
+
+  final mtrbStops = await BusStopBuilder.buildMtrbStops();
 
   final busStops = [...kmbStops, ...ctbStops, ...nlbStops, ...mtrbStops];
 

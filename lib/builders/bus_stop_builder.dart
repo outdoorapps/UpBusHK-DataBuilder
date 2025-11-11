@@ -86,6 +86,7 @@ class BusStopBuilder {
           );
         }
 
+        // Synchronized to ensure reporting is atomic
         lock.synchronized(() {
           completed++;
           if (completed % 50 == 0 || completed == total) {
@@ -102,8 +103,57 @@ class BusStopBuilder {
     return stops;
   }
 
-  static Future<List<BusStop>> buildNlbStops() async {
-    return [];
+  static Future<List<BusStop>> buildNlbStops(
+    List<CompanyBusRoute> nlbCompanyBusRoutes,
+  ) async {
+    final List<BusStop> nlbStops = [];
+    final existingStopIds = <String>{};
+    final total = nlbCompanyBusRoutes.length;
+    final start = DateTime.now();
+    final lock = Lock();
+    var completed = 0;
+
+    await Future.wait(
+      nlbCompanyBusRoutes.map((route) async {
+        final stops = await DataServices.getNlbRouteStops(route.nlbRouteId!);
+
+        await lock.synchronized(() {
+          for (final stop in stops) {
+            if (!existingStopIds.contains(stop.stopId)) {
+              existingStopIds.add(stop.stopId);
+              nlbStops.add(
+                BusStop(
+                  company: Company.NLB,
+                  stopId: stop.stopId,
+                  engName: stop.stopNameE,
+                  chiTName: stop.stopNameC,
+                  chiSName: stop.stopNameS,
+                  coordinate: LatLng(
+                    lat: double.tryParse(stop.latitude) ?? 0.0,
+                    long: double.tryParse(stop.longitude) ?? 0.0,
+                  ),
+                ),
+              );
+            }
+          }
+        });
+
+        await lock.synchronized(() {
+          completed++;
+          if (completed % 10 == 0 || completed == total) {
+            final percent = (completed / total * 100).toStringAsFixed(1);
+            final elapsed = DateTime.now().difference(start).inSeconds;
+            stdout.write(
+              '\rProgress: $completed/$total  $percent%  (${elapsed}s)',
+            );
+            if (completed == total) stdout.writeln();
+          }
+        });
+      }),
+    );
+
+    nlbStops.sort((a, b) => a.stopId.compareTo(b.stopId));
+    return nlbStops;
   }
 
   static Future<List<BusStop>> buildMtrbStops() async {
