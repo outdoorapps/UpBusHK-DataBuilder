@@ -1,8 +1,10 @@
 import 'package:isar_community/isar.dart';
+import 'package:upbushk_data_builder/builders/bus_stop_builder.dart';
 import 'package:upbushk_data_builder/builders/company_route_builder.dart';
 import 'package:upbushk_data_builder/debug/benchmark.dart';
 import 'package:upbushk_data_builder/files/project_paths.dart';
 import 'package:upbushk_data_builder/isar/isar_manager.dart';
+import 'package:upbushk_data_builder/isar/models/bus_stop.dart';
 import 'package:upbushk_data_builder/isar/models/company_bus_route.dart';
 import 'package:upbushk_data_builder/network/links.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
@@ -10,10 +12,12 @@ import 'package:upbushk_data_builder/network/web_services.dart';
 void main() async {
   await Benchmark.executeAsync('Initializing....', _init);
   // await Benchmark.executeAsync('Downloading gov data....', _downloadGovData);
+
   await Benchmark.executeAsync(
     'Building company bus routes....',
     _buildCompanyBusRoutes,
   );
+  await Benchmark.executeAsync('Building bus stops....', _buildBusStops);
 }
 
 Future<void> _init() async {
@@ -60,5 +64,27 @@ Future<void> _buildCompanyBusRoutes() async {
   await isar.writeTxn(() async {
     await isar.companyBusRoutes.clear();
     await isar.companyBusRoutes.putAll(companyRoutes);
+  });
+}
+
+Future<void> _buildBusStops() async {
+  final kmbStops = await BusStopBuilder.buildKmbStops();
+  final ctbStops = await BusStopBuilder.buildCtbStops();
+  final nlbStops = await BusStopBuilder.buildNlbStops();
+  final mtrbStops = await BusStopBuilder.buildNlbStops();
+
+  final busStops = [...kmbStops, ...ctbStops, ...nlbStops, ...mtrbStops];
+
+  print(
+    '- KMB stops: ${kmbStops.length}, '
+    '- CTB stops: ${ctbStops.length}, '
+    '- NLB stops: ${nlbStops.length}, '
+    '- MTRB stops: ${mtrbStops.length} '
+    'Total: ${busStops.length}',
+  );
+
+  await isar.writeTxn(() async {
+    await isar.busStops.clear();
+    await isar.busStops.putAll(busStops);
   });
 }
