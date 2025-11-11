@@ -2,6 +2,7 @@ import 'package:isar_community/isar.dart';
 import 'package:upbushk_data_builder/builders/bus_stop_builder.dart';
 import 'package:upbushk_data_builder/builders/company_route_builder.dart';
 import 'package:upbushk_data_builder/debug/benchmark.dart';
+import 'package:upbushk_data_builder/enums/company.dart';
 import 'package:upbushk_data_builder/files/project_paths.dart';
 import 'package:upbushk_data_builder/isar/isar_manager.dart';
 import 'package:upbushk_data_builder/isar/models/bus_stop.dart';
@@ -69,7 +70,13 @@ Future<void> _buildCompanyBusRoutes() async {
 
 Future<void> _buildBusStops() async {
   final kmbStops = await BusStopBuilder.buildKmbStops();
-  final ctbStops = await BusStopBuilder.buildCtbStops();
+
+  final ctbCompanyBusRoute = await isar.companyBusRoutes
+      .filter()
+      .companyEqualTo(Company.CTB)
+      .findAll();
+  final ctbStops = await BusStopBuilder.buildCtbStops(ctbCompanyBusRoute);
+
   final nlbStops = await BusStopBuilder.buildNlbStops();
   final mtrbStops = await BusStopBuilder.buildNlbStops();
 

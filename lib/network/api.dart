@@ -40,8 +40,8 @@ abstract class GovApi {
   @GET('/v2/transport/citybus/route/ctb')
   Future<CtbRouteResponse> getCtbRoutes();
 
-  @GET('/v2/transport/citybus/stop')
-  Future<CtbStopResponse> getCtbStops();
+  @GET('/v2/transport/citybus/stop/{number}')
+  Future<CtbStopResponse> getCtbStops(@Path('number') String number);
 
   @GET('/v2/transport/citybus/route-stop/ctb/{number}/{bound}')
   Future<CtbRouteStopResponse> getCtbRouteStops(

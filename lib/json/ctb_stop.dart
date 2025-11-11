@@ -22,42 +22,43 @@ class CtbStopResponse {
 
   factory CtbStopResponse.fromJson(Map<String, dynamic> json) =>
       _$CtbStopResponseFromJson(json);
+
   Map<String, dynamic> toJson() => _$CtbStopResponseToJson(this);
 }
 
 /// Citybus (CTB) Stop
 @JsonSerializable()
 class CtbStop {
-  final String? stop;
+  final String stop;
 
   @JsonKey(name: 'name_tc')
-  final String? nameTc;
+  final String nameTc;
 
   @JsonKey(name: 'name_en')
-  final String? nameEn;
+  final String nameEn;
 
-  final String? lat;
+  final String lat;
 
-  @JsonKey(name: 'long')
-  final String? lng; // renamed for clarity; maps to JSON "long"
+  final String long;
 
   @JsonKey(name: 'name_sc')
-  final String? nameSc;
+  final String nameSc;
 
   @JsonKey(name: 'data_timestamp')
-  final String? dataTimestamp;
+  final String dataTimestamp;
 
   CtbStop({
-    this.stop,
-    this.nameTc,
-    this.nameEn,
-    this.lat,
-    this.lng,
-    this.nameSc,
-    this.dataTimestamp,
+    required this.stop,
+    required this.nameTc,
+    required this.nameEn,
+    required this.lat,
+    required this.long,
+    required this.nameSc,
+    required this.dataTimestamp,
   });
 
   factory CtbStop.fromJson(Map<String, dynamic> json) =>
       _$CtbStopFromJson(json);
+
   Map<String, dynamic> toJson() => _$CtbStopToJson(this);
 }

@@ -1,5 +1,9 @@
+import 'dart:io';
+
+import 'package:synchronized/synchronized.dart';
 import 'package:upbushk_data_builder/enums/company.dart';
 import 'package:upbushk_data_builder/isar/models/bus_stop.dart';
+import 'package:upbushk_data_builder/isar/models/company_bus_route.dart';
 import 'package:upbushk_data_builder/isar/models/lat_lng.dart';
 import 'package:upbushk_data_builder/network/data_services.dart';
 
@@ -21,8 +25,81 @@ class BusStopBuilder {
     }).toList();
   }
 
-  static Future<List<BusStop>> buildCtbStops() async {
-    return [];
+  static Future<List<BusStop>> buildCtbStops(
+    List<CompanyBusRoute> ctbCompanyBusRoutes,
+  ) async {
+    const timeoutSeconds = 120;
+
+    // Collect all unique stop IDs from all routes
+    final ctbBusCompanyRoutes = ctbCompanyBusRoutes.where(
+      (r) => r.company == Company.CTB,
+    );
+    final pendingStopIds = ctbBusCompanyRoutes.expand((r) => r.stops).toSet();
+
+    final allStops = <BusStop>[];
+    while (pendingStopIds.isNotEmpty) {
+      final stops = await _getCtbStops(pendingStopIds);
+      allStops.addAll(stops);
+
+      // Remove successfully retrieved stops
+      final retrievedStopsIds = stops.map((s) => s.stopId).toSet();
+      pendingStopIds.removeAll(retrievedStopsIds);
+
+      final remaining = pendingStopIds.length;
+      if (remaining > 0) {
+        print(
+          '$remaining errors received for CTB stop IDs $pendingStopIds, '
+          'waiting for ${timeoutSeconds}s before retrying...',
+        );
+        await Future.delayed(Duration(seconds: timeoutSeconds));
+        print('Restarting...');
+      }
+    }
+    allStops.sort((a, b) => a.stopId.compareTo(b.stopId));
+    return allStops;
+  }
+
+  static Future<List<BusStop>> _getCtbStops(Set<String> stopIds) async {
+    final List<BusStop> stops = [];
+    final total = stopIds.length;
+    final start = DateTime.now();
+    final lock = Lock();
+    int completed = 0;
+
+    // Run all requests concurrently
+    await Future.wait(
+      stopIds.map((stopId) async {
+        final ctbStop = await DataServices.getCtbStop(stopId);
+        if (ctbStop != null) {
+          stops.add(
+            BusStop(
+              company: Company.CTB,
+              stopId: ctbStop.stop,
+              engName: ctbStop.nameEn,
+              chiTName: ctbStop.nameTc,
+              chiSName: ctbStop.nameSc,
+              coordinate: LatLng(
+                lat: double.tryParse(ctbStop.lat) ?? 0.0,
+                long: double.tryParse(ctbStop.long) ?? 0.0,
+              ),
+            ),
+          );
+        }
+
+        lock.synchronized(() {
+          completed++;
+          if (completed % 50 == 0 || completed == total) {
+            final percent = (completed / total * 100).toStringAsFixed(1);
+            final elapsed = DateTime.now().difference(start).inSeconds;
+            stdout.write(
+              '\rProgress: $completed/$total  $percent%  (${elapsed}s)',
+            );
+            if (completed == total) stdout.writeln();
+          }
+        });
+      }),
+    );
+    return stops;
   }
 
   static Future<List<BusStop>> buildNlbStops() async {
