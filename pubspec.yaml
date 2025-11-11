@@ -22,7 +22,7 @@ dependencies:
   # Utils
   path: ^1.9.1
   collection: any
-
+  get_it: ^9.0.5
 
 # Developer-only dependencies (for testing, linting, etc.)
 dev_dependencies:

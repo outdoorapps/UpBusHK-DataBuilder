@@ -1,10 +1,13 @@
 import 'package:upbushk_data_builder/debug/benchmark.dart';
 import 'package:upbushk_data_builder/files/project_paths.dart';
+import 'package:upbushk_data_builder/isar/isar_manager.dart';
 import 'package:upbushk_data_builder/network/links.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
 
 void main() async {
   Benchmark.executeAsync('Downloading gov data....', _downloadGovData);
+
+  await IsarManager.init();
 }
 
 Future<void> _downloadGovData() async {

@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:upbushk_data_builder/enums/company.dart';
 import 'package:upbushk_data_builder/enums/enums.dart';
 
 part '../generated/json/ctb_route_stop.g.dart';

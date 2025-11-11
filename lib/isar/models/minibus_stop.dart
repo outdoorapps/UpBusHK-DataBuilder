@@ -1,0 +1,29 @@
+import 'package:isar_community/isar.dart';
+import 'package:json_annotation/json_annotation.dart';
+import 'package:upbushk_data_builder/isar/models/stop.dart';
+import 'package:upbushk_data_builder/json/json_converters.dart';
+
+import 'lat_lng.dart';
+
+part '../../generated/isar/models/minibus_stop.g.dart';
+
+@JsonSerializable(explicitToJson: true)
+@Collection()
+class MinibusStop extends Stop {
+  MinibusStop({
+    required super.stopId,
+    required super.engName,
+    required super.chiTName,
+    required super.chiSName,
+    required super.coordinate,
+  });
+
+  factory MinibusStop.fromJson(Map<String, dynamic> json) =>
+      _$MinibusStopFromJson(json);
+
+  @override
+  Map<String, dynamic> toJson() => _$MinibusStopToJson(this);
+
+  @override
+  String toString() => stopId;
+}
