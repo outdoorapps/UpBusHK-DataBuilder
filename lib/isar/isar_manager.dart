@@ -25,7 +25,7 @@ class IsarManager {
       MinibusRouteSchema,
       MinibusStopSchema,
       TrackSchema,
-    ], directory: ProjectPaths.resourcesDir.path);
+    ], directory: ProjectPaths.isarDir.path);
 
     GetIt.I.registerSingleton<Isar>(isar);
   }

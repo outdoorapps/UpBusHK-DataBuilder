@@ -1,11 +1,14 @@
 import 'dart:io';
 
+import 'package:path/path.dart';
+
 class ProjectPaths {
-  static final resourcesDir = Directory('resources');
-  static final govDataDir = Directory('resources/govData');
-  static final generatedDir = Directory('resources/generated');
-  static final debugDir = Directory('resources/debug');
-  static final dataDir = Directory('data');
+  static final resourcesDir = Directory('../resources');
+  static final govDataDir = Directory(join(resourcesDir.path, 'govData'));
+  static final generatedDir = Directory(join(resourcesDir.path, 'generated'));
+  static final debugDir = Directory(join(resourcesDir.path, 'debug'));
+  static final isarDir = Directory(join(resourcesDir.path, 'isar'));
+  static final dataDir = Directory('../data');
 
   static String get busRoutesGeoJsonPath =>
       '${govDataDir.path}/BusRoute_GEOJSON.zip';
@@ -27,6 +30,7 @@ class ProjectPaths {
       govDataDir,
       generatedDir,
       debugDir,
+      isarDir,
       dataDir,
     ]) {
       if (!await dir.exists()) {

@@ -8,9 +8,12 @@ import 'package:upbushk_data_builder/network/links.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
 
 void main() async {
-  Benchmark.executeAsync('Initializing....', _init);
-  // Benchmark.executeAsync('Downloading gov data....', _downloadGovData);
-  Benchmark.executeAsync('Building company bus routes....', _buildCompanyBusRoutes);
+  await Benchmark.executeAsync('Initializing....', _init);
+  // await Benchmark.executeAsync('Downloading gov data....', _downloadGovData);
+  await Benchmark.executeAsync(
+    'Building company bus routes....',
+    _buildCompanyBusRoutes,
+  );
 }
 
 Future<void> _init() async {
@@ -18,7 +21,6 @@ Future<void> _init() async {
 
   await Isar.initializeIsarCore(download: firstTimeUse);
   await IsarManager.init();
-
 }
 
 Future<void> _downloadGovData() async {
@@ -35,7 +37,8 @@ Future<void> _downloadGovData() async {
 
 Future<void> _buildCompanyBusRoutes() async {
   final kmbRoutes = await CompanyRouteBuilder.buildKmbRoutes();
-  final ctbRoutes = <CompanyBusRoute>[];// await CompanyRouteBuilder.buildCtbRoutes();
+  final ctbRoutes =
+      <CompanyBusRoute>[]; // await CompanyRouteBuilder.buildCtbRoutes();
 
   print('${kmbRoutes.length}');
 
