@@ -11,23 +11,25 @@ class MinibusRouteInfoResponse {
   @JsonKey(name: 'generated_timestamp')
   final String generatedTimestamp;
 
-  final List<Datum> data;
+  @JsonKey(name: 'data')
+  final List<MinibusRouteInfo> routes;
 
   MinibusRouteInfoResponse({
     required this.type,
     required this.version,
     required this.generatedTimestamp,
-    required this.data,
+    required this.routes,
   });
 
   factory MinibusRouteInfoResponse.fromJson(Map<String, dynamic> json) =>
       _$MinibusRouteInfoResponseFromJson(json);
+
   Map<String, dynamic> toJson() => _$MinibusRouteInfoResponseToJson(this);
 }
 
 /// Route Info Entry
 @JsonSerializable(explicitToJson: true)
-class Datum {
+class MinibusRouteInfo {
   @JsonKey(name: 'route_id')
   final int routeID;
 
@@ -50,7 +52,7 @@ class Datum {
   @JsonKey(name: 'data_timestamp')
   final String dataTimestamp;
 
-  Datum({
+  MinibusRouteInfo({
     required this.routeID,
     required this.region,
     required this.routeCode,
@@ -61,8 +63,10 @@ class Datum {
     required this.dataTimestamp,
   });
 
-  factory Datum.fromJson(Map<String, dynamic> json) => _$DatumFromJson(json);
-  Map<String, dynamic> toJson() => _$DatumToJson(this);
+  factory MinibusRouteInfo.fromJson(Map<String, dynamic> json) =>
+      _$MinibusRouteInfoFromJson(json);
+
+  Map<String, dynamic> toJson() => _$MinibusRouteInfoToJson(this);
 }
 
 /// Route Direction Info
@@ -120,6 +124,7 @@ class Direction {
 
   factory Direction.fromJson(Map<String, dynamic> json) =>
       _$DirectionFromJson(json);
+
   Map<String, dynamic> toJson() => _$DirectionToJson(this);
 }
 
@@ -157,5 +162,6 @@ class Headway {
 
   factory Headway.fromJson(Map<String, dynamic> json) =>
       _$HeadwayFromJson(json);
+
   Map<String, dynamic> toJson() => _$HeadwayToJson(this);
 }

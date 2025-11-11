@@ -1,11 +1,13 @@
 import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
+import 'package:upbushk_data_builder/enums/enums.dart';
 import 'package:upbushk_data_builder/json/ctb_route.dart';
 import 'package:upbushk_data_builder/json/ctb_route_stop.dart';
 import 'package:upbushk_data_builder/json/ctb_stop.dart';
 import 'package:upbushk_data_builder/json/kmb_route.dart';
 import 'package:upbushk_data_builder/json/kmb_route_stop.dart';
 import 'package:upbushk_data_builder/json/kmb_stop.dart';
+import 'package:upbushk_data_builder/json/minibus_route_by_region.dart';
 import 'package:upbushk_data_builder/json/minibus_route_info.dart';
 import 'package:upbushk_data_builder/json/minibus_route_stop.dart';
 import 'package:upbushk_data_builder/json/minibus_stop.dart';
@@ -61,7 +63,13 @@ abstract class MinibusApi {
   factory MinibusApi(Dio dio, {String baseUrl}) = _MinibusApi;
 
   @GET('/route')
-  Future<MinibusRouteInfoResponse> getRoutes();
+  Future<MinibusRouteByRegionResponse> getRoutesByRegion();
+
+  @GET('/route/{region}/{number}')
+  Future<MinibusRouteInfoResponse> getRouteInfo(
+    @Path('region') Region region,
+    @Path('number') String number,
+  );
 
   @GET('/route-stop')
   Future<MinibusRouteStopResponse> getRouteStops();

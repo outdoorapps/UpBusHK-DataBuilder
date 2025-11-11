@@ -1,9 +1,11 @@
+import 'package:upbushk_data_builder/enums/enums.dart';
 import 'package:upbushk_data_builder/json/ctb_route.dart';
 import 'package:upbushk_data_builder/json/ctb_route_stop.dart';
 import 'package:upbushk_data_builder/json/ctb_stop.dart';
 import 'package:upbushk_data_builder/json/kmb_route.dart';
 import 'package:upbushk_data_builder/json/kmb_route_stop.dart';
 import 'package:upbushk_data_builder/json/kmb_stop.dart';
+import 'package:upbushk_data_builder/json/minibus_route_info.dart';
 import 'package:upbushk_data_builder/json/nlb_route.dart';
 import 'package:upbushk_data_builder/json/nlb_route_stop.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
@@ -43,7 +45,7 @@ class DataServices {
 
   static Future<CtbStop?> getCtbStop(String number) async {
     final response = await WebServices.safeApiCall(
-          () => WebServices.gov.getCtbStops(number),
+      () => WebServices.gov.getCtbStops(number),
     );
     return response?.data;
   }
@@ -70,5 +72,22 @@ class DataServices {
       () => WebServices.gov.getNlbRouteStops(number),
     );
     return response?.stops ?? [];
+  }
+
+  static Future<Map<Region, List<String>>> getMinibusRoutesByRegion() async {
+    final response = await WebServices.safeApiCall(
+      () => WebServices.minibus.getRoutesByRegion(),
+    );
+    return response?.data.routesByRegion ?? {};
+  }
+
+  static Future<MinibusRouteInfo?> getMinibusRouteInfo(
+    Region region,
+    String number,
+  ) async {
+    final response = await WebServices.safeApiCall(
+      () => WebServices.minibus.getRouteInfo(region, number),
+    );
+    return response?.routes.firstOrNull;
   }
 }
