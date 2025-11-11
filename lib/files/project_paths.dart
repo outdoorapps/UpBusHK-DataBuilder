@@ -3,24 +3,28 @@ import 'dart:io';
 import 'package:path/path.dart';
 
 class ProjectPaths {
-  static final resourcesDir = Directory('../resources');
+  static final resourcesDir = Directory(join('..', 'resources'));
   static final govDataDir = Directory(join(resourcesDir.path, 'govData'));
   static final generatedDir = Directory(join(resourcesDir.path, 'generated'));
   static final debugDir = Directory(join(resourcesDir.path, 'debug'));
   static final isarDir = Directory(join(resourcesDir.path, 'isar'));
-  static final dataDir = Directory('../data');
+  static final dataDir = Directory(join('..', 'data'));
 
   static String get busRoutesGeoJsonPath =>
-      '${govDataDir.path}/BusRoute_GEOJSON.zip';
+      join(govDataDir.path, 'BusRoute_GEOJSON.zip');
 
   static String get busStopsGeoJsonPath =>
-      '${govDataDir.path}/CoordinateofBusStopLocation_GEOJSON.zip';
+      join(govDataDir.path, 'CoordinateofBusStopLocation_GEOJSON.zip');
 
-  static String get busRouteStopJsonPath => '${govDataDir.path}/JSON_BUS.json';
+  static String get busRouteStopJsonPath =>
+      join(govDataDir.path, 'JSON_BUS.json');
 
-  static String get minibusRoutesJsonPath => '${govDataDir.path}/JSON_GMB.json';
+  static String get minibusRoutesJsonPath =>
+      join(govDataDir.path, 'JSON_GMB.json');
 
-  static String get busFarePath => '${govDataDir.path}/FARE_BUS.xml';
+  static String get busFarePath => join(govDataDir.path, 'FARE_BUS.xml');
+
+  static String get mtrbDataPath => join(dataDir.path, 'mtrb.txt');
 
   /// Ensures all required folders exist before use.
   static Future<bool> initDirectories() async {

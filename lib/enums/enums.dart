@@ -1,12 +1,8 @@
-import 'package:json_annotation/json_annotation.dart';
-
 enum Bound {
-  @JsonValue('I')
-  inbound,
-  @JsonValue('O')
-  outbound;
+  I,
+  O;
 
-  String get label => this == inbound ? 'inbound' : 'outbound';
+  String get label => this == I ? 'inbound' : 'outbound';
 }
 
 enum Region { HKI, KLN, NT }

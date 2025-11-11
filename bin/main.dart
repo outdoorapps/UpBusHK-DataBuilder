@@ -37,13 +37,25 @@ Future<void> _downloadGovData() async {
 
 Future<void> _buildCompanyBusRoutes() async {
   final kmbRoutes = await CompanyRouteBuilder.buildKmbRoutes();
-  final ctbRoutes =
-      <CompanyBusRoute>[]; // await CompanyRouteBuilder.buildCtbRoutes();
+  final ctbRoutes = await CompanyRouteBuilder.buildCtbRoutes();
+  final nlbRoutes = await CompanyRouteBuilder.buildNlbRoutes();
+  final mtrbRoutes = await CompanyRouteBuilder.buildNlbRoutes();
 
-  print('${kmbRoutes.length}');
-
-  final companyRoutes = [...kmbRoutes, ...ctbRoutes];
+  final companyRoutes = [
+    ...kmbRoutes,
+    ...ctbRoutes,
+    ...nlbRoutes,
+    ...mtrbRoutes,
+  ];
   companyRoutes.sort((a, b) => a.number.compareTo(b.number));
+
+  print(
+    '- KMB routes: ${kmbRoutes.length}, '
+    '- CTB routes: ${ctbRoutes.length}, '
+    '- NLB routes: ${nlbRoutes.length}, '
+    '- MTRB routes: ${mtrbRoutes.length} '
+    'Total: ${companyRoutes.length}',
+  );
 
   await isar.writeTxn(() async {
     await isar.companyBusRoutes.clear();

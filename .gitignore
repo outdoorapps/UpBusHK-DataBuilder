@@ -10,4 +10,4 @@ build/
 secrets/
 resources/
 generated/
-/bin/libisar.so
+/bin/libisar.*

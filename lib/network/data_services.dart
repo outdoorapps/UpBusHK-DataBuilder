@@ -2,6 +2,8 @@ import 'package:upbushk_data_builder/json/ctb_route.dart';
 import 'package:upbushk_data_builder/json/ctb_route_stop.dart';
 import 'package:upbushk_data_builder/json/kmb_route.dart';
 import 'package:upbushk_data_builder/json/kmb_route_stop.dart';
+import 'package:upbushk_data_builder/json/nlb_route.dart';
+import 'package:upbushk_data_builder/json/nlb_route_stop.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
 
 class DataServices {
@@ -36,6 +38,20 @@ class DataServices {
   ) async {
     final response = await WebServices.safeApiCall(
       () => WebServices.gov.getCtbRouteStops(number, bound),
+    );
+    return response?.stops ?? [];
+  }
+
+  static Future<List<NlbRoute>> getNlbRoutes() async {
+    final response = await WebServices.safeApiCall(
+      () => WebServices.gov.getNlbRoutes(),
+    );
+    return response?.routes ?? [];
+  }
+
+  static Future<List<NlbStop>> getNlbRouteStops(String number) async {
+    final response = await WebServices.safeApiCall(
+      () => WebServices.gov.getNlbRouteStops(number),
     );
     return response?.stops ?? [];
   }

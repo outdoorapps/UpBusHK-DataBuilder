@@ -18,7 +18,9 @@ class NlbRouteResponse {
 @JsonSerializable()
 class NlbRoute {
   final String routeId;
-  final String routeNo;
+
+  @JsonKey(name: 'routeNo')
+  final String number;
 
   @JsonKey(name: 'routeName_c')
   final String routeNameC;
@@ -34,7 +36,7 @@ class NlbRoute {
 
   NlbRoute({
     required this.routeId,
-    required this.routeNo,
+    required this.number,
     required this.routeNameC,
     required this.routeNameS,
     required this.routeNameE,

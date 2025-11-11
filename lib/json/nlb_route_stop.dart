@@ -17,8 +17,7 @@ class NlbRouteStopResponse {
 /// NLB Stop (per route)
 @JsonSerializable()
 class NlbStop {
-  @JsonKey(name: 'stopId')
-  final String stop;
+  final String stopId;
 
   @JsonKey(name: 'stopName_c')
   final String stopNameC;
@@ -45,7 +44,7 @@ class NlbStop {
   final int someDepartureObserveOnly;
 
   NlbStop({
-    required this.stop,
+    required this.stopId,
     required this.stopNameC,
     required this.stopNameS,
     required this.stopNameE,
