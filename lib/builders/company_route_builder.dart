@@ -147,7 +147,7 @@ class CompanyRouteBuilder {
     return nlbCompanyBusRoutes;
   }
 
-  Future<List<CompanyBusRoute>> buildMtrbRoutes() async {
+  static Future<List<CompanyBusRoute>> buildMtrbRoutes() async {
     final mtrbRouteMap = await MtrbParser.parseMtrbData(
       ProjectPaths.mtrbDataPath,
     );

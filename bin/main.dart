@@ -44,7 +44,7 @@ Future<void> _buildCompanyBusRoutes() async {
   final kmbRoutes = await CompanyRouteBuilder.buildKmbRoutes();
   final ctbRoutes = await CompanyRouteBuilder.buildCtbRoutes();
   final nlbRoutes = await CompanyRouteBuilder.buildNlbRoutes();
-  final mtrbRoutes = await CompanyRouteBuilder.buildNlbRoutes();
+  final mtrbRoutes = await CompanyRouteBuilder.buildMtrbRoutes();
 
   final companyRoutes = [
     ...kmbRoutes,
@@ -86,6 +86,9 @@ Future<void> _buildBusStops() async {
   final mtrbStops = await BusStopBuilder.buildMtrbStops();
 
   final busStops = [...kmbStops, ...ctbStops, ...nlbStops, ...mtrbStops];
+
+  final companyBusRoutes = await isar.companyBusRoutes.where().findAll();
+  BusStopBuilder.validateStops(companyBusRoutes, busStops);
 
   print(
     '- KMB stops: ${kmbStops.length}, '

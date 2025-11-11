@@ -171,4 +171,26 @@ class BusStopBuilder {
     });
     return busStops;
   }
+
+  static Set<String> validateStops(
+      List<CompanyBusRoute> companyBusRoutes,
+      List<BusStop> busStops,
+      ) {
+    final stopIDsInRoutes = companyBusRoutes.expand((e) => e.stops).toSet();
+    final stopIDsInDatabase = busStops.map((e) => e.stopId).toSet();
+    final missingStops = <String>{};
+
+    stopIDsInRoutes.forEach((stopId) {
+      if (!stopIDsInDatabase.contains(stopId)) {
+        missingStops.add(stopId);
+      }
+    });
+
+    missingStops.forEach(
+          (stopId) => print('Bus stop [$stopId] is not in the database'),
+    );
+    if (missingStops.isEmpty) print('Bus stops validated');
+
+    return missingStops;
+  }
 }
