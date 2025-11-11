@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:upbushk_data_builder/network/api.dart';
 
 class WebServices {
   static final Dio _dio = Dio(
@@ -9,6 +10,10 @@ class WebServices {
       receiveTimeout: const Duration(seconds: 10),
     ),
   );
+
+  static final KmbApi kmb = KmbApi(_dio);
+  static final GovApi gov = GovApi(_dio);
+  static final MinibusApi minibus = MinibusApi(_dio);
 
   /// Parallel downloads with maximum of 5 concurrent downloads.
   static Future<void> downloadAll(

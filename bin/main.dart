@@ -4,10 +4,10 @@ import 'package:upbushk_data_builder/network/links.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
 
 void main() async {
-  Benchmark.executeAsync('Downloading gov data....', downloadGovData);
+  Benchmark.executeAsync('Downloading gov data....', _downloadGovData);
 }
 
-Future<void> downloadGovData() async {
+Future<void> _downloadGovData() async {
   await ProjectPaths.initDirectories();
 
   final urlToPath = {
