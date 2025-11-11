@@ -75,4 +75,16 @@ class WebServices {
       ' Download completed (${(received / 1024 / 1024).toStringAsFixed(1)} MB)',
     );
   }
+
+  static Future<T?> safeApiCall<T>(Future<T> Function() call) async {
+    try {
+      return await call();
+    } on DioException catch (e, st) {
+      print("Dio error: ${e.message}\n$st");
+      return null;
+    } catch (e, st) {
+      print("Unexpected error: $e\n$st");
+      return null;
+    }
+  }
 }

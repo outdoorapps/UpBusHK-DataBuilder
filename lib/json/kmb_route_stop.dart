@@ -37,14 +37,16 @@ class KmbRouteStop {
   final String serviceType;
 
   final String seq;
-  final String stop;
+
+  @JsonKey(name: 'stop')
+  final String stopId;
 
   KmbRouteStop({
     required this.route,
     required this.bound,
     required this.serviceType,
     required this.seq,
-    required this.stop,
+    required this.stopId,
   });
 
   factory KmbRouteStop.fromJson(Map<String, dynamic> json) =>

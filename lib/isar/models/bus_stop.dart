@@ -1,7 +1,6 @@
 import 'package:isar_community/isar.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:upbushk_data_builder/enums/company.dart';
-import 'package:upbushk_data_builder/enums/enums.dart';
 import 'package:upbushk_data_builder/isar/models/lat_lng.dart';
 import 'package:upbushk_data_builder/isar/models/stop.dart';
 import 'package:upbushk_data_builder/json/json_converters.dart';
