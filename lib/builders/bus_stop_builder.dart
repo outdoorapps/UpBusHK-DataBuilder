@@ -8,6 +8,7 @@ import 'package:upbushk_data_builder/isar/models/bus_stop.dart';
 import 'package:upbushk_data_builder/isar/models/company_bus_route.dart';
 import 'package:upbushk_data_builder/isar/models/lat_lng.dart';
 import 'package:upbushk_data_builder/network/data_services.dart';
+import 'package:upbushk_data_builder/network/web_services.dart';
 
 class BusStopBuilder {
   static Future<List<BusStop>> buildKmbStops() async {
@@ -30,8 +31,6 @@ class BusStopBuilder {
   static Future<List<BusStop>> buildCtbStops(
     List<CompanyBusRoute> ctbCompanyBusRoutes,
   ) async {
-    const timeoutSeconds = 120;
-
     // Collect all unique stop IDs from all routes
     final ctbBusCompanyRoutes = ctbCompanyBusRoutes.where(
       (r) => r.company == Company.CTB,
@@ -51,9 +50,9 @@ class BusStopBuilder {
       if (remaining > 0) {
         print(
           '$remaining errors received for CTB stop IDs $pendingStopIds, '
-          'waiting for ${timeoutSeconds}s before retrying...',
+          'waiting for ${WebServices.timeoutSeconds}s before retrying...',
         );
-        await Future.delayed(Duration(seconds: timeoutSeconds));
+        await Future.delayed(Duration(seconds: WebServices.timeoutSeconds));
         print('Restarting...');
       }
     }

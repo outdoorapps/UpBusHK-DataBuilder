@@ -4,6 +4,8 @@ import 'package:dio/dio.dart';
 import 'package:upbushk_data_builder/network/api.dart';
 
 class WebServices {
+  static const timeoutSeconds = 120;
+
   static final Dio _dio = Dio(
     BaseOptions(
       connectTimeout: const Duration(seconds: 10),
