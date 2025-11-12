@@ -99,7 +99,8 @@ class MinibusRouteBuilder {
         final destChiS = await ChineseConverter.convert(destChiT, S2T());
 
         return MinibusRoute(
-          govRouteId: routeInfo.routeId,
+          routeId: '${routeInfo.routeId}-$bound',
+          // govRouteId: routeInfo.routeId,
           region: routeInfo.region,
           number: routeInfo.routeCode,
           bound: bound,

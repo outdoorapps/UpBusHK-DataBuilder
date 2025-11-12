@@ -58,7 +58,8 @@ class MinibusGeometry {
 
 @JsonSerializable()
 class MinibusProperties {
-  final int routeId;
+  @JsonKey(name: 'routeId')
+  final int govRouteId;
   final String companyCode;
   final String district;
   final String routeNameC;
@@ -92,7 +93,7 @@ class MinibusProperties {
   final String stopNameE;
 
   MinibusProperties({
-    required this.routeId,
+    required this.govRouteId,
     required this.companyCode,
     required this.district,
     required this.routeNameC,
@@ -129,5 +130,6 @@ class MinibusProperties {
 
   /// Convenience helpers
   Region get region => Region.values.byName(district);
+  String get routeId => '$govRouteId-$bound';
   Bound get bound => routeSeq == 1 ? Bound.O : Bound.I;
 }

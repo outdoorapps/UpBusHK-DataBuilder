@@ -8,10 +8,6 @@ part '../../generated/isar/models/minibus_route.g.dart';
 @JsonSerializable(explicitToJson: true)
 @Collection()
 class MinibusRoute extends TransitRoute {
-  static const String _normalMarker = 'normal';
-
-  final int govRouteId;
-
   @enumerated
   final Region region;
 
@@ -20,7 +16,7 @@ class MinibusRoute extends TransitRoute {
   final String descriptionChiS;
 
   MinibusRoute({
-    required this.govRouteId,
+    required super.routeId,
     required this.region,
     required super.number,
     required super.bound,
@@ -35,9 +31,7 @@ class MinibusRoute extends TransitRoute {
     required super.destChiS,
     required super.fullFare,
     required super.stops,
-  }) : super(
-         routeId: toRouteId(govRouteId: govRouteId, bound: bound),
-       );
+  }) : super();
 
   /// JSON serialization
   factory MinibusRoute.fromJson(Map<String, dynamic> json) =>
@@ -46,17 +40,7 @@ class MinibusRoute extends TransitRoute {
   @override
   Map<String, dynamic> toJson() => _$MinibusRouteToJson(this);
 
-  static String toRouteId({required int govRouteId, required Bound bound}) {
-    return '$govRouteId-${bound.name}';
-  }
+  int get govRouteId => int.parse(routeId.split('-').first);
 
-  // String getRouteDescriptions(SupportedLanguage language) => isNormal
-  //     ? ''
-  //     : switch (language) {
-  //         SupportedLanguage.zh_Hant => descriptionChiT,
-  //         SupportedLanguage.zh_Hans => descriptionChiS,
-  //         SupportedLanguage.en => descriptionEn,
-  //       }.trim();
-
-  bool get isNormal => descriptionEn.toLowerCase().contains(_normalMarker);
+  bool get isNormal => descriptionEn.toLowerCase().contains('normal');
 }

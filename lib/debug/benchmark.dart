@@ -1,27 +1,31 @@
 class Benchmark {
-  static Future<void> executeAsync(
+  static Future<T> executeAsync<T>(
     String description,
-    Future<void> Function() action,
+    Future<T> Function() action,
   ) async {
     print(description);
 
     final stopwatch = Stopwatch()..start();
-    await action();
+    final result = await action();
     stopwatch.stop();
 
     final elapsed = stopwatch.elapsed;
     print('Finished in ${_formatDuration(elapsed)}');
+
+    return result;
   }
 
-  static void execute(String description, void Function() action) {
+  static void execute<T>(String description, void Function() action) {
     print(description);
 
     final stopwatch = Stopwatch()..start();
-    action();
+    final result = action();
     stopwatch.stop();
 
     final elapsed = stopwatch.elapsed;
     print('Finished in ${_formatDuration(elapsed)}');
+
+    return result;
   }
 
   static String _formatDuration(Duration d) {

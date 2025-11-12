@@ -33,7 +33,7 @@ Future<void> _downloadGovData() async {
     Links.busRouteGeoJsonUrl: ProjectPaths.busRoutesGeoJsonPath,
     Links.busStopsGeoJsonUrl: ProjectPaths.busStopsGeoJsonPath,
     Links.busRouteStopUrl: ProjectPaths.busRouteStopJsonPath,
-    Links.minibusRoutesGeoJsonUrl: ProjectPaths.minibusRoutesJsonPath,
+    Links.minibusRoutesGeoJsonUrl: ProjectPaths.minibusDataJsonPath,
     Links.fareUrl: ProjectPaths.busFarePath,
   };
 
