@@ -10,7 +10,7 @@ part '../../generated/isar/models/minibus_route.g.dart';
 class MinibusRoute extends TransitRoute {
   static const String _normalMarker = 'normal';
 
-  final String govRouteId;
+  final int govRouteId;
 
   @enumerated
   final Region region;
@@ -46,7 +46,7 @@ class MinibusRoute extends TransitRoute {
   @override
   Map<String, dynamic> toJson() => _$MinibusRouteToJson(this);
 
-  static String toRouteId({required String govRouteId, required Bound bound}) {
+  static String toRouteId({required int govRouteId, required Bound bound}) {
     return '$govRouteId-${bound.name}';
   }
 

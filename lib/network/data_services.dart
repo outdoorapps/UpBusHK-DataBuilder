@@ -6,6 +6,7 @@ import 'package:upbushk_data_builder/json/kmb_route.dart';
 import 'package:upbushk_data_builder/json/kmb_route_stop.dart';
 import 'package:upbushk_data_builder/json/kmb_stop.dart';
 import 'package:upbushk_data_builder/json/minibus_route_info.dart';
+import 'package:upbushk_data_builder/json/minibus_route_stop.dart';
 import 'package:upbushk_data_builder/json/nlb_route.dart';
 import 'package:upbushk_data_builder/json/nlb_route_stop.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
@@ -89,5 +90,15 @@ class DataServices {
       () => WebServices.minibus.getRouteInfo(region, number),
     );
     return response?.routes.firstOrNull;
+  }
+
+  static Future<List<MinibusRouteStop>> getMinibusRouteStops(
+    int routeId,
+    int routeSeq,
+  ) async {
+    final response = await WebServices.safeApiCall(
+      () => WebServices.minibus.getRouteStops(routeId, routeSeq),
+    );
+    return response?.data.routeStops ?? [];
   }
 }

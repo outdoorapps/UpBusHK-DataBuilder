@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:upbushk_data_builder/enums/enums.dart';
 
 part '../generated/json/minibus_route_info.g.dart';
 
@@ -31,9 +32,9 @@ class MinibusRouteInfoResponse {
 @JsonSerializable(explicitToJson: true)
 class MinibusRouteInfo {
   @JsonKey(name: 'route_id')
-  final int routeID;
+  final int routeId;
 
-  final String region;
+  final Region region;
 
   @JsonKey(name: 'route_code')
   final String routeCode;
@@ -47,13 +48,13 @@ class MinibusRouteInfo {
   @JsonKey(name: 'description_en')
   final String descriptionEn;
 
-  final List<Direction> directions;
+  final List<MinibusDirection> directions;
 
   @JsonKey(name: 'data_timestamp')
   final String dataTimestamp;
 
   MinibusRouteInfo({
-    required this.routeID,
+    required this.routeId,
     required this.region,
     required this.routeCode,
     required this.descriptionTc,
@@ -71,7 +72,7 @@ class MinibusRouteInfo {
 
 /// Route Direction Info
 @JsonSerializable(explicitToJson: true)
-class Direction {
+class MinibusDirection {
   @JsonKey(name: 'route_seq')
   final int routeSeq;
 
@@ -107,7 +108,7 @@ class Direction {
   @JsonKey(name: 'data_timestamp')
   final String dataTimestamp;
 
-  Direction({
+  MinibusDirection({
     required this.routeSeq,
     required this.origTc,
     required this.origSc,
@@ -122,10 +123,10 @@ class Direction {
     required this.dataTimestamp,
   });
 
-  factory Direction.fromJson(Map<String, dynamic> json) =>
-      _$DirectionFromJson(json);
+  factory MinibusDirection.fromJson(Map<String, dynamic> json) =>
+      _$MinibusDirectionFromJson(json);
 
-  Map<String, dynamic> toJson() => _$DirectionToJson(this);
+  Map<String, dynamic> toJson() => _$MinibusDirectionToJson(this);
 }
 
 /// Headway info (minibus route frequency data)

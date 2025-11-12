@@ -29,6 +29,7 @@ class MinibusRouteByRegionResponse {
 
 @JsonSerializable()
 class MinibusRouteRegionData {
+  // List of route numbers by region
   @JsonKey(name: 'routes')
   @RegionMapConverter()
   final Map<Region, List<String>> routesByRegion;

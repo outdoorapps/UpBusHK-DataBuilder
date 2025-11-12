@@ -71,8 +71,11 @@ abstract class MinibusApi {
     @Path('number') String number,
   );
 
-  @GET('/route-stop')
-  Future<MinibusRouteStopResponse> getRouteStops();
+  @GET('/route-stop/{routeId}/{routeSeq}')
+  Future<MinibusRouteStopResponse> getRouteStops(
+    @Path('routeId') int routeId,
+    @Path('routeSeq') int routeSeq,
+  );
 
   @GET('/stop')
   Future<MinibusStopResponse> getStops();

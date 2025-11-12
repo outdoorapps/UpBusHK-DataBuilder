@@ -29,7 +29,7 @@ class MinibusRouteStopResponse {
 @JsonSerializable(explicitToJson: true)
 class MinibusRouteStopData {
   @JsonKey(name: 'route_stops')
-  final List<RouteStop> routeStops;
+  final List<MinibusRouteStop> routeStops;
 
   @JsonKey(name: 'data_timestamp')
   final String dataTimestamp;
@@ -46,12 +46,12 @@ class MinibusRouteStopData {
 
 /// Individual route-stop entry
 @JsonSerializable()
-class RouteStop {
+class MinibusRouteStop {
   @JsonKey(name: 'stop_seq')
   final int stopSeq;
 
   @JsonKey(name: 'stop_id')
-  final int stopID;
+  final int stopId;
 
   @JsonKey(name: 'name_tc')
   final String nameTc;
@@ -62,15 +62,15 @@ class RouteStop {
   @JsonKey(name: 'name_en')
   final String nameEn;
 
-  RouteStop({
+  MinibusRouteStop({
     required this.stopSeq,
-    required this.stopID,
+    required this.stopId,
     required this.nameTc,
     required this.nameSc,
     required this.nameEn,
   });
 
-  factory RouteStop.fromJson(Map<String, dynamic> json) =>
-      _$RouteStopFromJson(json);
-  Map<String, dynamic> toJson() => _$RouteStopToJson(this);
+  factory MinibusRouteStop.fromJson(Map<String, dynamic> json) =>
+      _$MinibusRouteStopFromJson(json);
+  Map<String, dynamic> toJson() => _$MinibusRouteStopToJson(this);
 }
