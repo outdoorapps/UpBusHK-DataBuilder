@@ -1,12 +1,12 @@
 import 'dart:io';
 
-import 'package:flutter_open_chinese_convert/flutter_open_chinese_convert.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:upbushk_data_builder/enums/enums.dart';
 import 'package:upbushk_data_builder/isar/models/minibus_route.dart';
 import 'package:upbushk_data_builder/json/minibus_route_info.dart';
 import 'package:upbushk_data_builder/network/data_services.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
+import 'package:upbushk_data_builder/utils/utils.dart';
 
 class MinibusRouteBuilder {
   static Future<List<MinibusRoute>> buildRoutes() async {
@@ -48,7 +48,7 @@ class MinibusRouteBuilder {
     // 2. Get route info (ID, origins, destinations and bound)
     final routeInfoList = await Future.wait(
       regionNumberPairs.map(
-        (e) => DataServices.getMinibusRouteInfo(e.key, e.value),
+        (e) => DataServices.getMinibusRouteInfo(e.key.name, e.value),
       ),
     );
 
@@ -89,18 +89,14 @@ class MinibusRouteBuilder {
 
         // Convert simplified Chinese here, as gov data are unreliable
         final descriptionChiT = routeInfo.descriptionTc.trim();
-        final descriptionChiS = await ChineseConverter.convert(
-          descriptionChiT,
-          S2T(),
-        );
+        final descriptionChiS = '';//Utils.zhT2S.convert(descriptionChiT);
         final origChiT = direction.origTc.trim();
-        final origChiS = await ChineseConverter.convert(origChiT, S2T());
+        final origChiS = '';//Utils.zhT2S.convert(origChiT);
         final destChiT = direction.destTc.trim();
-        final destChiS = await ChineseConverter.convert(destChiT, S2T());
+        final destChiS = '';//Utils.zhT2S.convert(destChiT);
 
         return MinibusRoute(
           routeId: '${routeInfo.routeId}-$bound',
-          // govRouteId: routeInfo.routeId,
           region: routeInfo.region,
           number: routeInfo.routeCode,
           bound: bound,

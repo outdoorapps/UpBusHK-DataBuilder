@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:flutter_open_chinese_convert/flutter_open_chinese_convert.dart';
 import 'package:upbushk_data_builder/enums/company.dart';
 import 'package:upbushk_data_builder/enums/enums.dart';
 import 'package:upbushk_data_builder/isar/models/bus_stop.dart';
 import 'package:upbushk_data_builder/isar/models/lat_lng.dart';
+import 'package:upbushk_data_builder/utils/utils.dart';
 
 class MtrbParser {
   static const String _TSUEN_CODE = '&#37032;';
@@ -63,7 +63,7 @@ class MtrbParser {
           _TSUEN_CODE,
           _TSUEN_CHARACTER,
         );
-        final chiSName = await ChineseConverter.convert(chiName, T2S());
+        final chiSName = Utils.zhT2S.convert(chiName);
         final engName = line
             .substring(line.indexOf(chiNameText) + chiNameText.length)
             .trim();

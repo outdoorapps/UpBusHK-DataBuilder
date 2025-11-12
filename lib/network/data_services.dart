@@ -84,7 +84,7 @@ class DataServices {
   }
 
   static Future<MinibusRouteInfo?> getMinibusRouteInfo(
-    Region region,
+    String region,
     String number,
   ) async {
     final response = await WebServices.safeApiCall(
