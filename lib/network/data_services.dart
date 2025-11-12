@@ -1,4 +1,5 @@
 import 'package:upbushk_data_builder/enums/enums.dart';
+import 'package:upbushk_data_builder/isar/models/lat_lng.dart';
 import 'package:upbushk_data_builder/json/ctb_route.dart';
 import 'package:upbushk_data_builder/json/ctb_route_stop.dart';
 import 'package:upbushk_data_builder/json/ctb_stop.dart';
@@ -100,5 +101,12 @@ class DataServices {
       () => WebServices.minibus.getRouteStops(routeId, routeSeq),
     );
     return response?.data.routeStops ?? [];
+  }
+
+  static Future<LatLng?> getMinibusStopLatLng(int stopId) async {
+    final response = await WebServices.safeApiCall(
+      () => WebServices.minibus.getStop(stopId),
+    );
+    return response?.data.coordinates.wgs84;
   }
 }

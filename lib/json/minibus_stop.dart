@@ -1,4 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:upbushk_data_builder/isar/models/lat_lng.dart';
+import 'package:upbushk_data_builder/json/json_converters.dart';
 
 part '../generated/json/minibus_stop.g.dart';
 
@@ -22,6 +24,7 @@ class MinibusStopResponse {
 
   factory MinibusStopResponse.fromJson(Map<String, dynamic> json) =>
       _$MinibusStopResponseFromJson(json);
+
   Map<String, dynamic> toJson() => _$MinibusStopResponseToJson(this);
 }
 
@@ -54,30 +57,35 @@ class MinibusStopData {
 
   factory MinibusStopData.fromJson(Map<String, dynamic> json) =>
       _$MinibusStopDataFromJson(json);
+
   Map<String, dynamic> toJson() => _$MinibusStopDataToJson(this);
 }
 
 /// Coordinate container (HK80 + WGS84)
 @JsonSerializable(explicitToJson: true)
 class Coordinates {
-  final Hk80 wgs84;
-  final Hk80 hk80;
+  @Wgs84Converter()
+  final LatLng wgs84;
+  final Coordinate hk80;
 
   Coordinates({required this.wgs84, required this.hk80});
 
   factory Coordinates.fromJson(Map<String, dynamic> json) =>
       _$CoordinatesFromJson(json);
+
   Map<String, dynamic> toJson() => _$CoordinatesToJson(this);
 }
 
 /// Coordinate system data (latitude, longitude)
 @JsonSerializable()
-class Hk80 {
+class Coordinate {
   final double latitude;
   final double longitude;
 
-  Hk80({required this.latitude, required this.longitude});
+  Coordinate({required this.latitude, required this.longitude});
 
-  factory Hk80.fromJson(Map<String, dynamic> json) => _$Hk80FromJson(json);
-  Map<String, dynamic> toJson() => _$Hk80ToJson(this);
+  factory Coordinate.fromJson(Map<String, dynamic> json) =>
+      _$CoordinateFromJson(json);
+
+  Map<String, dynamic> toJson() => _$CoordinateToJson(this);
 }

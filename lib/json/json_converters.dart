@@ -37,3 +37,21 @@ class RegionMapConverter
   Map<String, dynamic> toJson(Map<Region, List<String>> object) =>
       object.map((key, value) => MapEntry(key.name, value));
 }
+
+class Wgs84Converter implements JsonConverter<LatLng, Map<String, dynamic>> {
+  const Wgs84Converter();
+
+  @override
+  LatLng fromJson(Map<String, dynamic> json) {
+    return LatLng(
+      lat: (json['latitude'] as num?)?.toDouble() ?? 0.0,
+      long: (json['longitude'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson(LatLng latLng) => {
+    'latitude': latLng.lat,
+    'longitude': latLng.long,
+  };
+}

@@ -14,6 +14,13 @@ class LatLng {
   factory LatLng.fromList(List<dynamic> list) =>
       LatLng(lat: list[0] as double, long: list[1] as double);
 
+  factory LatLng.fromWgs84(Map<String, dynamic> json) {
+    return LatLng(
+      lat: (json['latitude'] as num?)?.toDouble() ?? 0.0,
+      long: (json['longitude'] as num?)?.toDouble() ?? 0.0,
+    );
+  }
+
   factory LatLng.fromJson(Map<String, dynamic> json) => _$LatLngFromJson(json);
 
   Map<String, dynamic> toJson() => _$LatLngToJson(this);

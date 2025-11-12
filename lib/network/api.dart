@@ -77,8 +77,8 @@ abstract class MinibusApi {
     @Path('routeSeq') int routeSeq,
   );
 
-  @GET('/stop')
-  Future<MinibusStopResponse> getStops();
+  @GET('/stop/{stopId}')
+  Future<MinibusStopResponse> getStop(@Path('stopId') int stopId);
 
   @GET('/stop-route')
   Future<MinibusStopRouteResponse> getStopRoutes();
