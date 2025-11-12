@@ -4,50 +4,24 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:flutter_open_chinese_convert/flutter_open_chinese_convert.dart';
 import 'package:upbushk_data_builder/files/project_paths.dart';
+import 'package:upbushk_data_builder/isar/isar_manager.dart';
 import 'package:upbushk_data_builder/isar/models/minibus_route.dart';
+import 'package:upbushk_data_builder/isar/models/minibus_stop.dart';
 import 'package:upbushk_data_builder/json/minibus_geo_json.dart';
 
 class MinibusBuilder {
   static Future<void> buildMinibusData() async {
     final geoJson = await _readMinibusData();
 
-    final routeToRouteStops = groupBy(
-      geoJson.features,
-      (e) => e.properties.routeId,
-    );
+    final routes = await _buildMinibusRoute(geoJson);
+    final stops = await _buildMinibusStop(geoJson);
 
-    routeToRouteStops.entries.map((e) async {
-      //todo
-      final routeId = e.key;
-      final routeStops = e.value;
-      routeStops.sort(
-        (a, b) => a.properties.stopSeq.compareTo(b.properties.stopSeq),
-      );
-      final routeInfo = routeStops.first.properties;
-
-      final originT = routeInfo.locStartNameC.trim();
-      final originS = await ChineseConverter.convert(originT, S2T());
-      final destT = routeInfo.locEndNameC.trim();
-      final destS = await ChineseConverter.convert(destT, S2T());
-
-      return MinibusRoute(
-        routeId: routeId,
-        region: routeInfo.region,
-        number: routeInfo.routeNameE,
-        bound: routeInfo.bound,
-        descriptionEn: '',
-        descriptionChiT: '',
-        descriptionChiS: '',
-        originEn: routeInfo.locStartNameE.trim(),
-        originChiT: originT,
-        originChiS: originS,
-        destEn: routeInfo.locEndNameE.trim(), //todo
-        destChiT: destT,
-        destChiS: destS,
-        fullFare: routeInfo.fullFare,
-        stops: stops.map((e) => '${e.stopId}').toList(),
-      );
+    await isar.writeTxn(() async {
+      isar.minibusRoutes.putAll(routes);
+      isar.minibusStops.putAll(stops);
     });
+
+    // todo supplies descriptions
   }
 
   static Future<MinibusGeoJson> _readMinibusData() async {
@@ -55,6 +29,77 @@ class MinibusBuilder {
     final jsonString = await file.readAsString();
     final jsonData = jsonDecode(jsonString) as Map<String, dynamic>;
     return MinibusGeoJson.fromJson(jsonData);
+  }
+
+  static Future<List<MinibusRoute>> _buildMinibusRoute(
+    MinibusGeoJson geoJson,
+  ) async {
+    final routeToRouteStops = groupBy(
+      geoJson.features,
+      (e) => e.properties.routeId,
+    );
+
+    return await Future.wait(
+      routeToRouteStops.entries.map((e) async {
+        final routeId = e.key;
+        final routeStops = e.value;
+        routeStops.sort(
+          (a, b) => a.properties.stopSeq.compareTo(b.properties.stopSeq),
+        );
+
+        // Use the last stop's name as the destination name. The dest texts
+        // sometimes is a description and not the real destination.
+        final routeInfo = routeStops.last.properties;
+
+        // Convert traditional to simplified Chinese. The json given simplified
+        // Chinese is not always accurate.
+        final originT = routeInfo.locStartNameC.trim();
+        final originS = await ChineseConverter.convert(originT, S2T());
+        final destT = routeInfo.stopNameC.trim();
+        final destS = await ChineseConverter.convert(destT, S2T());
+
+        return MinibusRoute(
+          routeId: routeId,
+          region: routeInfo.region,
+          number: routeInfo.routeNameE,
+          bound: routeInfo.bound,
+          descriptionEn: '',
+          descriptionChiT: '',
+          descriptionChiS: '',
+          originEn: routeInfo.locStartNameE.trim(),
+          originChiT: originT,
+          originChiS: originS,
+          destEn: routeInfo.stopNameE.trim(),
+          destChiT: destT,
+          destChiS: destS,
+          fullFare: routeInfo.fullFare,
+          stops: routeStops.map((e) => '${e.properties.stopId}').toList(),
+        );
+      }),
+    );
+  }
+
+
+
+  static Future<List<MinibusStop>> _buildMinibusStop(
+    MinibusGeoJson geoJson,
+  ) async {
+    final stopIdGroups = groupBy(geoJson.features, (e) => e.properties.stopId);
+    return await Future.wait(
+      stopIdGroups.entries.map((e) async {
+        final stop = e.value.first;
+        final chiTName = stop.properties.stopNameC.trim();
+        final chiSName = await ChineseConverter.convert(chiTName, S2T());
+
+        return MinibusStop(
+          stopId: '${e.key}',
+          engName: stop.properties.stopNameE.trim(),
+          chiTName: chiTName,
+          chiSName: chiSName,
+          coordinate: stop.geometry.coordinates,
+        );
+      }),
+    );
   }
 }
 

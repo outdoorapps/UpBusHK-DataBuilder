@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:upbushk_data_builder/enums/enums.dart';
+import 'package:upbushk_data_builder/isar/models/lat_lng.dart';
 import 'package:upbushk_data_builder/json/json_converters.dart';
 
 part '../generated/json/minibus_geo_json.g.dart';
@@ -9,10 +10,7 @@ class MinibusGeoJson {
   final String type;
   final List<MinibusFeature> features;
 
-  MinibusGeoJson({
-    required this.type,
-    required this.features,
-  });
+  MinibusGeoJson({required this.type, required this.features});
 
   factory MinibusGeoJson.fromJson(Map<String, dynamic> json) =>
       _$MinibusGeoJsonFromJson(json);
@@ -43,12 +41,9 @@ class MinibusGeometry {
   final String type;
 
   @LatLngConverter()
-  final List<double> coordinates;
+  final LatLng coordinates;
 
-  MinibusGeometry({
-    required this.type,
-    required this.coordinates,
-  });
+  MinibusGeometry({required this.type, required this.coordinates});
 
   factory MinibusGeometry.fromJson(Map<String, dynamic> json) =>
       _$MinibusGeometryFromJson(json);
@@ -130,6 +125,8 @@ class MinibusProperties {
 
   /// Convenience helpers
   Region get region => Region.values.byName(district);
+
   String get routeId => '$govRouteId-$bound';
+
   Bound get bound => routeSeq == 1 ? Bound.O : Bound.I;
 }
