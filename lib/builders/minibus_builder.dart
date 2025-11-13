@@ -171,7 +171,6 @@ class MinibusBuilder {
     final minibusRoutes = <MinibusRoute>[];
     final minibusStops = <MinibusStop>{};
 
-    // todo not to include chiS in database, do it runtime on the app
     for (final (govRoute, direction, routeStop) in results) {
       final stops = routeStop.map(
         (stop) => MinibusStop(
@@ -180,7 +179,7 @@ class MinibusBuilder {
           chiTName: stop.nameTc.standardizeChiStopName(),
           latLng: LatLng(),
         ),
-      );
+      );//todo use shortest chi name
       minibusStops.addAll(stops);
 
       final bound = direction.routeSeq == 1 ? Bound.O : Bound.I;
