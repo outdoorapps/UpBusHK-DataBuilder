@@ -6,10 +6,9 @@ import 'package:upbushk_data_builder/isar/models/minibus_route.dart';
 import 'package:upbushk_data_builder/json/minibus_route_info.dart';
 import 'package:upbushk_data_builder/network/data_services.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
-import 'package:upbushk_data_builder/utils/utils.dart';
 
 class MinibusRouteBuilder {
-  static Future<List<MinibusRoute>> buildRoutes() async {
+  static Future<List<MinibusRoute>> buildOnlineRoutes() async {
     // 1. Get routes by region
     final routesByRegion = await DataServices.getMinibusRoutesByRegion();
     final pendingRegionNumberPairs = routesByRegion.entries
@@ -88,12 +87,12 @@ class MinibusRouteBuilder {
         final bound = routeSeq == 1 ? Bound.O : Bound.I; // routeSeq 1 or 2 only
 
         // Convert simplified Chinese here, as gov data are unreliable
-        final descriptionChiT = routeInfo.descriptionTc.trim();
-        final descriptionChiS = '';//Utils.zhT2S.convert(descriptionChiT);
-        final origChiT = direction.origTc.trim();
-        final origChiS = '';//Utils.zhT2S.convert(origChiT);
-        final destChiT = direction.destTc.trim();
-        final destChiS = '';//Utils.zhT2S.convert(destChiT);
+        // final descriptionChiT = routeInfo.descriptionTc.trim();
+        // final descriptionChiS = Utils.zhT2S.convert(descriptionChiT);
+        // final origChiT = direction.origTc.trim();
+        // final origChiS = Utils.zhT2S.convert(origChiT);
+        // final destChiT = direction.destTc.trim();
+        // final destChiS = Utils.zhT2S.convert(destChiT);
 
         return MinibusRoute(
           routeId: '${routeInfo.routeId}-$bound',
@@ -101,14 +100,14 @@ class MinibusRouteBuilder {
           number: routeInfo.routeCode,
           bound: bound,
           descriptionEn: routeInfo.descriptionEn.trim(),
-          descriptionChiT: descriptionChiT,
-          descriptionChiS: descriptionChiS,
+          descriptionChiT: routeInfo.descriptionTc.trim(),
+          descriptionChiS: routeInfo.descriptionSc.trim(),
           originEn: direction.origEn.trim(),
-          originChiT: origChiT,
-          originChiS: origChiS,
+          originChiT: direction.origTc.trim(),
+          originChiS: direction.origSc.trim(),
           destEn: direction.destEn.trim(),
-          destChiT: destChiT,
-          destChiS: destChiS,
+          destChiT: direction.destTc.trim(),
+          destChiS: direction.destSc.trim(),
           fullFare: null,
           stops: stops.map((e) => '${e.stopId}').toList(),
         );

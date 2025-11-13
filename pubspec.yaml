@@ -3,7 +3,7 @@ description: A data building utility for the UpBusHK project.
 version: 0.1.0
 
 environment:
-  sdk: '^3.9.0'
+  sdk: '>=3.8.0 <4.0.0'
 
 isar_version: &isar_version 3.3.0-dev.3
 
@@ -24,7 +24,6 @@ dependencies:
   collection: any
   synchronized: ^3.4.0
   get_it: ^9.0.5
-  opencc: ^1.1.0
 
 # Developer-only dependencies (for testing, linting, etc.)
 dev_dependencies:

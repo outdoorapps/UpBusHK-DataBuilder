@@ -7,7 +7,6 @@ import 'package:upbushk_data_builder/files/project_paths.dart';
 import 'package:upbushk_data_builder/isar/models/minibus_route.dart';
 import 'package:upbushk_data_builder/isar/models/minibus_stop.dart';
 import 'package:upbushk_data_builder/json/minibus_geo_json.dart';
-import 'package:upbushk_data_builder/utils/utils.dart';
 
 class MinibusBuilder {
   static Future<void> buildMinibusData() async {
@@ -21,15 +20,14 @@ class MinibusBuilder {
     //   isar.minibusStops.putAll(stops);
     // });
 
-    final onlineRoutes = await MinibusRouteBuilder.buildRoutes();
+    final onlineRoutes = await MinibusRouteBuilder.buildOnlineRoutes();
     final onlineRouteIds = onlineRoutes.map((e) => e.routeId);
     routes.removeWhere((e) => !onlineRouteIds.contains(e.routeId));
 
-
     final routeIDs = routes.map((e) => e.routeId);
-    onlineRouteIds
+    final onlineRoutesToAdd = onlineRouteIds
         .where((e) => !routeIDs.contains(e))
-        .forEach((e) => print('Json db missing route:$e'));//todo add these routes
+        .map((e) {});
 
     // todo supplies descriptions
   }
@@ -64,9 +62,9 @@ class MinibusBuilder {
         // Convert traditional to simplified Chinese. The json given simplified
         // Chinese is not always accurate.
         final originT = routeInfo.locStartNameC.trim();
-        final originS = '';//Utils.zhT2S.convert(originT);
+        final originS = ''; //Utils.zhT2S.convert(originT);
         final destT = routeInfo.stopNameC.trim();
-        final destS = '';//Utils.zhT2S.convert(destT);
+        final destS = ''; //Utils.zhT2S.convert(destT);
 
         return MinibusRoute(
           routeId: routeId,
@@ -97,7 +95,7 @@ class MinibusBuilder {
       stopIdGroups.entries.map((e) async {
         final stop = e.value.first;
         final chiTName = stop.properties.stopNameC.trim();
-        final chiSName = Utils.zhT2S.convert(chiTName);
+        final chiSName = stop.properties.stopNameS.trim();
 
         return MinibusStop(
           stopId: '${e.key}',
