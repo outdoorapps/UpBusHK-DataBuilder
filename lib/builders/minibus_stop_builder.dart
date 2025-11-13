@@ -12,8 +12,6 @@ class MinibusStopBuilder {
       // todo pick the one with the shortest standardized chinese name
       final stop = e.value.first; // Use the first stop in the group
 
-      //todo round latlng
-      //todo round latlng for bus routes as well
       return MinibusStop(
         stopId: '${e.key}',
         engName: stop.properties.stopNameE.trim(),

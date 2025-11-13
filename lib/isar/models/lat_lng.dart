@@ -9,7 +9,8 @@ class LatLng {
   final double lat;
   final double long;
 
-  const LatLng({this.lat = 0, this.long = 0});
+  /// Always round to 5 decimal places
+  LatLng({double lat = 0, double long = 0}) : lat = _r(lat), long = _r(long);
 
   factory LatLng.fromList(List<dynamic> list) =>
       LatLng(lat: list[0] as double, long: list[1] as double);
@@ -21,4 +22,10 @@ class LatLng {
   bool isEqual(LatLng latLng) => lat == latLng.lat && long == latLng.long;
 
   bool isValid() => lat != 0 && long != 0;
+
+  /// Round to 5 decimal places
+  static double _r(double v) {
+    const scale = 1e5;
+    return (v * scale).round() / scale;
+  }
 }
