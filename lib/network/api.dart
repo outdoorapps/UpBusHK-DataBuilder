@@ -65,7 +65,7 @@ abstract class MinibusApi {
   Future<MinibusRouteByRegionResponse> getRoutesByRegion();
 
   @GET('/route/{region}/{number}')
-  Future<MinibusRouteInfoResponse> getRouteInfo(
+  Future<MinibusRouteInfoResponse> getRoute(
     @Path('region') String region,
     @Path('number') String number,
   );

@@ -13,7 +13,7 @@ class MinibusRouteInfoResponse {
   final String generatedTimestamp;
 
   @JsonKey(name: 'data')
-  final List<MinibusRouteInfo> routes;
+  final List<GovMinibusRoute> routes;
 
   MinibusRouteInfoResponse({
     required this.type,
@@ -30,7 +30,7 @@ class MinibusRouteInfoResponse {
 
 /// Route Info Entry
 @JsonSerializable(explicitToJson: true)
-class MinibusRouteInfo {
+class GovMinibusRoute {
   @JsonKey(name: 'route_id')
   final int routeId;
 
@@ -53,7 +53,7 @@ class MinibusRouteInfo {
   @JsonKey(name: 'data_timestamp')
   final String dataTimestamp;
 
-  MinibusRouteInfo({
+  GovMinibusRoute({
     required this.routeId,
     required this.region,
     required this.routeCode,
@@ -64,10 +64,10 @@ class MinibusRouteInfo {
     required this.dataTimestamp,
   });
 
-  factory MinibusRouteInfo.fromJson(Map<String, dynamic> json) =>
-      _$MinibusRouteInfoFromJson(json);
+  factory GovMinibusRoute.fromJson(Map<String, dynamic> json) =>
+      _$GovMinibusRouteFromJson(json);
 
-  Map<String, dynamic> toJson() => _$MinibusRouteInfoToJson(this);
+  Map<String, dynamic> toJson() => _$GovMinibusRouteToJson(this);
 }
 
 /// Route Direction Info

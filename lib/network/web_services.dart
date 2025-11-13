@@ -5,6 +5,7 @@ import 'package:upbushk_data_builder/network/api.dart';
 
 class WebServices {
   static const timeoutSeconds = 120;
+  static const maxRetries = 3;
 
   static final Dio _dio = Dio(
     BaseOptions(

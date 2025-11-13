@@ -5,31 +5,24 @@ import 'package:upbushk_data_builder/network/data_services.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
 
 class MinibusStopBuilder {
-  static Future<List<MinibusStop>> buildMinibusStopWithJson(
-    MinibusGeoJson geoJson,
-  ) async {
+  static List<MinibusStop> buildMinibusStopWithJson(MinibusGeoJson geoJson) {
     final stopIdGroups = groupBy(geoJson.features, (e) => e.properties.stopId);
-    return await Future.wait(
-      stopIdGroups.entries.map((e) async {
-        final stop = e.value.first;
-        final chiTName = stop.properties.stopNameC.trim();
-        final chiSName = stop.properties.stopNameS.trim();
 
-        return MinibusStop(
-          stopId: '${e.key}',
-          engName: stop.properties.stopNameE.trim(),
-          chiTName: chiTName,
-          chiSName: chiSName,
-          latLng: stop.geometry.latLng,
-        );
-      }),
-    );
+    return stopIdGroups.entries.map((e) {
+      // todo pick the one with the shortest standardized chinese name
+      final stop = e.value.first; // Use the first stop in the group
+
+      //todo round latlng
+      //todo round latlng for bus routes as well
+      return MinibusStop(
+        stopId: '${e.key}',
+        engName: stop.properties.stopNameE.trim(),
+        chiTName: stop.properties.stopNameC.trim(),
+        chiSName: stop.properties.stopNameS.trim(),
+        latLng: stop.geometry.latLng,
+      );
+    }).toList();
   }
-
-  // static Future<List<MinibusStop>> buildStops(List<String> stopIds) {
-  //
-  //
-  // }
 
   /// Supply the list of [MinibusStop] with coordinates from online api
   static Future<List<MinibusStop>> getLatLngForStops(
@@ -37,23 +30,26 @@ class MinibusStopBuilder {
   ) async {
     final pendingStopIds = stops.map((e) => e.stopId).toSet();
     final stopsWithCoordinate = <MinibusStop>[];
+    int retries = 0;
 
-    while (pendingStopIds.isNotEmpty) {
+    while (pendingStopIds.isNotEmpty && retries < WebServices.maxRetries) {
+      final completed = <String>{};
+
       await Future.wait(
         pendingStopIds.map((e) async {
-          final coordinate = await DataServices.getMinibusStopLatLng(
-            int.parse(e),
-          );
-          if (coordinate != null) {
+          final latLng = await DataServices.getMinibusStopLatLng(int.parse(e));
+          if (latLng != null) {
             final pendingStop = stops.firstWhere((s) => s.stopId == e);
-            stopsWithCoordinate.add(pendingStop.copyWith(latLng: coordinate));
+            stopsWithCoordinate.add(pendingStop.copyWith(latLng: latLng));
+            completed.add(e);
           }
         }),
       );
-      pendingStopIds.removeAll(stopsWithCoordinate.map((e) => e.stopId));
+      pendingStopIds.removeAll(completed);
 
       final remaining = pendingStopIds.length;
       if (remaining > 0) {
+        retries++;
         print(
           '$remaining errors received for minibus stops $pendingStopIds, '
           'waiting for ${WebServices.timeoutSeconds}s before retrying...',
