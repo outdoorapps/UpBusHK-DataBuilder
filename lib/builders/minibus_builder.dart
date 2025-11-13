@@ -178,7 +178,6 @@ class MinibusBuilder {
           stopId: '${stop.stopId}',
           engName: stop.nameEn.trim(),
           chiTName: stop.nameTc.standardizeChiStopName(),
-          chiSName: stop.nameSc,
           latLng: LatLng(),
         ),
       );
@@ -192,13 +191,10 @@ class MinibusBuilder {
         bound: bound,
         descriptionEn: govRoute.descriptionEn.trim(),
         descriptionChiT: govRoute.descriptionTc.trim(),
-        descriptionChiS: govRoute.descriptionSc.trim(),
         originEn: direction.origEn.trim(),
         originChiT: direction.origTc.trim(),
-        originChiS: direction.origSc.trim(),
         destEn: direction.destEn.trim(),
         destChiT: direction.destTc.trim(),
-        destChiS: direction.destSc.trim(),
         fullFare: null,
         stops: stops.map((e) => '${e.stopId}').toList(),
       );

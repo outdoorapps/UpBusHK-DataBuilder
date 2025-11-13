@@ -12,7 +12,6 @@ abstract class Stop {
   String stopId;
   final String engName;
   final String chiTName;
-  final String chiSName;
 
   @LatLngConverter()
   final LatLng latLng;
@@ -21,7 +20,6 @@ abstract class Stop {
     required this.stopId,
     required this.engName,
     required this.chiTName,
-    required this.chiSName,
     required this.latLng,
   });
 

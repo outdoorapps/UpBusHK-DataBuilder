@@ -29,13 +29,10 @@ class MinibusRouteBuilder {
         bound: routeInfo.bound,
         descriptionEn: '',
         descriptionChiT: '',
-        descriptionChiS: '',
         originEn: routeInfo.locStartNameE.trim(),
         originChiT: routeInfo.locStartNameC.trim(),
-        originChiS: routeInfo.locStartNameS.trim(),
         destEn: routeInfo.stopNameE.trim(),
         destChiT: routeInfo.stopNameC.trim(),
-        destChiS: routeInfo.stopNameS.trim(),
         fullFare: routeInfo.fullFare,
         stops: routeStops.map((e) => '${e.properties.stopId}').toList(),
       );

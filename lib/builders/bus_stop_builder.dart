@@ -19,7 +19,6 @@ class BusStopBuilder {
         stopId: e.stop,
         engName: e.nameEn,
         chiTName: e.nameTc,
-        chiSName: e.nameSc,
         latLng: LatLng(
           lat: double.tryParse(e.lat) ?? 0,
           long: double.tryParse(e.lng) ?? 0,
@@ -80,7 +79,6 @@ class BusStopBuilder {
               stopId: ctbStop.stop,
               engName: ctbStop.nameEn,
               chiTName: ctbStop.nameTc,
-              chiSName: ctbStop.nameSc,
               latLng: LatLng(
                 lat: double.tryParse(ctbStop.lat) ?? 0.0,
                 long: double.tryParse(ctbStop.long) ?? 0.0,
@@ -130,7 +128,6 @@ class BusStopBuilder {
                   stopId: stop.stopId,
                   engName: stop.stopNameE,
                   chiTName: stop.stopNameC,
-                  chiSName: stop.stopNameS,
                   latLng: LatLng(
                     lat: double.tryParse(stop.latitude) ?? 0.0,
                     long: double.tryParse(stop.longitude) ?? 0.0,

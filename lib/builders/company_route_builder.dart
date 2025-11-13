@@ -24,10 +24,8 @@ class CompanyRouteBuilder {
           bound: e.bound,
           originEn: e.origEn,
           originChiT: e.origTc,
-          originChiS: e.origSc,
           destEn: e.destEn,
           destChiT: e.destTc,
-          destChiS: e.destSc,
           serviceType: int.tryParse(e.serviceType),
           nlbRouteId: null,
           stops: stops.map((e) => e.stopId).toList(),
@@ -63,10 +61,8 @@ class CompanyRouteBuilder {
               bound: bound,
               originEn: bound == Bound.O ? e.origEn : e.destEn,
               originChiT: bound == Bound.O ? e.origTc : e.destTc,
-              originChiS: bound == Bound.O ? e.origSc : e.destSc,
               destEn: bound == Bound.O ? e.destEn : e.origEn,
               destChiT: bound == Bound.O ? e.destTc : e.origTc,
-              destChiS: bound == Bound.O ? e.destSc : e.origSc,
               serviceType: null,
               nlbRouteId: null,
               stops: stops.map((s) => s.stopId).toList(),
@@ -102,14 +98,11 @@ class CompanyRouteBuilder {
       // Extract origin and destination names
       final nameEParts = route.routeNameE.split('>');
       final nameCParts = route.routeNameC.split('>');
-      final nameSParts = route.routeNameS.split('>');
 
       final originEn = nameEParts.first.trim();
       final destEn = nameEParts.length > 1 ? nameEParts[1].trim() : '';
       final originChiT = nameCParts.first.trim();
       final destChiT = nameCParts.length > 1 ? nameCParts[1].trim() : '';
-      final originChiS = nameSParts.first.trim();
-      final destChiS = nameSParts.length > 1 ? nameSParts[1].trim() : '';
 
       // Determine bound
       // If route number hasn't been added: outbound
@@ -134,10 +127,8 @@ class CompanyRouteBuilder {
           bound: bound,
           originEn: originEn,
           originChiT: originChiT,
-          originChiS: originChiS,
           destEn: destEn,
           destChiT: destChiT,
-          destChiS: destChiS,
           serviceType: null,
           nlbRouteId: route.routeId,
           stops: stops.map((s) => s.stopId).toList(),
@@ -166,10 +157,8 @@ class CompanyRouteBuilder {
           bound: bound,
           originEn: origin.engName,
           originChiT: origin.chiTName,
-          originChiS: origin.chiSName,
           destEn: dest.engName,
           destChiT: dest.chiTName,
-          destChiS: dest.chiSName,
           serviceType: null,
           nlbRouteId: null,
           stops: stops.map((s) => s.stopId).toList(),

@@ -18,10 +18,8 @@ abstract class TransitRoute implements Comparable<TransitRoute> {
   final Bound bound;
   final String originEn;
   final String originChiT;
-  final String originChiS;
   final String destEn;
   final String destChiT;
-  final String destChiS;
   final double? fullFare;
   final List<String> stops;
 
@@ -31,10 +29,8 @@ abstract class TransitRoute implements Comparable<TransitRoute> {
     required this.bound,
     required this.originEn,
     required this.originChiT,
-    required this.originChiS,
     required this.destEn,
     required this.destChiT,
-    required this.destChiS,
     required this.fullFare,
     required this.stops,
   });

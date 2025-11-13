@@ -16,7 +16,6 @@ class MinibusStop extends Stop {
     required super.stopId,
     required super.engName,
     required super.chiTName,
-    required super.chiSName,
     required super.latLng,
   });
 

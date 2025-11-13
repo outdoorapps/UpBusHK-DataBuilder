@@ -20,11 +20,9 @@ class CompanyBusRoute {
 
   final String originEn;
   final String originChiT;
-  final String originChiS;
 
   final String destEn;
   final String destChiT;
-  final String destChiS;
 
   /// For KMB/LWB, nullable for others
   final int? serviceType;
@@ -44,10 +42,8 @@ class CompanyBusRoute {
     required this.bound,
     required this.originEn,
     required this.originChiT,
-    required this.originChiS,
     required this.destEn,
     required this.destChiT,
-    required this.destChiS,
     required this.serviceType,
     required this.nlbRouteId,
     required this.stops,

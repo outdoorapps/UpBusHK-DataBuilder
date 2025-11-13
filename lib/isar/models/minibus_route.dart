@@ -15,7 +15,6 @@ class MinibusRoute extends TransitRoute {
 
   final String descriptionEn;
   final String descriptionChiT;
-  final String descriptionChiS;
 
   MinibusRoute({
     required super.routeId,
@@ -24,13 +23,10 @@ class MinibusRoute extends TransitRoute {
     required super.bound,
     required this.descriptionEn,
     required this.descriptionChiT,
-    required this.descriptionChiS,
     required super.originEn,
     required super.originChiT,
-    required super.originChiS,
     required super.destEn,
     required super.destChiT,
-    required super.destChiS,
     required super.fullFare,
     required super.stops,
   }) : super();

@@ -17,7 +17,6 @@ class MinibusStopBuilder {
         stopId: '${e.key}',
         engName: stop.properties.stopNameE.trim(),
         chiTName: stop.properties.stopNameC.standardizeChiStopName(),
-        chiSName: stop.properties.stopNameS.trim(),
         latLng: stop.geometry.latLng,
       );
     }).toList();

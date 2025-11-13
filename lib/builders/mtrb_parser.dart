@@ -62,7 +62,6 @@ class MtrbParser {
           _TSUEN_CODE,
           _TSUEN_CHARACTER,
         );
-        final chiSName = ''; //todo Utils.zhT2S.convert(chiName);
         final engName = line
             .substring(line.indexOf(chiNameText) + chiNameText.length)
             .trim();
@@ -72,7 +71,6 @@ class MtrbParser {
           stopId: stopId,
           engName: engName,
           chiTName: chiName,
-          chiSName: chiSName,
           latLng: LatLng(lat: lat, long: long),
         );
 
