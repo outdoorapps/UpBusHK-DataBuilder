@@ -1,3 +1,4 @@
+import 'package:copy_with_extension/copy_with_extension.dart';
 import 'package:isar_community/isar.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:upbushk_data_builder/enums/enums.dart';
@@ -7,6 +8,7 @@ part '../../generated/isar/models/minibus_route.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 @Collection()
+@CopyWith()
 class MinibusRoute extends TransitRoute {
   @enumerated
   final Region region;

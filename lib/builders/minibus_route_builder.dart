@@ -1,14 +1,19 @@
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:upbushk_data_builder/enums/enums.dart';
 import 'package:upbushk_data_builder/isar/models/minibus_route.dart';
+import 'package:upbushk_data_builder/json/minibus_geo_json.dart';
 import 'package:upbushk_data_builder/json/minibus_route_info.dart';
 import 'package:upbushk_data_builder/network/data_services.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
 
 class MinibusRouteBuilder {
-  static Future<List<MinibusRoute>> buildOnlineRoutes() async {
+  /// Use the open API to get minibus routes. Routes built by this function
+  /// will have [MinibusRoute.fullFare] set to null, which is to be obtained
+  /// via the JSON_GMB.json file.
+  static Future<List<MinibusRoute>> buildRoutesWithApi() async {
     // 1. Get routes by region
     final routesByRegion = await DataServices.getMinibusRoutesByRegion();
     final pendingRegionNumberPairs = routesByRegion.entries
@@ -31,8 +36,8 @@ class MinibusRouteBuilder {
       if (remaining > 0) {
         print(
           '$remaining errors received for minibus routes '
-          '$pendingRegionNumberPairs, waiting for'
-          ' ${WebServices.timeoutSeconds}s before retrying...',
+          '$pendingRegionNumberPairs, waiting for '
+          '${WebServices.timeoutSeconds}s before retrying...',
         );
         await Future.delayed(Duration(seconds: WebServices.timeoutSeconds));
         print('Restarting...');
@@ -77,7 +82,7 @@ class MinibusRouteBuilder {
             final percent = (completed / total * 100).toStringAsFixed(1);
             final elapsed = DateTime.now().difference(start).inSeconds;
             stdout.write(
-              '\rProgress: $completed/$total  $percent%  (${elapsed}s)',
+              '\rGetting minibus routes: $completed/$total  $percent%  (${elapsed}s)',
             );
             if (completed == total) stdout.writeln();
           }
@@ -85,14 +90,6 @@ class MinibusRouteBuilder {
 
         // Create MinibusRoute
         final bound = routeSeq == 1 ? Bound.O : Bound.I; // routeSeq 1 or 2 only
-
-        // Convert simplified Chinese here, as gov data are unreliable
-        // final descriptionChiT = routeInfo.descriptionTc.trim();
-        // final descriptionChiS = Utils.zhT2S.convert(descriptionChiT);
-        // final origChiT = direction.origTc.trim();
-        // final origChiS = Utils.zhT2S.convert(origChiT);
-        // final destChiT = direction.destTc.trim();
-        // final destChiS = Utils.zhT2S.convert(destChiT);
 
         return MinibusRoute(
           routeId: '${routeInfo.routeId}-$bound',
@@ -110,6 +107,49 @@ class MinibusRouteBuilder {
           destChiS: direction.destSc.trim(),
           fullFare: null,
           stops: stops.map((e) => '${e.stopId}').toList(),
+        );
+      }),
+    );
+  }
+
+  /// Use the JSON_GMB.json file to get minibus routes. Routes built by this
+  /// function will have [MinibusRoute.fullFare] set and empty descriptions.
+  static Future<List<MinibusRoute>> buildRoutesWithJson(
+      MinibusGeoJson geoJson,
+      ) async {
+    final routeToRouteStops = groupBy(
+      geoJson.features,
+          (e) => e.properties.routeId,
+    );
+
+    return await Future.wait(
+      routeToRouteStops.entries.map((e) async {
+        final routeId = e.key;
+        final routeStops = e.value;
+        routeStops.sort(
+              (a, b) => a.properties.stopSeq.compareTo(b.properties.stopSeq),
+        );
+
+        // Use the last stop's name as the destination name. The dest texts
+        // sometimes is a description and not the real destination.
+        final routeInfo = routeStops.last.properties;
+
+        return MinibusRoute(
+          routeId: routeId,
+          region: routeInfo.region,
+          number: routeInfo.routeNameE,
+          bound: routeInfo.bound,
+          descriptionEn: '',
+          descriptionChiT: '',
+          descriptionChiS: '',
+          originEn: routeInfo.locStartNameE.trim(),
+          originChiT: routeInfo.locStartNameC.trim(),
+          originChiS: routeInfo.locStartNameS.trim(),
+          destEn: routeInfo.stopNameE.trim(),
+          destChiT: routeInfo.stopNameC.trim(),
+          destChiS: routeInfo.stopNameS.trim(),
+          fullFare: routeInfo.fullFare,
+          stops: routeStops.map((e) => '${e.properties.stopId}').toList(),
         );
       }),
     );

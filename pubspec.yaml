@@ -15,6 +15,7 @@ dependencies:
   # Code generation
   json_annotation: ^4.9.0
   freezed_annotation: ^3.1.0
+  copy_with_extension: ^9.0.0
 
   # Storage
   isar_community: *isar_version
@@ -35,6 +36,7 @@ dev_dependencies:
   isar_community_generator: *isar_version
   json_serializable: ^6.11.1
   freezed: ^3.2.1
+  copy_with_extension_gen: ^9.0.0
   retrofit_generator: ^10.0.1
 
 dependency_overrides:
