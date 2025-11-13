@@ -38,7 +38,9 @@ class BusStopBuilder {
     final pendingStopIds = ctbBusCompanyRoutes.expand((r) => r.stops).toSet();
 
     final allStops = <BusStop>[];
-    while (pendingStopIds.isNotEmpty) {
+    int retries = 0;
+
+    while (pendingStopIds.isNotEmpty && retries < WebServices.maxRetries) {
       final stops = await _getCtbStops(pendingStopIds);
       allStops.addAll(stops);
 
