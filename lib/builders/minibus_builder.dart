@@ -14,7 +14,8 @@ class MinibusBuilder {
 
     // 1. Build routes
     final jsonRoutes = await MinibusRouteBuilder.buildRoutesWithJson(geoJson);
-    final apiRoutes = await MinibusRouteBuilder.buildRoutesWithApi();
+    final (apiRoutes, apiStops) = await MinibusRouteBuilder.buildWithApi();
+
     final routes = <MinibusRoute>[];
 
     // Use api routes (online) as references, add fare info from json routes
@@ -35,18 +36,31 @@ class MinibusBuilder {
     final apiStopIds = apiRoutes.expand((e) => e.stops).toSet();
     stops.removeWhere((e) => !apiStopIds.contains(e.stopId));
 
-    // Find stops missing LatLng (not present in GMB_stops.json)
-    final stopWithoutLatLng = stops.where((e) => e.latLng == null)
-        .map((e) => stops.firstWhere((s) => s.stopId == e))
-        .toList();
-    final stopsWithApiLatLng = await MinibusStopBuilder.getLatLngForStops(
-      stopWithoutLatLng,
-    );
-    stopWithoutLatLng.forEach((e) => stops.remove(e));
+    // Find API stopIds not present in stops
+    final stopIds = stops.map((e) => e.stopId).toSet();
+    final missingStopIds = apiStopIds.difference(stopIds);
 
-    stops.addAll(stopsWithApiLatLng);
-
-    stops.sort((a, b) => a.stopId.compareTo(b.stopId));
+    missingStopIds.forEach((e) => print('Missing stop: $e'));
+    // final stopsMissingLatLng = missingStopIds
+    //     .map((e) {
+    //       final routeStop = geoJson.features.firstWhere(
+    //         (f) => f.properties.stopId == e,
+    //       );
+    //       return MinibusStop(
+    //         stopId: e,
+    //         engName: routeStop.properties.stopNameE,
+    //         chiTName: routeStop.properties.stopNameC,
+    //         chiSName: routeStop.properties.stopNameS,
+    //         latLng: LatLng(),
+    //       );
+    //     })
+    //     .whereType<MinibusStop>()
+    //     .toList();
+    // final stopsCreated = await MinibusStopBuilder.getLatLngForStops(
+    //   stopsMissingLatLng,
+    // );
+    // stops.addAll(stopsCreated);
+    // stops.sort((a, b) => a.stopId.compareTo(b.stopId));
 
     //todo Save to Isar
     // await isar.writeTxn(() async {

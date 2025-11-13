@@ -26,6 +26,11 @@ class MinibusStopBuilder {
     );
   }
 
+  // static Future<List<MinibusStop>> buildStops(List<String> stopIds) {
+  //
+  //
+  // }
+
   /// Supply the list of [MinibusStop] with coordinates from online api
   static Future<List<MinibusStop>> getLatLngForStops(
     List<MinibusStop> stops,

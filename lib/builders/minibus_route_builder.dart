@@ -3,26 +3,33 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:synchronized/synchronized.dart';
 import 'package:upbushk_data_builder/enums/enums.dart';
+import 'package:upbushk_data_builder/isar/models/lat_lng.dart';
 import 'package:upbushk_data_builder/isar/models/minibus_route.dart';
+import 'package:upbushk_data_builder/isar/models/minibus_stop.dart';
 import 'package:upbushk_data_builder/json/minibus_geo_json.dart';
 import 'package:upbushk_data_builder/json/minibus_route_info.dart';
 import 'package:upbushk_data_builder/network/data_services.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
 
 class MinibusRouteBuilder {
-  /// Use the open API to get minibus routes. Routes built by this function
-  /// will have [MinibusRoute.fullFare] set to null, which is to be obtained
-  /// via the JSON_GMB.json file.
-  static Future<List<MinibusRoute>> buildRoutesWithApi() async {
+  /// Use the API to get minibus routes and stops. Routes built by this
+  /// will have [MinibusRoute.fullFare] set to null which is to be obtained
+  /// via the JSON_GMB.json file. Stops built by this will have
+  /// [MinibusStop.latLng] set to default [LatLng], which is to be obtained
+  /// from the JSON_GMB.json file or, if not available, from the API.
+  static Future<(List<MinibusRoute>, Set<MinibusStop>)> buildWithApi() async {
     // 1. Get routes by region
     final routesByRegion = await DataServices.getMinibusRoutesByRegion();
     final pendingRegionNumberPairs = routesByRegion.entries
         .expand((e) => e.value.map((number) => MapEntry(e.key, number)))
         .toList();
     final minibusRoutes = <MinibusRoute>[];
+    final minibusStops = <MinibusStop>{};
 
     while (pendingRegionNumberPairs.isNotEmpty) {
-      final routes = await _getRoutes(pendingRegionNumberPairs);
+      final results = await _requestMinibusData(pendingRegionNumberPairs);
+      final (routes, stops) = results;
+      minibusStops.addAll(stops); // todo should be set and implements ==
       minibusRoutes.addAll(routes);
 
       // Remove successfully added routes
@@ -43,13 +50,13 @@ class MinibusRouteBuilder {
         print('Restarting...');
       }
     }
-    return minibusRoutes;
+    return (minibusRoutes, minibusStops);
   }
 
-  static Future<List<MinibusRoute>> _getRoutes(
+  static Future<(List<MinibusRoute>, Set<MinibusStop>)> _requestMinibusData(
     List<MapEntry<Region, String>> regionNumberPairs,
   ) async {
-    // 2. Get route info (ID, origins, destinations and bound)
+    // Get route info (ID, origins, destinations and bound)
     final routeInfoList = await Future.wait(
       regionNumberPairs.map(
         (e) => DataServices.getMinibusRouteInfo(e.key.name, e.value),
@@ -64,13 +71,13 @@ class MinibusRouteBuilder {
     final lock = Lock();
     final start = DateTime.now();
 
-    return await Future.wait(
+    final results = await Future.wait(
       routeInfoDirectionPairs.map((e) async {
         final routeInfo = e.key;
         final direction = e.value;
         final routeSeq = direction.routeSeq;
 
-        final stops = await DataServices.getMinibusRouteStops(
+        final routeStop = await DataServices.getMinibusRouteStops(
           routeInfo.routeId,
           routeSeq,
         );
@@ -88,38 +95,59 @@ class MinibusRouteBuilder {
           }
         });
 
-        // Create MinibusRoute
-        final bound = routeSeq == 1 ? Bound.O : Bound.I; // routeSeq 1 or 2 only
-
-        return MinibusRoute(
-          routeId: '${routeInfo.routeId}-$bound',
-          region: routeInfo.region,
-          number: routeInfo.routeCode,
-          bound: bound,
-          descriptionEn: routeInfo.descriptionEn.trim(),
-          descriptionChiT: routeInfo.descriptionTc.trim(),
-          descriptionChiS: routeInfo.descriptionSc.trim(),
-          originEn: direction.origEn.trim(),
-          originChiT: direction.origTc.trim(),
-          originChiS: direction.origSc.trim(),
-          destEn: direction.destEn.trim(),
-          destChiT: direction.destTc.trim(),
-          destChiS: direction.destSc.trim(),
-          fullFare: null,
-          stops: stops.map((e) => '${e.stopId}').toList(),
-        );
+        return (routeInfo, direction, routeStop);
       }),
     );
+
+    final minibusRoutes = <MinibusRoute>[];
+    final minibusStops = <MinibusStop>{};
+
+    for (final (routeInfo, direction, routeStop) in results) {
+      final stops = routeStop.map(
+        (stop) => MinibusStop(
+          stopId: '${stop.stopId}',
+          engName: stop.nameEn,
+          chiTName: stop.nameTc,
+          chiSName: stop.nameSc,
+          latLng: LatLng(),
+        ),
+      );
+      minibusStops.addAll(stops);
+
+      // Create MinibusRoute
+      final bound = direction.routeSeq == 1 ? Bound.O : Bound.I;
+
+      final route = MinibusRoute(
+        routeId: '${routeInfo.routeId}-$bound',
+        region: routeInfo.region,
+        number: routeInfo.routeCode,
+        bound: bound,
+        descriptionEn: routeInfo.descriptionEn.trim(),
+        descriptionChiT: routeInfo.descriptionTc.trim(),
+        descriptionChiS: routeInfo.descriptionSc.trim(),
+        originEn: direction.origEn.trim(),
+        originChiT: direction.origTc.trim(),
+        originChiS: direction.origSc.trim(),
+        destEn: direction.destEn.trim(),
+        destChiT: direction.destTc.trim(),
+        destChiS: direction.destSc.trim(),
+        fullFare: null,
+        stops: stops.map((e) => '${e.stopId}').toList(),
+      );
+      minibusRoutes.add(route);
+    }
+
+    return (minibusRoutes, minibusStops);
   }
 
   /// Use the JSON_GMB.json file to get minibus routes. Routes built by this
   /// function will have [MinibusRoute.fullFare] set and empty descriptions.
   static Future<List<MinibusRoute>> buildRoutesWithJson(
-      MinibusGeoJson geoJson,
-      ) async {
+    MinibusGeoJson geoJson,
+  ) async {
     final routeToRouteStops = groupBy(
       geoJson.features,
-          (e) => e.properties.routeId,
+      (e) => e.properties.routeId,
     );
 
     return await Future.wait(
@@ -127,7 +155,7 @@ class MinibusRouteBuilder {
         final routeId = e.key;
         final routeStops = e.value;
         routeStops.sort(
-              (a, b) => a.properties.stopSeq.compareTo(b.properties.stopSeq),
+          (a, b) => a.properties.stopSeq.compareTo(b.properties.stopSeq),
         );
 
         // Use the last stop's name as the destination name. The dest texts
