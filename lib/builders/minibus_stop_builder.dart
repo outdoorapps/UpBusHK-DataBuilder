@@ -3,6 +3,7 @@ import 'package:upbushk_data_builder/isar/models/minibus_stop.dart';
 import 'package:upbushk_data_builder/json/minibus_geo_json.dart';
 import 'package:upbushk_data_builder/network/data_services.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
+import 'package:upbushk_data_builder/utils/string_x.dart';
 
 class MinibusStopBuilder {
   static List<MinibusStop> buildMinibusStopWithJson(MinibusGeoJson geoJson) {
@@ -15,7 +16,7 @@ class MinibusStopBuilder {
       return MinibusStop(
         stopId: '${e.key}',
         engName: stop.properties.stopNameE.trim(),
-        chiTName: stop.properties.stopNameC.trim(),
+        chiTName: stop.properties.stopNameC.standardizeChiStopName(),
         chiSName: stop.properties.stopNameS.trim(),
         latLng: stop.geometry.latLng,
       );

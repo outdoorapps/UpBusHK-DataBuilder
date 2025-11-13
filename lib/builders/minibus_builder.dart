@@ -15,6 +15,7 @@ import 'package:upbushk_data_builder/json/minibus_geo_json.dart';
 import 'package:upbushk_data_builder/json/minibus_route_info.dart';
 import 'package:upbushk_data_builder/network/data_services.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
+import 'package:upbushk_data_builder/utils/string_x.dart';
 
 class MinibusBuilder {
   static Future<void> buildMinibusData() async {
@@ -170,14 +171,13 @@ class MinibusBuilder {
     final minibusRoutes = <MinibusRoute>[];
     final minibusStops = <MinibusStop>{};
 
-    // todo standardize chi names
     // todo not to include chiS in database, do it runtime on the app
     for (final (govRoute, direction, routeStop) in results) {
       final stops = routeStop.map(
         (stop) => MinibusStop(
           stopId: '${stop.stopId}',
-          engName: stop.nameEn,
-          chiTName: stop.nameTc,
+          engName: stop.nameEn.trim(),
+          chiTName: stop.nameTc.standardizeChiStopName(),
           chiSName: stop.nameSc,
           latLng: LatLng(),
         ),
