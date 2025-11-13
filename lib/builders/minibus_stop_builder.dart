@@ -20,14 +20,14 @@ class MinibusStopBuilder {
           engName: stop.properties.stopNameE.trim(),
           chiTName: chiTName,
           chiSName: chiSName,
-          coordinate: stop.geometry.coordinates,
+          latLng: stop.geometry.latLng,
         );
       }),
     );
   }
 
   /// Supply the list of [MinibusStop] with coordinates from online api
-  static Future<List<MinibusStop>> getCoordinatesForStops(
+  static Future<List<MinibusStop>> getLatLngForStops(
     List<MinibusStop> stops,
   ) async {
     final pendingStopIds = stops.map((e) => e.stopId).toSet();
@@ -41,9 +41,7 @@ class MinibusStopBuilder {
           );
           if (coordinate != null) {
             final pendingStop = stops.firstWhere((s) => s.stopId == e);
-            stopsWithCoordinate.add(
-              pendingStop.copyWith(coordinate: coordinate),
-            );
+            stopsWithCoordinate.add(pendingStop.copyWith(latLng: coordinate));
           }
         }),
       );

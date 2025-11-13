@@ -17,7 +17,7 @@ class MinibusStop extends Stop {
     required super.engName,
     required super.chiTName,
     required super.chiSName,
-    required super.coordinate,
+    required super.latLng,
   });
 
   factory MinibusStop.fromJson(Map<String, dynamic> json) =>

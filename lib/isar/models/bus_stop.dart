@@ -19,7 +19,7 @@ class BusStop extends Stop {
     required super.engName,
     required super.chiTName,
     required super.chiSName,
-    required super.coordinate,
+    required super.latLng,
   });
 
   factory BusStop.fromJson(Map<String, dynamic> json) =>

@@ -3,6 +3,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'package:path/path.dart';
 import 'package:upbushk_data_builder/isar/models/lat_lng.dart';
 import 'package:upbushk_data_builder/json/json_converters.dart';
+
 abstract class Stop {
   @JsonKey(includeToJson: false, includeFromJson: false)
   Id id = Isar.autoIncrement;
@@ -14,14 +15,14 @@ abstract class Stop {
   final String chiSName;
 
   @LatLngConverter()
-  final LatLng coordinate;
+  final LatLng latLng;
 
   Stop({
     required this.stopId,
     required this.engName,
     required this.chiTName,
     required this.chiSName,
-    required this.coordinate,
+    required this.latLng,
   });
 
   Map<String, dynamic> toJson();

@@ -73,7 +73,7 @@ class MtrbParser {
           engName: engName,
           chiTName: chiName,
           chiSName: chiSName,
-          coordinate: LatLng(lat: lat, long: long),
+          latLng: LatLng(lat: lat, long: long),
         );
 
         if (number != null && bound != null) {

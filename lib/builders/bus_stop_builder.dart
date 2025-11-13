@@ -20,7 +20,7 @@ class BusStopBuilder {
         engName: e.nameEn,
         chiTName: e.nameTc,
         chiSName: e.nameSc,
-        coordinate: LatLng(
+        latLng: LatLng(
           lat: double.tryParse(e.lat) ?? 0,
           long: double.tryParse(e.lng) ?? 0,
         ),
@@ -79,7 +79,7 @@ class BusStopBuilder {
               engName: ctbStop.nameEn,
               chiTName: ctbStop.nameTc,
               chiSName: ctbStop.nameSc,
-              coordinate: LatLng(
+              latLng: LatLng(
                 lat: double.tryParse(ctbStop.lat) ?? 0.0,
                 long: double.tryParse(ctbStop.long) ?? 0.0,
               ),
@@ -129,7 +129,7 @@ class BusStopBuilder {
                   engName: stop.stopNameE,
                   chiTName: stop.stopNameC,
                   chiSName: stop.stopNameS,
-                  coordinate: LatLng(
+                  latLng: LatLng(
                     lat: double.tryParse(stop.latitude) ?? 0.0,
                     long: double.tryParse(stop.longitude) ?? 0.0,
                   ),
@@ -172,9 +172,9 @@ class BusStopBuilder {
   }
 
   static Set<String> validateStops(
-      List<CompanyBusRoute> companyBusRoutes,
-      List<BusStop> busStops,
-      ) {
+    List<CompanyBusRoute> companyBusRoutes,
+    List<BusStop> busStops,
+  ) {
     final stopIDsInRoutes = companyBusRoutes.expand((e) => e.stops).toSet();
     final stopIDsInDatabase = busStops.map((e) => e.stopId).toSet();
     final missingStops = <String>{};
@@ -186,7 +186,7 @@ class BusStopBuilder {
     });
 
     missingStops.forEach(
-          (stopId) => print('Bus stop [$stopId] is not in the database'),
+      (stopId) => print('Bus stop [$stopId] is not in the database'),
     );
     if (missingStops.isEmpty) print('Bus stops validated');
 
