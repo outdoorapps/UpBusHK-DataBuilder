@@ -36,7 +36,7 @@ class MinibusBuilder {
     final apiStopIds = apiRoutes.expand((e) => e.stops).toSet();
     stops.removeWhere((e) => !apiStopIds.contains(e.stopId));
 
-    // Find stops missing info
+    // Find stops missing json info
     final stopIds = stops.map((s) => s.stopId).toSet();
     final stopsMissingInfo = apiStopIds.difference(stopIds);
 
