@@ -62,7 +62,7 @@ Future<void> _buildCompanyBusRoutes() async {
     '\n- CTB routes: ${ctbRoutes.length}'
     '\n- NLB routes: ${nlbRoutes.length}'
     '\n- MTRB routes: ${mtrbRoutes.length}'
-    '\nTotal: ${companyRoutes.length}',
+    '\n- Total: ${companyRoutes.length}',
   );
 
   await isar.writeTxn(() async {
@@ -95,10 +95,10 @@ Future<void> _buildBusStops() async {
 
   print(
     '- KMB stops: ${kmbStops.length}, '
-    '- CTB stops: ${ctbStops.length}, '
-    '- NLB stops: ${nlbStops.length}, '
-    '- MTRB stops: ${mtrbStops.length} '
-    'Total: ${busStops.length}',
+    '\n- CTB stops: ${ctbStops.length}, '
+    '\n- NLB stops: ${nlbStops.length}, '
+    '\n- MTRB stops: ${mtrbStops.length} '
+    '\n- Total: ${busStops.length}',
   );
 
   await isar.writeTxn(() async {
