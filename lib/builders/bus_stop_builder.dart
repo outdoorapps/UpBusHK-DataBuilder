@@ -6,7 +6,7 @@ import 'package:upbushk_data_builder/isar/models/company_bus_route.dart';
 import 'package:upbushk_data_builder/isar/models/lat_lng.dart';
 import 'package:upbushk_data_builder/network/data_services.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
-import 'package:upbushk_data_builder/utils/progress_tracker.dart';
+import 'package:upbushk_data_builder/utils/async_utils.dart';
 
 class BusStopBuilder {
   static Future<List<BusStop>> buildKmbStops() async {
@@ -51,92 +51,69 @@ class BusStopBuilder {
   }
 
   static Future<List<BusStop>> _getCtbStops(Set<String> stopIds) async {
-    final List<BusStop> stops = [];
-    final total = stopIds.length;
-    final tracker = ProgressTracker(
+    final stops = await AsyncUtils.mapAsyncWithProgress<String, BusStop?>(
+      items: stopIds,
       label: "Getting CTB stops",
-      total: total,
       step: 50,
-    );
-
-    // Run all requests concurrently
-    await Future.wait(
-      stopIds.map((stopId) async {
+      worker: (stopId) async {
         final ctbStop = await DataServices.getCtbStop(stopId);
-        if (ctbStop != null) {
-          stops.add(
-            BusStop(
-              company: Company.CTB,
-              stopId: ctbStop.stop,
-              engName: ctbStop.nameEn,
-              chiTName: ctbStop.nameTc,
-              latLng: LatLng(
-                lat: double.tryParse(ctbStop.lat) ?? 0.0,
-                long: double.tryParse(ctbStop.long) ?? 0.0,
-              ),
-            ),
-          );
-        }
-        await tracker.increment();
-      }),
+        if (ctbStop == null) return null;
+
+        return BusStop(
+          company: Company.CTB,
+          stopId: ctbStop.stop,
+          engName: ctbStop.nameEn,
+          chiTName: ctbStop.nameTc,
+          latLng: LatLng(
+            lat: double.tryParse(ctbStop.lat) ?? 0.0,
+            long: double.tryParse(ctbStop.long) ?? 0.0,
+          ),
+        );
+      },
     );
-    return stops;
+    return stops.whereType<BusStop>().toList();
   }
 
   static Future<List<BusStop>> buildNlbStops(
     List<CompanyBusRoute> nlbCompanyBusRoutes,
   ) async {
-    final List<BusStop> nlbStops = [];
-    final existingStopIds = <String>{};
-    final total = nlbCompanyBusRoutes.length;
-
-    final tracker = ProgressTracker(
+    final results = await AsyncUtils.mapAsyncWithProgress(
+      items: nlbCompanyBusRoutes,
       label: "Getting NLB stops",
-      total: total,
       step: 50,
-    );
-
-    await Future.wait(
-      nlbCompanyBusRoutes.map((route) async {
+      worker: (route) async {
         final stops = await DataServices.getNlbRouteStops(route.nlbRouteId!);
-
-        for (final stop in stops) {
-          if (!existingStopIds.contains(stop.stopId)) {
-            existingStopIds.add(stop.stopId);
-            nlbStops.add(
-              BusStop(
+        return stops
+            .map(
+              (s) => BusStop(
                 company: Company.NLB,
-                stopId: stop.stopId,
-                engName: stop.stopNameE,
-                chiTName: stop.stopNameC,
+                stopId: s.stopId,
+                engName: s.stopNameE,
+                chiTName: s.stopNameC,
                 latLng: LatLng(
-                  lat: double.tryParse(stop.latitude) ?? 0.0,
-                  long: double.tryParse(stop.longitude) ?? 0.0,
+                  lat: double.tryParse(s.latitude) ?? 0.0,
+                  long: double.tryParse(s.longitude) ?? 0.0,
                 ),
               ),
-            );
-          }
-        }
-        await tracker.increment();
-      }),
+            )
+            .toList();
+      },
     );
 
-    nlbStops.sort((a, b) => a.stopId.compareTo(b.stopId));
-    return nlbStops;
+    // Deduplicate with Set
+    final stops = results.expand((x) => x).toSet().toList()
+      ..sort((a, b) => a.stopId.compareTo(b.stopId));
+    return stops;
   }
 
   static Future<List<BusStop>> buildMtrbStops() async {
     final mtrbRouteMap = await MtrbParser.parseMtrbData(
       ProjectPaths.mtrbDataPath,
     );
-
-    final List<BusStop> busStops = [];
-    mtrbRouteMap.forEach((_, boundMap) {
-      boundMap.forEach((_, stops) {
-        busStops.addAll(stops);
-      });
-    });
-    return busStops;
+    return mtrbRouteMap.values
+        .expand((boundMap) => boundMap.values)
+        .expand((stops) => stops)
+        .toList();
   }
 
   static Set<String> validateStops(

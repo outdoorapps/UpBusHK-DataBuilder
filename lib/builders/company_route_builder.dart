@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:collection/collection.dart';
 import 'package:upbushk_data_builder/builders/mtrb_parser.dart';
 import 'package:upbushk_data_builder/enums/company.dart';
@@ -7,17 +5,24 @@ import 'package:upbushk_data_builder/enums/enums.dart';
 import 'package:upbushk_data_builder/files/project_paths.dart';
 import 'package:upbushk_data_builder/isar/models/company_bus_route.dart';
 import 'package:upbushk_data_builder/network/data_services.dart';
+import 'package:upbushk_data_builder/utils/async_utils.dart';
+import 'package:upbushk_data_builder/utils/benchmark.dart';
+import 'package:upbushk_data_builder/utils/progress_tracker.dart';
 
 class CompanyRouteBuilder {
   static Future<List<CompanyBusRoute>> buildKmbRoutes() async {
     final routes = await DataServices.getKmbRoutes();
-    return await Future.wait(
-      routes.map((e) async {
+    return AsyncUtils.mapAsyncWithProgress(
+      items: routes,
+      label: "Building KMB routes",
+      step: 50,
+      worker: (e) async {
         final stops = await DataServices.getKmbRouteStops(
           e.route,
           e.bound.label,
           e.serviceType,
         );
+
         return CompanyBusRoute(
           company: Company.KMB,
           number: e.route,
@@ -28,9 +33,9 @@ class CompanyRouteBuilder {
           destChiT: e.destTc,
           serviceType: int.tryParse(e.serviceType),
           nlbRouteId: null,
-          stops: stops.map((e) => e.stopId).toList(),
+          stops: stops.map((s) => s.stopId).toList(),
         );
-      }),
+      },
     );
   }
 
@@ -41,59 +46,54 @@ class CompanyRouteBuilder {
   static Future<List<CompanyBusRoute>> buildCtbRoutes() async {
     final routes = await DataServices.getCtbRoutes();
 
-    final ctbCompanyBusRoutes = <CompanyBusRoute>[];
-    final total = routes.length * 2;
-    final start = DateTime.now();
-    int count = 0;
+    // Expand into (route, bound) pairs
+    final pairs = routes
+        .expand((route) => Bound.values.map((bound) => (route, bound)))
+        .toList();
 
-    await Future.wait(
-      routes.expand(
-        (e) => Bound.values.map((bound) async {
-          final stops = await DataServices.getCtbRouteStops(
-            e.route,
-            bound.label,
-          );
+    final results = await AsyncUtils.mapAsyncWithProgress(
+      items: pairs,
+      label: "Building CTB routes",
+      step: 50,
+      worker: (pair) async {
+        final (route, bound) = pair;
+        final stops = await DataServices.getCtbRouteStops(
+          route.route,
+          bound.label,
+        );
 
-          if (stops.isNotEmpty) {
-            final newRoute = CompanyBusRoute(
-              company: Company.CTB,
-              number: e.route,
-              bound: bound,
-              originEn: bound == Bound.O ? e.origEn : e.destEn,
-              originChiT: bound == Bound.O ? e.origTc : e.destTc,
-              destEn: bound == Bound.O ? e.destEn : e.origEn,
-              destChiT: bound == Bound.O ? e.destTc : e.origTc,
-              serviceType: null,
-              nlbRouteId: null,
-              stops: stops.map((s) => s.stopId).toList(),
-            );
-            ctbCompanyBusRoutes.add(newRoute);
-          }
-          count++;
+        if (stops.isEmpty) return null; // ignore missing bound
 
-          // Print progress
-          if (count % 50 == 0 || count == total) {
-            final elapsed =
-                DateTime.now().difference(start).inMilliseconds / 1000;
-            final percent = (count / total * 100).toStringAsFixed(1);
-            stdout.write(
-              '\rGetting CTB routes: $count/$total $percent% (${elapsed}s)',
-            );
-          }
-        }),
-      ),
+        return CompanyBusRoute(
+          company: Company.CTB,
+          number: route.route,
+          bound: bound,
+          originEn: bound == Bound.O ? route.origEn : route.destEn,
+          originChiT: bound == Bound.O ? route.origTc : route.destTc,
+          destEn: bound == Bound.O ? route.destEn : route.origEn,
+          destChiT: bound == Bound.O ? route.destTc : route.origTc,
+          serviceType: null,
+          nlbRouteId: null,
+          stops: stops.map((s) => s.stopId).toList(),
+        );
+      },
     );
-    return ctbCompanyBusRoutes;
+
+    return results.whereType<CompanyBusRoute>().toList();
   }
 
   static Future<List<CompanyBusRoute>> buildNlbRoutes() async {
     final routes = await DataServices.getNlbRoutes();
-
-    // Sort by routeId (as int)
-    routes.sortBy((r) => int.tryParse(r.routeId) ?? 0);
+    routes.sortBy((r) => int.tryParse(r.routeId) ?? 0); // Sort by routeId
 
     final List<CompanyBusRoute> nlbCompanyBusRoutes = [];
+    final tracker = ProgressTracker(
+      label: 'Building NLB routes',
+      total: routes.length,
+      step: 20,
+    );
 
+    // Process in for loop to preserve sequence for bound resolution.
     for (final route in routes) {
       // Extract origin and destination names
       final nameEParts = route.routeNameE.split('>');
@@ -134,37 +134,40 @@ class CompanyRouteBuilder {
           stops: stops.map((s) => s.stopId).toList(),
         ),
       );
+      await tracker.increment();
     }
     return nlbCompanyBusRoutes;
   }
 
   static Future<List<CompanyBusRoute>> buildMtrbRoutes() async {
-    final mtrbRouteMap = await MtrbParser.parseMtrbData(
-      ProjectPaths.mtrbDataPath,
-    );
     final List<CompanyBusRoute> mtrbCompanyBusRoutes = [];
 
-    mtrbRouteMap.forEach((routeName, boundMap) {
-      boundMap.forEach((bound, stops) {
-        if (stops.isEmpty) return;
+    await Benchmark.executeAsync('Building MTRB routes', () async {
+      final mtrbRouteMap = await MtrbParser.parseMtrbData(
+        ProjectPaths.mtrbDataPath,
+      );
 
-        final origin = stops.first;
-        final dest = stops.last;
+      mtrbRouteMap.forEach((routeName, boundMap) {
+        boundMap.forEach((bound, stops) {
+          if (stops.isEmpty) return;
 
-        final route = CompanyBusRoute(
-          company: Company.MTRB,
-          number: routeName,
-          bound: bound,
-          originEn: origin.engName,
-          originChiT: origin.chiTName,
-          destEn: dest.engName,
-          destChiT: dest.chiTName,
-          serviceType: null,
-          nlbRouteId: null,
-          stops: stops.map((s) => s.stopId).toList(),
-        );
+          final origin = stops.first;
+          final dest = stops.last;
 
-        mtrbCompanyBusRoutes.add(route);
+          final route = CompanyBusRoute(
+            company: Company.MTRB,
+            number: routeName,
+            bound: bound,
+            originEn: origin.engName,
+            originChiT: origin.chiTName,
+            destEn: dest.engName,
+            destChiT: dest.chiTName,
+            serviceType: null,
+            nlbRouteId: null,
+            stops: stops.map((s) => s.stopId).toList(),
+          );
+          mtrbCompanyBusRoutes.add(route);
+        });
       });
     });
 

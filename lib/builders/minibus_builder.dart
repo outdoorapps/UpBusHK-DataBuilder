@@ -14,8 +14,8 @@ import 'package:upbushk_data_builder/json/minibus_geo_json.dart';
 import 'package:upbushk_data_builder/json/minibus_route_info.dart';
 import 'package:upbushk_data_builder/network/data_services.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
+import 'package:upbushk_data_builder/utils/async_utils.dart';
 import 'package:upbushk_data_builder/utils/benchmark.dart';
-import 'package:upbushk_data_builder/utils/progress_tracker.dart';
 import 'package:upbushk_data_builder/utils/string_x.dart';
 
 class MinibusBuilder {
@@ -121,24 +121,21 @@ class MinibusBuilder {
         .expand((e) => e.directions.map((direction) => MapEntry(e, direction)));
 
     // 3. Get route stops for each route from the API
-    final total = routeOverviewToBound.length;
-    final tracker = ProgressTracker(
+    final results = await AsyncUtils.mapAsyncWithProgress(
+      items: routeOverviewToBound,
       label: "Getting minibus routes",
-      total: total,
       step: 50,
-    );
+      worker: (entry) async {
+        final govRoute = entry.key;
+        final direction = entry.value;
 
-    final results = await Future.wait(
-      routeOverviewToBound.map((e) async {
-        final govRoute = e.key;
-        final direction = e.value;
         final routeStops = await DataServices.getMinibusRouteStops(
           govRoute.routeId,
           direction.routeSeq,
         );
-        await tracker.increment(); // Update progress
+
         return (govRoute, direction, routeStops);
-      }),
+      },
     );
 
     // 4. Build routes
@@ -201,22 +198,12 @@ class MinibusBuilder {
   static Future<List<GovMinibusRoute>> _getRouteOverviews(
     Set<MapEntry<Region, String>> regionNumberPairs,
   ) async {
-    final tracker = ProgressTracker(
+    final routeOverviews = await AsyncUtils.mapAsyncWithProgress(
+      items: regionNumberPairs,
       label: "Getting minibus route overviews",
-      total: regionNumberPairs.length,
       step: 50,
-    );
-
-    final routeOverviews = await Future.wait(
-      //todo
-      regionNumberPairs.map((e) async {
-        final overview = await DataServices.getMinibusRouteOverview(
-          e.key.name,
-          e.value,
-        );
-        await tracker.increment();
-        return overview;
-      }),
+      worker: (pair) =>
+          DataServices.getMinibusRouteOverview(pair.key.name, pair.value),
     );
     return routeOverviews.whereType<GovMinibusRoute>().toList();
   }

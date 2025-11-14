@@ -3,7 +3,7 @@ import 'package:upbushk_data_builder/isar/models/minibus_stop.dart';
 import 'package:upbushk_data_builder/json/minibus_geo_json.dart';
 import 'package:upbushk_data_builder/network/data_services.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
-import 'package:upbushk_data_builder/utils/progress_tracker.dart';
+import 'package:upbushk_data_builder/utils/async_utils.dart';
 import 'package:upbushk_data_builder/utils/string_x.dart';
 
 class MinibusStopBuilder {
@@ -60,24 +60,18 @@ class MinibusStopBuilder {
   static Future<List<MinibusStop>> _getLatLngForStops(
     List<MinibusStop> stops,
   ) async {
-    final pendingStopIds = stops.map((e) => e.stopId).toSet();
-    final tracker = ProgressTracker(
+    final results = await AsyncUtils.mapAsyncWithProgress(
+      items: stops,
       label: "Getting minibus stops LatLng",
-      total: pendingStopIds.length,
       step: 1,
+      worker: (stop) async {
+        final latLng = await DataServices.getMinibusStopLatLng(
+          int.parse(stop.stopId),
+        );
+        if (latLng == null) return null;
+        return stop.copyWith(latLng: latLng);
+      },
     );
-    final stopsWithCoordinate = <MinibusStop>[];
-
-    await Future.wait(
-      pendingStopIds.map((id) async {
-        final latLng = await DataServices.getMinibusStopLatLng(int.parse(id));
-        if (latLng != null) {
-          final stop = stops.firstWhere((s) => s.stopId == id);
-          stopsWithCoordinate.add(stop.copyWith(latLng: latLng));
-        }
-        await tracker.increment();
-      }),
-    );
-    return stopsWithCoordinate;
+    return results.whereType<MinibusStop>().toList();
   }
 }
