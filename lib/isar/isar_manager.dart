@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:get_it/get_it.dart';
 import 'package:isar_community/isar.dart';
@@ -18,6 +19,17 @@ class IsarManager {
   /// For future reference: for any schema change, putting an updated database
   /// in the asset folder will trigger a database rebuild
   static Future<void> init() async {
+    final f = File('bin/libisar.so');
+    final download = !await f.exists();
+
+    try {
+      await Isar.initializeIsarCore(download: download);
+    } on IsarError {
+      // Try removing the old Isar Core binaries
+      await f.delete();
+      await Isar.initializeIsarCore(download: true);
+    }
+
     final isar = await Isar.open([
       CompanyBusRouteSchema,
       BusRouteSchema,

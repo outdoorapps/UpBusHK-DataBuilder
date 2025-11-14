@@ -28,9 +28,6 @@ void main() async {
 }
 
 Future<void> _init() async {
-  final firstTimeUse = await ProjectPaths.initDirectories();
-
-  await Isar.initializeIsarCore(download: firstTimeUse);
   await IsarManager.init();
 }
 
