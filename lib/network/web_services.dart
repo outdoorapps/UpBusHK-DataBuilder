@@ -1,21 +1,43 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:upbushk_data_builder/network/api.dart';
 
 typedef BatchWorker<T> = Future<Set<T>> Function(Set<T> pending);
 
 class WebServices {
-  static final Dio _dio = Dio(
-    BaseOptions(
-      connectTimeout: const Duration(seconds: 10),
-      receiveTimeout: const Duration(seconds: 10),
-    ),
-  );
+  static final Dio _dio = _createDio();
 
   static final KmbApi kmb = KmbApi(_dio);
   static final GovApi gov = GovApi(_dio);
   static final MinibusApi minibus = MinibusApi(_dio);
+
+  static Dio _createDio() {
+    final dio = Dio(
+      BaseOptions(
+        connectTimeout: const Duration(seconds: 10),
+        receiveTimeout: const Duration(seconds: 30),
+      ),
+    );
+
+    dio.interceptors.add(
+      RetryInterceptor(
+        dio: dio,
+        logPrint: (obj) {
+          final ts = DateTime.now().toIso8601String();
+          print("[Retry][$ts] $obj");
+        },
+        retries: 3,
+        retryDelays: const [
+          Duration(seconds: 1),
+          Duration(seconds: 5),
+          Duration(seconds: 120),
+        ],
+      ),
+    );
+    return dio;
+  }
 
   /// Parallel downloads with maximum of 5 concurrent downloads.
   static Future<void> downloadAll(
@@ -90,11 +112,11 @@ class WebServices {
     }
   }
 
-  /// Retries a batch operation until all items succeed or the retry limit is 
+  /// Retries a batch operation until all items succeed or the retry limit is
   /// reached. Logging is printed for remaining items after each failed attempt.
   ///
   /// [pending] contains the items to process.
-  /// [pendingTypeLabel] is the label for the pending items, used in error 
+  /// [pendingTypeLabel] is the label for the pending items, used in error
   /// logging to indicate the type of items remain to be processed.
   /// [work] receives the current pending set and must return the subset that
   /// completed successfully. Those items are removed from [pending].

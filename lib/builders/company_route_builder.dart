@@ -4,19 +4,48 @@ import 'package:upbushk_data_builder/enums/company.dart';
 import 'package:upbushk_data_builder/enums/enums.dart';
 import 'package:upbushk_data_builder/files/project_paths.dart';
 import 'package:upbushk_data_builder/isar/models/company_bus_route.dart';
+import 'package:upbushk_data_builder/json/ctb_route.dart';
+import 'package:upbushk_data_builder/json/kmb_route.dart';
 import 'package:upbushk_data_builder/network/data_services.dart';
+import 'package:upbushk_data_builder/network/web_services.dart';
 import 'package:upbushk_data_builder/utils/async_utils.dart';
 import 'package:upbushk_data_builder/utils/benchmark.dart';
 import 'package:upbushk_data_builder/utils/progress_tracker.dart';
 
 class CompanyRouteBuilder {
   static Future<List<CompanyBusRoute>> buildKmbRoutes() async {
-    final routes = await Benchmark.executeAsync(
+    final results = await Benchmark.executeAsync(
       'Getting KMB routes',
-      DataServices.getKmbRoutes,
+      WebServices.kmb.getRoutes,
     );
+    final routes = results.data;
+
+    final builtRoutes = <CompanyBusRoute>[];
+    final pending = routes.map((r) => r.key).toSet();
+
+    await WebServices.retryBatch<String>(
+      pending: pending,
+      pendingTypeLabel: "KMB routes",
+      work: (batchKeys) async {
+        final batchRoutes = batchKeys
+            .map((key) => routes.firstWhere((r) => r.key == key))
+            .toList();
+        final results = await _buildKmbRoutesBatch(batchRoutes);
+        builtRoutes.addAll(results);
+
+        return batchKeys.toSet();
+      },
+    );
+    return builtRoutes;
+  }
+
+  /// Build CompanyBusRoute for a batch of KMB route models.
+  /// Includes progress tracking and concurrent execution.
+  static Future<List<CompanyBusRoute>> _buildKmbRoutesBatch(
+    List<KmbRoute> batch,
+  ) async {
     return AsyncUtils.mapAsyncWithProgress(
-      items: routes,
+      items: batch,
       label: "Building KMB routes",
       step: 50,
       worker: (e) async {
@@ -47,52 +76,84 @@ class CompanyRouteBuilder {
   /// bounds. If a bound doesn't exist, it will return no stops and we will
   /// skip that bound.
   static Future<List<CompanyBusRoute>> buildCtbRoutes() async {
-    final routes = await Benchmark.executeAsync(
+    final response = await Benchmark.executeAsync(
       'Getting CTB routes',
-      DataServices.getCtbRoutes,
+      WebServices.gov.getCtbRoutes,
     );
+    final routes = response.data;
 
-    // Expand into (route, bound) pairs
-    final pairs = routes
-        .expand((route) => Bound.values.map((bound) => (route, bound)))
-        .toList();
+    final builtRoutes = <CompanyBusRoute>[];
+    final pending = routes
+        .expand((route) => Bound.values.map((b) => route.key(b)))
+        .toSet();
 
-    final results = await AsyncUtils.mapAsyncWithProgress(
-      items: pairs,
-      label: "Building CTB routes",
-      step: 50,
-      worker: (pair) async {
-        final (route, bound) = pair;
-        final stops = await DataServices.getCtbRouteStops(
-          route.route,
-          bound.label,
-        );
+    await WebServices.retryBatch<String>(
+      pending: pending,
+      pendingTypeLabel: "CTB routes",
+      work: (batchKeys) async {
+        // Convert retry keys back to real CtbRoute+Bound pairs
+        final batchPairs = batchKeys.map((key) {
+          final parts = key.split("-");
+          final routeNum = parts[0];
+          final boundLabel = parts[1];
 
-        if (stops.isEmpty) return null; // ignore missing bound
+          final route = routes.firstWhere((r) => r.route == routeNum);
+          final bound = Bound.values.firstWhere((b) => b.label == boundLabel);
+          return (route, bound);
+        }).toList();
 
-        return CompanyBusRoute(
-          company: Company.CTB,
-          number: route.route,
-          bound: bound,
-          originEn: bound == Bound.O ? route.origEn : route.destEn,
-          originChiT: bound == Bound.O ? route.origTc : route.destTc,
-          destEn: bound == Bound.O ? route.destEn : route.origEn,
-          destChiT: bound == Bound.O ? route.destTc : route.origTc,
-          serviceType: null,
-          nlbRouteId: null,
-          stops: stops.map((s) => s.stopId).toList(),
-        );
+        // Process batch
+        final results = await _buildCtbRouteBatch(batchPairs);
+        builtRoutes.addAll(results);
+        return results.map((r) => '${r.number}-${r.bound.label}').toSet();
       },
     );
+    return builtRoutes;
+  }
 
+  static Future<List<CompanyBusRoute>> _buildCtbRouteBatch(
+    List<(CtbRoute route, Bound bound)> batch,
+  ) async {
+    final results =
+        await AsyncUtils.mapAsyncWithProgress<
+          (CtbRoute, Bound),
+          CompanyBusRoute?
+        >(
+          items: batch,
+          label: "Building CTB routes",
+          step: 50,
+          worker: (pair) async {
+            final (route, bound) = pair;
+            final stops = await DataServices.getCtbRouteStops(
+              route.route,
+              bound.label,
+            );
+
+            if (stops.isEmpty) return null;
+
+            return CompanyBusRoute(
+              company: Company.CTB,
+              number: route.route,
+              bound: bound,
+              originEn: bound == Bound.O ? route.origEn : route.destEn,
+              originChiT: bound == Bound.O ? route.origTc : route.destTc,
+              destEn: bound == Bound.O ? route.destEn : route.origEn,
+              destChiT: bound == Bound.O ? route.destTc : route.origTc,
+              serviceType: null,
+              nlbRouteId: null,
+              stops: stops.map((s) => s.stopId).toList(),
+            );
+          },
+        );
     return results.whereType<CompanyBusRoute>().toList();
   }
 
   static Future<List<CompanyBusRoute>> buildNlbRoutes() async {
-    final routes = await Benchmark.executeAsync(
+    final response = await Benchmark.executeAsync(
       'Getting NLB routes',
-      DataServices.getNlbRoutes,
+      WebServices.gov.getNlbRoutes,
     );
+    final routes = response.routes;
     routes.sortBy((r) => int.tryParse(r.routeId) ?? 0); // Sort by routeId
 
     final List<CompanyBusRoute> nlbCompanyBusRoutes = [];
@@ -104,6 +165,10 @@ class CompanyRouteBuilder {
 
     // Process in for loop to preserve sequence for bound resolution.
     for (final route in routes) {
+      // Get route stops (blocking sequentially for bound logic to work)
+      final response = await WebServices.gov.getNlbRouteStops(route.routeId);
+      final stops = response.stops;
+
       // Extract origin and destination names
       final nameEParts = route.routeNameE.split('>');
       final nameCParts = route.routeNameC.split('>');
@@ -125,9 +190,6 @@ class CompanyRouteBuilder {
           : (existing.any((r) => r.originEn == originEn || r.destEn == destEn)
                 ? Bound.O
                 : Bound.I);
-
-      // Get route stops (blocking sequentially for bound logic to work)
-      final stops = await DataServices.getNlbRouteStops(route.routeId);
 
       nlbCompanyBusRoutes.add(
         CompanyBusRoute(

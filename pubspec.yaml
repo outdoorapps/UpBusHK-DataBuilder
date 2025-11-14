@@ -10,6 +10,7 @@ isar_version: &isar_version 3.3.0-dev.3
 dependencies:
   # Network
   dio: ^5.9.0
+  dio_smart_retry: ^7.0.1
   retrofit: ^4.9.0
 
   # Code generation

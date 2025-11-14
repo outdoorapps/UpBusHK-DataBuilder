@@ -12,7 +12,7 @@ class ProgressTracker {
   final DateTime _start = DateTime.now();
 
   ProgressTracker({required this.label, required this.total, this.step = 50}) {
-    stdout.writeln('\r$label: 0/$total  0%  (0s)'); // Initial print
+    stdout.write('\r$label: 0/$total  0%  (0s)'); // Initial print
   }
 
   Future<void> increment() async {

@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:upbushk_data_builder/enums/enums.dart';
 
 part '../generated/json/ctb_route.g.dart';
 
@@ -67,4 +68,6 @@ class CtbRoute {
   factory CtbRoute.fromJson(Map<String, dynamic> json) =>
       _$CtbRouteFromJson(json);
   Map<String, dynamic> toJson() => _$CtbRouteToJson(this);
+
+  String key(Bound bound) => "$route-${bound.label}";
 }

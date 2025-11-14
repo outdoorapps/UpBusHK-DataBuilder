@@ -12,6 +12,7 @@ import 'package:upbushk_data_builder/isar/models/minibus_route.dart';
 import 'package:upbushk_data_builder/isar/models/minibus_stop.dart';
 import 'package:upbushk_data_builder/json/minibus_geo_json.dart';
 import 'package:upbushk_data_builder/json/minibus_route_info.dart';
+import 'package:upbushk_data_builder/json/minibus_route_stop.dart';
 import 'package:upbushk_data_builder/network/data_services.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
 import 'package:upbushk_data_builder/utils/async_utils.dart';
@@ -76,13 +77,13 @@ class MinibusBuilder {
   /// available, from the API.
   static Future<(List<MinibusRoute>, Set<MinibusStop>)> _buildWithApi() async {
     // 1. Get routes by region
-    final routesByRegion = await Benchmark.executeAsync(
+    final response = await Benchmark.executeAsync(
       'Getting minibus routes by region',
-      DataServices.getMinibusRoutesByRegion,
+      WebServices.minibus.getRoutesByRegion,
     );
 
     // 2. Get individual routes
-    final pendingRegionNumberPairs = routesByRegion.entries
+    final pendingRegionNumberPairs = response.data.routesByRegion.entries
         .expand((e) => e.value.map((number) => MapEntry(e.key, number)))
         .toSet();
 
@@ -93,7 +94,7 @@ class MinibusBuilder {
       pending: pendingRegionNumberPairs,
       pendingTypeLabel: "minibus routes",
       work: (pendingBatch) async {
-        final results = await _buildRoutesAndStops(pendingBatch);
+        final results = await _buildBatch(pendingBatch);
         final (routes, stops) = results;
         minibusRoutes.addAll(routes);
         minibusStops.addAll(stops);
@@ -106,7 +107,7 @@ class MinibusBuilder {
 
   /// Return a tuple of (List<MinibusRoute>, Set<MinibusStop>) for the given
   /// [regionNumberPairs].
-  static Future<(List<MinibusRoute>, Set<MinibusStop>)> _buildRoutesAndStops(
+  static Future<(List<MinibusRoute>, Set<MinibusStop>)> _buildBatch(
     Set<MapEntry<Region, String>> regionNumberPairs,
   ) async {
     // 1. Get routes overviews based on region & number
@@ -121,22 +122,26 @@ class MinibusBuilder {
         .expand((e) => e.directions.map((direction) => MapEntry(e, direction)));
 
     // 3. Get route stops for each route from the API
-    final results = await AsyncUtils.mapAsyncWithProgress(
-      items: routeOverviewToBound,
-      label: "Getting minibus routes",
-      step: 50,
-      worker: (entry) async {
-        final govRoute = entry.key;
-        final direction = entry.value;
+    final results =
+        await AsyncUtils.mapAsyncWithProgress<
+          MapEntry<GovMinibusRoute, MinibusDirection>,
+          (GovMinibusRoute, MinibusDirection, List<MinibusRouteStop>)
+        >(
+          items: routeOverviewToBound,
+          label: "Getting minibus routes",
+          step: 50,
+          worker: (entry) async {
+            final govRoute = entry.key;
+            final direction = entry.value;
 
-        final routeStops = await DataServices.getMinibusRouteStops(
-          govRoute.routeId,
-          direction.routeSeq,
+            final routeStops = await DataServices.getMinibusRouteStops(
+              govRoute.routeId,
+              direction.routeSeq,
+            );
+
+            return (govRoute, direction, routeStops);
+          },
         );
-
-        return (govRoute, direction, routeStops);
-      },
-    );
 
     // 4. Build routes
     final minibusRoutes = <MinibusRoute>[];
@@ -198,13 +203,22 @@ class MinibusBuilder {
   static Future<List<GovMinibusRoute>> _getRouteOverviews(
     Set<MapEntry<Region, String>> regionNumberPairs,
   ) async {
-    final routeOverviews = await AsyncUtils.mapAsyncWithProgress(
-      items: regionNumberPairs,
-      label: "Getting minibus route overviews",
-      step: 50,
-      worker: (pair) =>
-          DataServices.getMinibusRouteOverview(pair.key.name, pair.value),
-    );
+    final routeOverviews =
+        await AsyncUtils.mapAsyncWithProgress<
+          MapEntry<Region, String>,
+          GovMinibusRoute?
+        >(
+          items: regionNumberPairs,
+          label: "Getting minibus route overviews",
+          step: 50,
+          worker: (pair) async {
+            final response = await WebServices.minibus.getRouteOverview(
+              pair.key.name,
+              pair.value,
+            );
+            return response.routes.firstOrNull;
+          },
+        );
     return routeOverviews.whereType<GovMinibusRoute>().toList();
   }
 

@@ -10,8 +10,8 @@ import 'package:upbushk_data_builder/utils/async_utils.dart';
 
 class BusStopBuilder {
   static Future<List<BusStop>> buildKmbStops() async {
-    final stops = await DataServices.getKmbStops();
-    return stops.map((e) {
+    final response = await WebServices.kmb.getStops();
+    return response.data.map((e) {
       return BusStop(
         company: Company.KMB,
         stopId: e.stop,
@@ -77,28 +77,31 @@ class BusStopBuilder {
   static Future<List<BusStop>> buildNlbStops(
     List<CompanyBusRoute> nlbCompanyBusRoutes,
   ) async {
-    final results = await AsyncUtils.mapAsyncWithProgress(
-      items: nlbCompanyBusRoutes,
-      label: "Getting NLB stops",
-      step: 50,
-      worker: (route) async {
-        final stops = await DataServices.getNlbRouteStops(route.nlbRouteId!);
-        return stops
-            .map(
-              (s) => BusStop(
-                company: Company.NLB,
-                stopId: s.stopId,
-                engName: s.stopNameE,
-                chiTName: s.stopNameC,
-                latLng: LatLng(
-                  lat: double.tryParse(s.latitude) ?? 0.0,
-                  long: double.tryParse(s.longitude) ?? 0.0,
-                ),
-              ),
-            )
-            .toList();
-      },
-    );
+    final results =
+        await AsyncUtils.mapAsyncWithProgress<CompanyBusRoute, List<BusStop>>(
+          items: nlbCompanyBusRoutes,
+          label: "Getting NLB stops",
+          step: 50,
+          worker: (route) async {
+            final response = await WebServices.gov.getNlbRouteStops(
+              route.nlbRouteId!,
+            );
+            return response.stops
+                .map(
+                  (s) => BusStop(
+                    company: Company.NLB,
+                    stopId: s.stopId,
+                    engName: s.stopNameE,
+                    chiTName: s.stopNameC,
+                    latLng: LatLng(
+                      lat: double.tryParse(s.latitude) ?? 0.0,
+                      long: double.tryParse(s.longitude) ?? 0.0,
+                    ),
+                  ),
+                )
+                .toList();
+          },
+        );
 
     // Deduplicate with Set
     final stops = results.expand((x) => x).toSet().toList()

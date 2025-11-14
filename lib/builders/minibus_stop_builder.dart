@@ -49,7 +49,7 @@ class MinibusStopBuilder {
         final pendingStops = stops
             .where((s) => pendingBatch.contains(s.stopId))
             .toList();
-        final stopsBuilt = await _getLatLngForStops(pendingStops);
+        final stopsBuilt = await _getLatLngForStopsBatch(pendingStops);
         stopsWithCoordinate.addAll(stopsBuilt);
         return stopsBuilt.map((e) => e.stopId).toSet();
       },
@@ -57,21 +57,22 @@ class MinibusStopBuilder {
     return stopsWithCoordinate;
   }
 
-  static Future<List<MinibusStop>> _getLatLngForStops(
+  static Future<List<MinibusStop>> _getLatLngForStopsBatch(
     List<MinibusStop> stops,
   ) async {
-    final results = await AsyncUtils.mapAsyncWithProgress(
-      items: stops,
-      label: "Getting minibus stops LatLng",
-      step: 1,
-      worker: (stop) async {
-        final latLng = await DataServices.getMinibusStopLatLng(
-          int.parse(stop.stopId),
+    final results =
+        await AsyncUtils.mapAsyncWithProgress<MinibusStop, MinibusStop?>(
+          items: stops,
+          label: "Getting minibus stops LatLng",
+          step: 1,
+          worker: (stop) async {
+            final latLng = await DataServices.getMinibusStopLatLng(
+              int.parse(stop.stopId),
+            );
+            if (latLng == null) return null;
+            return stop.copyWith(latLng: latLng);
+          },
         );
-        if (latLng == null) return null;
-        return stop.copyWith(latLng: latLng);
-      },
-    );
     return results.whereType<MinibusStop>().toList();
   }
 }
