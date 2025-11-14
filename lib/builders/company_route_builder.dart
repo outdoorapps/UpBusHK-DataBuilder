@@ -11,7 +11,10 @@ import 'package:upbushk_data_builder/utils/progress_tracker.dart';
 
 class CompanyRouteBuilder {
   static Future<List<CompanyBusRoute>> buildKmbRoutes() async {
-    final routes = await DataServices.getKmbRoutes();
+    final routes = await Benchmark.executeAsync(
+      'Getting KMB routes',
+      DataServices.getKmbRoutes,
+    );
     return AsyncUtils.mapAsyncWithProgress(
       items: routes,
       label: "Building KMB routes",
@@ -44,7 +47,10 @@ class CompanyRouteBuilder {
   /// bounds. If a bound doesn't exist, it will return no stops and we will
   /// skip that bound.
   static Future<List<CompanyBusRoute>> buildCtbRoutes() async {
-    final routes = await DataServices.getCtbRoutes();
+    final routes = await Benchmark.executeAsync(
+      'Getting CTB routes',
+      DataServices.getCtbRoutes,
+    );
 
     // Expand into (route, bound) pairs
     final pairs = routes
@@ -83,14 +89,17 @@ class CompanyRouteBuilder {
   }
 
   static Future<List<CompanyBusRoute>> buildNlbRoutes() async {
-    final routes = await DataServices.getNlbRoutes();
+    final routes = await Benchmark.executeAsync(
+      'Getting NLB routes',
+      DataServices.getNlbRoutes,
+    );
     routes.sortBy((r) => int.tryParse(r.routeId) ?? 0); // Sort by routeId
 
     final List<CompanyBusRoute> nlbCompanyBusRoutes = [];
     final tracker = ProgressTracker(
       label: 'Building NLB routes',
       total: routes.length,
-      step: 20,
+      step: 1,
     );
 
     // Process in for loop to preserve sequence for bound resolution.

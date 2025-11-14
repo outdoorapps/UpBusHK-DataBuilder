@@ -215,7 +215,3 @@ class MinibusBuilder {
     return MinibusGeoJson.fromJson(jsonData);
   }
 }
-
-void main() async {
-  await MinibusBuilder.buildMinibusData();
-}

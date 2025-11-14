@@ -11,3 +11,4 @@ secrets/
 resources/
 generated/
 /bin/libisar.*
+debug/

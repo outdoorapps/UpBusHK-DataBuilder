@@ -2,7 +2,6 @@ import 'package:isar_community/isar.dart';
 import 'package:upbushk_data_builder/builders/bus_stop_builder.dart';
 import 'package:upbushk_data_builder/builders/company_route_builder.dart';
 import 'package:upbushk_data_builder/builders/minibus_builder.dart';
-import 'package:upbushk_data_builder/utils/benchmark.dart';
 import 'package:upbushk_data_builder/enums/company.dart';
 import 'package:upbushk_data_builder/files/project_paths.dart';
 import 'package:upbushk_data_builder/isar/isar_manager.dart';
@@ -10,19 +9,20 @@ import 'package:upbushk_data_builder/isar/models/bus_stop.dart';
 import 'package:upbushk_data_builder/isar/models/company_bus_route.dart';
 import 'package:upbushk_data_builder/network/links.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
+import 'package:upbushk_data_builder/utils/benchmark.dart';
 
 void main() async {
-  await Benchmark.executeAsync('Initializing....', _init);
+  await Benchmark.executeAsync('Initializing', _init);
   // await Benchmark.executeAsync('Downloading gov data....', _downloadGovData);
 
   await Benchmark.executeAsync(
-    'Building company bus routes....',
+    'Building company bus routes',
     _buildCompanyBusRoutes,
   );
-  await Benchmark.executeAsync('Building bus stops....', _buildBusStops);
+  await Benchmark.executeAsync('Building bus stops', _buildBusStops);
 
   await Benchmark.executeAsync(
-    'Building minibus data....',
+    'Building minibus data',
     MinibusBuilder.buildMinibusData,
   );
 }

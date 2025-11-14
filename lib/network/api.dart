@@ -52,8 +52,10 @@ abstract class GovApi {
   @GET('/v2/transport/nlb/route.php?action=list')
   Future<NlbRouteResponse> getNlbRoutes();
 
-  @GET('/v2/transport/nlb/stop.php/{number}')
-  Future<NlbRouteStopResponse> getNlbRouteStops(@Path('number') String number);
+  @GET('/v2/transport/nlb/stop.php?action=list')
+  Future<NlbRouteStopResponse> getNlbRouteStops(
+    @Query('routeId') String routeId,
+  );
 }
 
 @RestApi(baseUrl: 'https://data.etagmb.gov.hk')
