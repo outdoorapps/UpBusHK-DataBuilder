@@ -1,31 +1,48 @@
+import 'dart:async';
 import 'dart:io';
-
 import 'package:synchronized/synchronized.dart';
 
 class ProgressTracker {
-  final String label; // e.g., "Getting minibus routes"
+  final String label;
   final int total;
-  final int step; // print every N steps
   final Lock _lock = Lock();
 
   int _completed = 0;
   final DateTime _start = DateTime.now();
+  late final Timer _timer;
 
-  ProgressTracker({required this.label, required this.total, this.step = 10}) {
-    stdout.write('\r$label: 0/$total  0%  (0s)'); // Initial print
-  }
+  ProgressTracker({required this.label, required this.total}) {
+    // Initial print
+    stdout.write('\r$label: 0/$total  0%  (0s)');
 
-  Future<void> increment() async {
-    await _lock.synchronized(() {
-      _completed++;
+    // Print every second until finished
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      _lock.synchronized(() {
+        if (_completed >= total) return; // don't overprint final result
 
-      if (_completed % step == 0 || _completed == total) {
         final percent = (_completed / total * 100).toStringAsFixed(1);
         final elapsed = DateTime.now().difference(_start).inSeconds;
 
-        stdout.write('\r$label: $_completed/$total  $percent%  (${elapsed}s)');
+        stdout.write(
+          '\r$label: $_completed/$total  $percent%  (${elapsed}s)',
+        );
+      });
+    });
+  }
 
-        if (_completed == total) stdout.writeln();
+  /// Call this whenever a task finishes
+  Future<void> increment() async {
+    await _lock.synchronized(() {
+      _completed++;
+      if (_completed >= total) {
+        // Final print
+        final percent = (_completed / total * 100).toStringAsFixed(1);
+        final elapsed = DateTime.now().difference(_start).inSeconds;
+        stdout.write(
+          '\r$label: $_completed/$total  $percent%  (${elapsed}s)\n',
+        );
+
+        _timer.cancel();
       }
     });
   }

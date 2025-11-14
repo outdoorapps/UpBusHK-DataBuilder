@@ -161,7 +161,6 @@ class CompanyRouteBuilder {
     final tracker = ProgressTracker(
       label: 'Building NLB routes',
       total: routes.length,
-      step: 1,
     );
 
     // Process in for loop to preserve sequence for bound resolution.

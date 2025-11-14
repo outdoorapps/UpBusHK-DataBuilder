@@ -64,7 +64,6 @@ class MinibusStopBuilder {
         await AsyncUtils.mapAsyncWithProgress<MinibusStop, MinibusStop?>(
           items: stops,
           label: "Getting minibus stops LatLng",
-          step: 1,
           worker: (stop) async {
             final latLng = await DataServices.getMinibusStopLatLng(
               int.parse(stop.stopId),

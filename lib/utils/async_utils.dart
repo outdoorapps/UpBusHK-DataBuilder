@@ -7,13 +7,8 @@ class AsyncUtils {
     required Iterable<I> items,
     required String label,
     required AsyncMapper<I, O> worker,
-    int step = 10,
   }) async {
-    final tracker = ProgressTracker(
-      label: label,
-      total: items.length,
-      step: step,
-    );
+    final tracker = ProgressTracker(label: label, total: items.length);
 
     return Future.wait(
       items.map((item) async {
