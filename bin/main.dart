@@ -61,11 +61,11 @@ Future<void> _buildCompanyBusRoutes() async {
   companyRoutes.sort((a, b) => a.number.compareTo(b.number));
 
   print(
-    '- KMB routes: ${kmbRoutes.length}, '
-    '- CTB routes: ${ctbRoutes.length}, '
-    '- NLB routes: ${nlbRoutes.length}, '
-    '- MTRB routes: ${mtrbRoutes.length} '
-    'Total: ${companyRoutes.length}',
+    '- KMB routes: ${kmbRoutes.length}'
+    '\n- CTB routes: ${ctbRoutes.length}'
+    '\n- NLB routes: ${nlbRoutes.length}'
+    '\n- MTRB routes: ${mtrbRoutes.length}'
+    '\nTotal: ${companyRoutes.length}',
   );
 
   await isar.writeTxn(() async {

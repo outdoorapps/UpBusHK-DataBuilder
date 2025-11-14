@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:upbushk_data_builder/builders/mtrb_parser.dart';
 import 'package:upbushk_data_builder/enums/company.dart';
 import 'package:upbushk_data_builder/files/project_paths.dart';
@@ -10,8 +12,9 @@ import 'package:upbushk_data_builder/utils/async_utils.dart';
 
 class BusStopBuilder {
   static Future<List<BusStop>> buildKmbStops() async {
+    print('Building KMB stops...');
     final response = await WebServices.kmb.getStops();
-    return response.data.map((e) {
+    final stops = response.data.map((e) {
       return BusStop(
         company: Company.KMB,
         stopId: e.stop,
@@ -23,6 +26,8 @@ class BusStopBuilder {
         ),
       );
     }).toList();
+    stdout.writeln('Done');
+    return stops;
   }
 
   static Future<List<BusStop>> buildCtbStops(
@@ -53,7 +58,7 @@ class BusStopBuilder {
   static Future<List<BusStop>> _getCtbStops(Set<String> stopIds) async {
     final stops = await AsyncUtils.mapAsyncWithProgress<String, BusStop?>(
       items: stopIds,
-      label: "Getting CTB stops",
+      label: "Building CTB stops",
       worker: (stopId) async {
         final ctbStop = await DataServices.getCtbStop(stopId);
         if (ctbStop == null) return null;
@@ -79,7 +84,7 @@ class BusStopBuilder {
     final results =
         await AsyncUtils.mapAsyncWithProgress<CompanyBusRoute, List<BusStop>>(
           items: nlbCompanyBusRoutes,
-          label: "Getting NLB stops",
+          label: "Building NLB stops",
           worker: (route) async {
             final response = await WebServices.gov.getNlbRouteStops(
               route.nlbRouteId!,
@@ -108,13 +113,16 @@ class BusStopBuilder {
   }
 
   static Future<List<BusStop>> buildMtrbStops() async {
+    stdout.write('Building MTRB stops...');
     final mtrbRouteMap = await MtrbParser.parseMtrbData(
       ProjectPaths.mtrbDataPath,
     );
-    return mtrbRouteMap.values
+    final stops = mtrbRouteMap.values
         .expand((boundMap) => boundMap.values)
         .expand((stops) => stops)
         .toList();
+    stdout.writeln('Building KMB stops...');
+    return stops;
   }
 
   static Set<String> validateStops(

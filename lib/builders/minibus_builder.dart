@@ -110,10 +110,7 @@ class MinibusBuilder {
     Set<String> regionNumberPairs,
   ) async {
     // 1. Get routes overviews based on region & number
-    final routeOverviews = await Benchmark.executeAsync(
-      'Getting minibus route overviews',
-      () => _getRouteOverviews(regionNumberPairs),
-    );
+    final routeOverviews = await _getRouteOverviews(regionNumberPairs);
 
     // 2. Separate the routes overviews by bound
     final routeOverviewToBound = routeOverviews
@@ -127,7 +124,7 @@ class MinibusBuilder {
           (GovMinibusRoute, MinibusDirection, List<MinibusRouteStop>)
         >(
           items: routeOverviewToBound,
-          label: "Getting minibus routes",
+          label: "Building minibus routes",
           worker: (entry) async {
             final govRoute = entry.key;
             final direction = entry.value;
@@ -193,6 +190,10 @@ class MinibusBuilder {
     minibusStopList.sort((a, b) => a.stopId.compareTo(b.stopId));
     final minibusStops = minibusStopList.toSet();
 
+    print(
+      'Minibus routes: ${minibusRoutes.length}'
+      '\nMinibus stops: ${minibusStops.length}',
+    );
     return (minibusRoutes, minibusStops);
   }
 
