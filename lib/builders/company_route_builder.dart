@@ -47,7 +47,6 @@ class CompanyRouteBuilder {
     return AsyncUtils.mapAsyncWithProgress(
       items: batch,
       label: "Building KMB routes",
-      step: 50,
       worker: (e) async {
         final stops = await DataServices.getKmbRouteStops(
           e.route,
@@ -124,7 +123,6 @@ class CompanyRouteBuilder {
         >(
           items: batch,
           label: "Building CTB routes",
-          step: 50,
           worker: (pair) async {
             final (route, bound) = pair;
             final stops = await DataServices.getCtbRouteStops(

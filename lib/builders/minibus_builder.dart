@@ -129,7 +129,6 @@ class MinibusBuilder {
         >(
           items: routeOverviewToBound,
           label: "Getting minibus routes",
-          step: 50,
           worker: (entry) async {
             final govRoute = entry.key;
             final direction = entry.value;
@@ -210,7 +209,6 @@ class MinibusBuilder {
         >(
           items: regionNumberPairs,
           label: "Getting minibus route overviews",
-          step: 50,
           worker: (pair) async {
             final response = await WebServices.minibus.getRouteOverview(
               pair.key.name,

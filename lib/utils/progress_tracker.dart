@@ -11,7 +11,7 @@ class ProgressTracker {
   int _completed = 0;
   final DateTime _start = DateTime.now();
 
-  ProgressTracker({required this.label, required this.total, this.step = 50}) {
+  ProgressTracker({required this.label, required this.total, this.step = 10}) {
     stdout.write('\r$label: 0/$total  0%  (0s)'); // Initial print
   }
 

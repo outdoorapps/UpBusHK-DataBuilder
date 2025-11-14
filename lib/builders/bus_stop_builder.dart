@@ -54,7 +54,6 @@ class BusStopBuilder {
     final stops = await AsyncUtils.mapAsyncWithProgress<String, BusStop?>(
       items: stopIds,
       label: "Getting CTB stops",
-      step: 50,
       worker: (stopId) async {
         final ctbStop = await DataServices.getCtbStop(stopId);
         if (ctbStop == null) return null;
@@ -81,7 +80,6 @@ class BusStopBuilder {
         await AsyncUtils.mapAsyncWithProgress<CompanyBusRoute, List<BusStop>>(
           items: nlbCompanyBusRoutes,
           label: "Getting NLB stops",
-          step: 50,
           worker: (route) async {
             final response = await WebServices.gov.getNlbRouteStops(
               route.nlbRouteId!,

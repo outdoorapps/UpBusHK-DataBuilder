@@ -25,8 +25,11 @@ class WebServices {
       RetryInterceptor(
         dio: dio,
         logPrint: (obj) {
-          final ts = DateTime.now().toIso8601String();
-          print("[Retry][$ts] $obj");
+          // Only print if it is on the final attempt
+          if ('$obj'.contains('attempt: 3/3')) {
+            final ts = DateTime.now().toIso8601String();
+            print("[Retry][$ts] $obj");
+          }
         },
         retries: 3,
         retryDelays: const [

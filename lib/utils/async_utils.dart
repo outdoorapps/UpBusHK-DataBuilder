@@ -7,7 +7,7 @@ class AsyncUtils {
     required Iterable<I> items,
     required String label,
     required AsyncMapper<I, O> worker,
-    int step = 50,
+    int step = 10,
   }) async {
     final tracker = ProgressTracker(
       label: label,
