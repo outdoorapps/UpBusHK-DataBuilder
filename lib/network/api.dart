@@ -10,7 +10,6 @@ import 'package:upbushk_data_builder/json/minibus_route_by_region.dart';
 import 'package:upbushk_data_builder/json/minibus_route_info.dart';
 import 'package:upbushk_data_builder/json/minibus_route_stop.dart';
 import 'package:upbushk_data_builder/json/minibus_stop.dart';
-import 'package:upbushk_data_builder/json/minibus_stop_route.dart';
 import 'package:upbushk_data_builder/json/nlb_route.dart';
 import 'package:upbushk_data_builder/json/nlb_route_stop.dart';
 
@@ -65,7 +64,7 @@ abstract class MinibusApi {
   Future<MinibusRouteByRegionResponse> getRoutesByRegion();
 
   @GET('/route/{region}/{number}')
-  Future<MinibusRouteInfoResponse> getRoute(
+  Future<MinibusRouteOverviewResponse> getRouteOverview(
     @Path('region') String region,
     @Path('number') String number,
   );
@@ -78,7 +77,4 @@ abstract class MinibusApi {
 
   @GET('/stop/{stopId}')
   Future<MinibusStopResponse> getStop(@Path('stopId') int stopId);
-
-  @GET('/stop-route')
-  Future<MinibusStopRouteResponse> getStopRoutes();
 }

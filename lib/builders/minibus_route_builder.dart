@@ -5,7 +5,7 @@ import 'package:upbushk_data_builder/json/minibus_geo_json.dart';
 class MinibusRouteBuilder {
   /// Use the JSON_GMB.json file to get minibus routes. Routes built by this
   /// function will have [MinibusRoute.fullFare] set and empty descriptions.
-  static List<MinibusRoute> buildRoutesWithJson(MinibusGeoJson geoJson) {
+  static List<MinibusRoute> buildWithJson(MinibusGeoJson geoJson) {
     final routeToRouteStops = groupBy(
       geoJson.features,
       (e) => e.properties.routeId,

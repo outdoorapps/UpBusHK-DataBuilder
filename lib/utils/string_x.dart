@@ -1,4 +1,5 @@
 extension StringX on String {
+  /// Standardize Minibus Chinese stop names
   String standardizeChiStopName() {
     String s = this;
 
@@ -40,16 +41,14 @@ extension StringX on String {
   }
 }
 
-// Helper: convert full-width to half-width
+/// Helper: convert full-width to half-width
 String _toHalfWidth(String input) {
   final code = input.codeUnitAt(0);
   // Full-width A-Z or a-z or 0-9 → subtract 65248
   if (code >= 0xFF01 && code <= 0xFF5E) {
     return String.fromCharCode(code - 65248);
   }
-
-  // Full-width hyphen "－" (U+FF0D)
-  if (code == 0xFF0D) return "-";
+  if (code == 0xFF0D) return '-'; // Full-width hyphen "－" (U+FF0D)
 
   return input;
 }

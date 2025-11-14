@@ -83,12 +83,12 @@ class DataServices {
     return response?.data.routesByRegion ?? {};
   }
 
-  static Future<GovMinibusRoute?> getMinibusRoute(
+  static Future<GovMinibusRoute?> getMinibusRouteOverview(
     String region,
     String number,
   ) async {
     final response = await WebServices.safeApiCall(
-      () => WebServices.minibus.getRoute(region, number),
+      () => WebServices.minibus.getRouteOverview(region, number),
     );
     return response?.routes.firstOrNull;
   }

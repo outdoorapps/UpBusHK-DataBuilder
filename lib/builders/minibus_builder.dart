@@ -8,6 +8,7 @@ import 'package:upbushk_data_builder/builders/minibus_stop_builder.dart';
 import 'package:upbushk_data_builder/debug/benchmark.dart';
 import 'package:upbushk_data_builder/enums/enums.dart';
 import 'package:upbushk_data_builder/files/project_paths.dart';
+import 'package:upbushk_data_builder/isar/isar_manager.dart';
 import 'package:upbushk_data_builder/isar/models/lat_lng.dart';
 import 'package:upbushk_data_builder/isar/models/minibus_route.dart';
 import 'package:upbushk_data_builder/isar/models/minibus_stop.dart';
@@ -27,7 +28,7 @@ class MinibusBuilder {
       'Parsing JSON_GMB.json',
       _readMinibusData,
     );
-    final jsonRoutes = await MinibusRouteBuilder.buildRoutesWithJson(geoJson);
+    final jsonRoutes = await MinibusRouteBuilder.buildWithJson(geoJson);
 
     // Add fare info to json routes
     final routes = <MinibusRoute>[];
@@ -42,7 +43,7 @@ class MinibusBuilder {
     routes.sort((a, b) => a.routeId.compareTo(b.routeId));
 
     // Add LatLng to stops
-    final jsonStops = MinibusStopBuilder.buildMinibusStopWithJson(geoJson);
+    final jsonStops = MinibusStopBuilder.buildWithJson(geoJson);
     final stops = <MinibusStop>{};
     final pendingStops = <MinibusStop>{};
     apiStops.forEach((e) {
@@ -59,11 +60,10 @@ class MinibusBuilder {
     final sortedStops = stops.toList()
       ..sort((a, b) => a.stopId.compareTo(b.stopId));
 
-    //todo Save to Isar
-    // await isar.writeTxn(() async {
-    //   isar.minibusRoutes.putAll(routes);
-    //   isar.minibusStops.putAll(sortedStops);
-    // });
+    await isar.writeTxn(() async {
+      isar.minibusRoutes.putAll(routes);
+      isar.minibusStops.putAll(sortedStops);
+    });
   }
 
   /// Use the API to get minibus routes and stops.
@@ -123,30 +123,29 @@ class MinibusBuilder {
   static Future<(List<MinibusRoute>, Set<MinibusStop>)> _apiBuild(
     List<MapEntry<Region, String>> regionNumberPairs,
   ) async {
-    // Get all routes' info based on region & number (ID, origins, destinations
-    // and bound)
-    final routesByRegionAndNumber = await Future.wait(
+    // 1. Get routes overviews based on region & number
+    final routeOverviews = await Future.wait(
       regionNumberPairs.map(
-        (e) => DataServices.getMinibusRoute(e.key.name, e.value),
+        (e) => DataServices.getMinibusRouteOverview(e.key.name, e.value),
       ),
     );
 
-    // Separate the routes of the same region & number by bound
-    final routesToBound = routesByRegionAndNumber
+    // 2. Separate the routes overviews by bound
+    final routeOverviewToBound = routeOverviews
         .whereType<GovMinibusRoute>()
         .expand((e) => e.directions.map((direction) => MapEntry(e, direction)));
 
-    // Get route stops for each route from the API
-    final total = routesToBound.length;
+    // 3. Get route stops for each route from the API
+    final total = routeOverviewToBound.length;
     int completed = 0;
     final lock = Lock();
     final start = DateTime.now();
 
     final results = await Future.wait(
-      routesToBound.map((e) async {
+      routeOverviewToBound.map((e) async {
         final govRoute = e.key;
         final direction = e.value;
-        final routeStop = await DataServices.getMinibusRouteStops(
+        final routeStops = await DataServices.getMinibusRouteStops(
           govRoute.routeId,
           direction.routeSeq,
         );
@@ -163,26 +162,15 @@ class MinibusBuilder {
             if (completed == total) stdout.writeln();
           }
         });
-        return (govRoute, direction, routeStop);
+        return (govRoute, direction, routeStops);
       }),
     );
 
-    // Build MinibusRoutes and MinibusStops from the results
+    // 4. Build routes
     final minibusRoutes = <MinibusRoute>[];
-    final minibusStops = <MinibusStop>{};
 
-    for (final (govRoute, direction, routeStop) in results) {
-      final stops = routeStop.map(
-        (stop) => MinibusStop(
-          stopId: '${stop.stopId}',
-          engName: stop.nameEn.trim(),
-          chiTName: stop.nameTc.standardizeChiStopName(),
-          latLng: LatLng(),
-        ),
-      );//todo use shortest chi name
-      minibusStops.addAll(stops);
-
-      final bound = direction.routeSeq == 1 ? Bound.O : Bound.I;
+    for (final (govRoute, direction, routeStops) in results) {
+      final bound = direction.bound;
       final route = MinibusRoute(
         routeId: '${govRoute.routeId}-$bound',
         region: govRoute.region,
@@ -195,10 +183,37 @@ class MinibusBuilder {
         destEn: direction.destEn.trim(),
         destChiT: direction.destTc.trim(),
         fullFare: null,
-        stops: stops.map((e) => '${e.stopId}').toList(),
+        stops: routeStops.map((e) => '${e.stopId}').toList(),
       );
       minibusRoutes.add(route);
     }
+
+    // 5. Build stops
+    final minibusStops = <MinibusStop>{};
+
+    final allRouteStops = results.expand((r) => r.$3);
+    final stopIdGroups = groupBy(allRouteStops, (e) => e.stopId);
+    stopIdGroups.forEach((stopId, routeStops) {
+      var stopWithShortestChiTName = routeStops.first;
+      var chiTName = stopWithShortestChiTName.nameTc.standardizeChiStopName();
+
+      for (final stop in routeStops.skip(1)) {
+        final chi = stop.nameTc.standardizeChiStopName();
+        if (chi.length < chiTName.length) {
+          chiTName = chi;
+          stopWithShortestChiTName = stop;
+        }
+      }
+
+      minibusStops.add(
+        MinibusStop(
+          stopId: '$stopId',
+          engName: stopWithShortestChiTName.nameEn.trim(),
+          chiTName: chiTName,
+          latLng: LatLng(),
+        ),
+      );
+    });
     return (minibusRoutes, minibusStops);
   }
 

@@ -1,6 +1,7 @@
 import 'package:isar_community/isar.dart';
 import 'package:upbushk_data_builder/builders/bus_stop_builder.dart';
 import 'package:upbushk_data_builder/builders/company_route_builder.dart';
+import 'package:upbushk_data_builder/builders/minibus_builder.dart';
 import 'package:upbushk_data_builder/debug/benchmark.dart';
 import 'package:upbushk_data_builder/enums/company.dart';
 import 'package:upbushk_data_builder/files/project_paths.dart';
@@ -12,13 +13,18 @@ import 'package:upbushk_data_builder/network/web_services.dart';
 
 void main() async {
   await Benchmark.executeAsync('Initializing....', _init);
-  // await Benchmark.executeAsync('Downloading gov data....', _downloadGovData);
+  await Benchmark.executeAsync('Downloading gov data....', _downloadGovData);
 
   await Benchmark.executeAsync(
     'Building company bus routes....',
     _buildCompanyBusRoutes,
   );
   await Benchmark.executeAsync('Building bus stops....', _buildBusStops);
+
+  await Benchmark.executeAsync(
+    'Building minibus data....',
+    MinibusBuilder.buildMinibusData,
+  );
 }
 
 Future<void> _init() async {

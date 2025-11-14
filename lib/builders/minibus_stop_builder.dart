@@ -6,18 +6,30 @@ import 'package:upbushk_data_builder/network/web_services.dart';
 import 'package:upbushk_data_builder/utils/string_x.dart';
 
 class MinibusStopBuilder {
-  static List<MinibusStop> buildMinibusStopWithJson(MinibusGeoJson geoJson) {
+  static List<MinibusStop> buildWithJson(MinibusGeoJson geoJson) {
     final stopIdGroups = groupBy(geoJson.features, (e) => e.properties.stopId);
 
     return stopIdGroups.entries.map((e) {
-      // todo pick the one with the shortest standardized chinese name
-      final stop = e.value.first; // Use the first stop in the group
+      // Find the stop with the shortest stop name
+      var stopWithShortestChiTName = e.value.first;
+      var chiTName = stopWithShortestChiTName.properties.stopNameC
+          .standardizeChiStopName();
 
+      for (final stop in e.value.skip(1)) {
+        final chi = stop.properties.stopNameC.standardizeChiStopName();
+
+        if (chi.length < chiTName.length) {
+          chiTName = chi;
+          stopWithShortestChiTName = stop;
+        }
+      }
+
+      final properties = stopWithShortestChiTName.properties;
       return MinibusStop(
-        stopId: '${e.key}',
-        engName: stop.properties.stopNameE.trim(),
-        chiTName: stop.properties.stopNameC.standardizeChiStopName(),
-        latLng: stop.geometry.latLng,
+        stopId: '${properties.stopId}',
+        engName: properties.stopNameE.trim(),
+        chiTName: chiTName,
+        latLng: stopWithShortestChiTName.geometry.latLng,
       );
     }).toList();
   }

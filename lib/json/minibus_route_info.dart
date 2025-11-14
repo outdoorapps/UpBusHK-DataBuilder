@@ -5,7 +5,7 @@ part '../generated/json/minibus_route_info.g.dart';
 
 /// Minibus (GMB) Route Info Response
 @JsonSerializable(explicitToJson: true)
-class MinibusRouteInfoResponse {
+class MinibusRouteOverviewResponse {
   final String type;
   final String version;
 
@@ -15,17 +15,17 @@ class MinibusRouteInfoResponse {
   @JsonKey(name: 'data')
   final List<GovMinibusRoute> routes;
 
-  MinibusRouteInfoResponse({
+  MinibusRouteOverviewResponse({
     required this.type,
     required this.version,
     required this.generatedTimestamp,
     required this.routes,
   });
 
-  factory MinibusRouteInfoResponse.fromJson(Map<String, dynamic> json) =>
-      _$MinibusRouteInfoResponseFromJson(json);
+  factory MinibusRouteOverviewResponse.fromJson(Map<String, dynamic> json) =>
+      _$MinibusRouteOverviewResponseFromJson(json);
 
-  Map<String, dynamic> toJson() => _$MinibusRouteInfoResponseToJson(this);
+  Map<String, dynamic> toJson() => _$MinibusRouteOverviewResponseToJson(this);
 }
 
 /// Route Info Entry
@@ -127,6 +127,8 @@ class MinibusDirection {
       _$MinibusDirectionFromJson(json);
 
   Map<String, dynamic> toJson() => _$MinibusDirectionToJson(this);
+
+  Bound get bound => routeSeq == 1 ? Bound.O : Bound.I;
 }
 
 /// Headway info (minibus route frequency data)
