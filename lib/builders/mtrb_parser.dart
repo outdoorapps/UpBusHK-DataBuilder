@@ -14,7 +14,9 @@ class MtrbParser {
   static final _stopIdRegex = RegExp(
     r'^(K[0-9]+[A-Z]?|506)-[a-z]?[A-Z][0-9]{3}',
   );
-  static final _chiNameRegex = RegExp(r'(\p{Han})+[^=A-Z]*', unicode: true);
+  static final _chiNameRegex = RegExp(
+    r'([\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF])+[^=A-Z]*',
+  ); // "(\\p{IsHan})+[^=A-Z]*"
 
   /// Parses the MTR Bus data file into a nested map:
   /// routeNumber -> bound -> List<BusStop>
