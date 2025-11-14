@@ -104,7 +104,10 @@ class CompanyRouteBuilder {
 
         // Process batch
         final results = await _buildCtbRouteBatch(batchPairs);
-        builtRoutes.addAll(results);
+
+        // Only add routes with stops (routes with no stops indicate an invalid
+        // bound).
+        builtRoutes.addAll(results.where((e) => e.stops.isNotEmpty));
         return results.map((r) => '${r.number}-${r.bound.label}').toSet();
       },
     );
@@ -128,9 +131,9 @@ class CompanyRouteBuilder {
               route.route,
               bound.label,
             );
-
-            if (stops.isEmpty) return null;
-
+            // For bounds that doesn't exist, it will have empty stops, return
+            // a CompanyBusRoute with empty stops to distinguish it between an
+            // error (which returns null).
             return CompanyBusRoute(
               company: Company.CTB,
               number: route.route,
