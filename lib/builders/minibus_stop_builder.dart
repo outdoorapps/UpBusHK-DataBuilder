@@ -3,6 +3,7 @@ import 'package:upbushk_data_builder/isar/models/minibus_stop.dart';
 import 'package:upbushk_data_builder/json/minibus_geo_json.dart';
 import 'package:upbushk_data_builder/network/data_services.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
+import 'package:upbushk_data_builder/utils/progress_tracker.dart';
 import 'package:upbushk_data_builder/utils/string_x.dart';
 
 class MinibusStopBuilder {
@@ -40,34 +41,43 @@ class MinibusStopBuilder {
   ) async {
     final pendingStopIds = stops.map((e) => e.stopId).toSet();
     final stopsWithCoordinate = <MinibusStop>[];
-    int retries = 0;
 
-    while (pendingStopIds.isNotEmpty && retries < WebServices.maxRetries) {
-      final completed = <String>{};
+    await WebServices.retryBatch<String>(
+      pending: pendingStopIds,
+      pendingTypeLabel: "minibus stop IDs",
+      work: (pendingBatch) async {
+        final pendingStops = stops
+            .where((s) => pendingBatch.contains(s.stopId))
+            .toList();
+        final stopsBuilt = await _getLatLngForStops(pendingStops);
+        stopsWithCoordinate.addAll(stopsBuilt);
+        return stopsBuilt.map((e) => e.stopId).toSet();
+      },
+    );
+    return stopsWithCoordinate;
+  }
 
-      await Future.wait(
-        pendingStopIds.map((e) async {
-          final latLng = await DataServices.getMinibusStopLatLng(int.parse(e));
-          if (latLng != null) {
-            final pendingStop = stops.firstWhere((s) => s.stopId == e);
-            stopsWithCoordinate.add(pendingStop.copyWith(latLng: latLng));
-            completed.add(e);
-          }
-        }),
-      );
-      pendingStopIds.removeAll(completed);
+  static Future<List<MinibusStop>> _getLatLngForStops(
+    List<MinibusStop> stops,
+  ) async {
+    final pendingStopIds = stops.map((e) => e.stopId).toSet();
+    final tracker = ProgressTracker(
+      label: "Getting minibus stops LatLng",
+      total: pendingStopIds.length,
+      step: 1,
+    );
+    final stopsWithCoordinate = <MinibusStop>[];
 
-      final remaining = pendingStopIds.length;
-      if (remaining > 0) {
-        retries++;
-        print(
-          '$remaining errors received for minibus stops $pendingStopIds, '
-          'waiting for ${WebServices.timeoutSeconds}s before retrying...',
-        );
-        await Future.delayed(Duration(seconds: WebServices.timeoutSeconds));
-        print('Restarting...');
-      }
-    }
+    await Future.wait(
+      pendingStopIds.map((id) async {
+        final latLng = await DataServices.getMinibusStopLatLng(int.parse(id));
+        if (latLng != null) {
+          final stop = stops.firstWhere((s) => s.stopId == id);
+          stopsWithCoordinate.add(stop.copyWith(latLng: latLng));
+        }
+        await tracker.increment();
+      }),
+    );
     return stopsWithCoordinate;
   }
 }

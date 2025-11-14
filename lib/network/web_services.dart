@@ -3,10 +3,9 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:upbushk_data_builder/network/api.dart';
 
-class WebServices {
-  static const timeoutSeconds = 120;
-  static const maxRetries = 3;
+typedef BatchWorker<T> = Future<Set<T>> Function(Set<T> pending);
 
+class WebServices {
   static final Dio _dio = Dio(
     BaseOptions(
       connectTimeout: const Duration(seconds: 10),
@@ -88,6 +87,43 @@ class WebServices {
     } catch (e, st) {
       print("Unexpected error: $e\n$st");
       return null;
+    }
+  }
+
+  /// Retries a batch operation until all items succeed or the retry limit is 
+  /// reached. Logging is printed for remaining items after each failed attempt.
+  ///
+  /// [pending] contains the items to process.
+  /// [pendingTypeLabel] is the label for the pending items, used in error 
+  /// logging to indicate the type of items remain to be processed.
+  /// [work] receives the current pending set and must return the subset that
+  /// completed successfully. Those items are removed from [pending].
+  /// [maxRetries] limits how many times to retry the operation.
+  /// [delaySeconds] is the number of seconds to wait between retries.
+  ///
+  static Future<void> retryBatch<T>({
+    required Set<T> pending,
+    required String pendingTypeLabel,
+    required BatchWorker<T> work,
+    int maxRetries = 3,
+    int delaySeconds = 120,
+  }) async {
+    int retries = 0;
+
+    while (pending.isNotEmpty && retries < maxRetries) {
+      final completed = await work(pending);
+      pending.removeAll(completed);
+
+      final remaining = pending.length;
+      if (remaining > 0) {
+        retries++;
+        print(
+          '$remaining errors remaining for $pendingTypeLabel: $pending, '
+          'waiting for ${delaySeconds}s before retrying...',
+        );
+        await Future.delayed(Duration(seconds: delaySeconds));
+        print('Restarting...');
+      }
     }
   }
 }

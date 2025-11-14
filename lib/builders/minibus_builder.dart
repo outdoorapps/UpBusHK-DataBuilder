@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:upbushk_data_builder/builders/minibus_route_builder.dart';
 import 'package:upbushk_data_builder/builders/minibus_stop_builder.dart';
-import 'package:upbushk_data_builder/utils/benchmark.dart';
 import 'package:upbushk_data_builder/enums/enums.dart';
 import 'package:upbushk_data_builder/files/project_paths.dart';
 import 'package:upbushk_data_builder/isar/isar_manager.dart';
@@ -15,6 +14,7 @@ import 'package:upbushk_data_builder/json/minibus_geo_json.dart';
 import 'package:upbushk_data_builder/json/minibus_route_info.dart';
 import 'package:upbushk_data_builder/network/data_services.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
+import 'package:upbushk_data_builder/utils/benchmark.dart';
 import 'package:upbushk_data_builder/utils/progress_tracker.dart';
 import 'package:upbushk_data_builder/utils/string_x.dart';
 
@@ -84,45 +84,30 @@ class MinibusBuilder {
     // 2. Get individual routes
     final pendingRegionNumberPairs = routesByRegion.entries
         .expand((e) => e.value.map((number) => MapEntry(e.key, number)))
-        .toList();
-    
+        .toSet();
+
     final minibusRoutes = <MinibusRoute>[];
     final minibusStops = <MinibusStop>{};
-    int retries = 0;
-    
-    while (pendingRegionNumberPairs.isNotEmpty &&
-        retries < WebServices.maxRetries) {
-      final results = await _buildRoutesAndStops(pendingRegionNumberPairs);
-      final (routes, stops) = results;
-      minibusRoutes.addAll(routes);
-      minibusStops.addAll(stops);
 
-      // Remove successfully added routes
-      routes.forEach(
-        (r) => pendingRegionNumberPairs.removeWhere(
-          (p) => p.key == r.region && p.value == r.number,
-        ),
-      );
+    await WebServices.retryBatch<MapEntry<Region, String>>(
+      pending: pendingRegionNumberPairs,
+      pendingTypeLabel: "minibus routes",
+      work: (pendingBatch) async {
+        final results = await _buildRoutesAndStops(pendingBatch);
+        final (routes, stops) = results;
+        minibusRoutes.addAll(routes);
+        minibusStops.addAll(stops);
 
-      final remaining = pendingRegionNumberPairs.length;//todo
-      if (remaining > 0) {
-        retries++;
-        print(
-          '$remaining errors received for minibus routes '
-          '$pendingRegionNumberPairs, waiting for '
-          '${WebServices.timeoutSeconds}s before retrying...',
-        );
-        await Future.delayed(Duration(seconds: WebServices.timeoutSeconds));
-        print('Restarting...');
-      }
-    }
+        return routes.map((r) => MapEntry(r.region, r.number)).toSet();
+      },
+    );
     return (minibusRoutes, minibusStops);
   }
 
   /// Return a tuple of (List<MinibusRoute>, Set<MinibusStop>) for the given
   /// [regionNumberPairs].
   static Future<(List<MinibusRoute>, Set<MinibusStop>)> _buildRoutesAndStops(
-    List<MapEntry<Region, String>> regionNumberPairs,
+    Set<MapEntry<Region, String>> regionNumberPairs,
   ) async {
     // 1. Get routes overviews based on region & number
     final routeOverviews = await Benchmark.executeAsync(
@@ -214,7 +199,7 @@ class MinibusBuilder {
   /// Get route overviews for the given [regionNumberPairs]. The overviews
   /// contains route ID, descriptions and origins & destinations for bounds.
   static Future<List<GovMinibusRoute>> _getRouteOverviews(
-    List<MapEntry<Region, String>> regionNumberPairs,
+    Set<MapEntry<Region, String>> regionNumberPairs,
   ) async {
     final tracker = ProgressTracker(
       label: "Getting minibus route overviews",
@@ -222,7 +207,8 @@ class MinibusBuilder {
       step: 50,
     );
 
-    final routeOverviews = await Future.wait(//todo
+    final routeOverviews = await Future.wait(
+      //todo
       regionNumberPairs.map((e) async {
         final overview = await DataServices.getMinibusRouteOverview(
           e.key.name,

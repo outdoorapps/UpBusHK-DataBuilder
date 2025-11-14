@@ -35,26 +35,17 @@ class BusStopBuilder {
     final pendingStopIds = ctbBusCompanyRoutes.expand((r) => r.stops).toSet();
 
     final allStops = <BusStop>[];
-    int retries = 0;
 
-    while (pendingStopIds.isNotEmpty && retries < WebServices.maxRetries) {
-      final stops = await _getCtbStops(pendingStopIds);
-      allStops.addAll(stops);
+    await WebServices.retryBatch<String>(
+      pending: pendingStopIds,
+      pendingTypeLabel: "CTB stop ID",
+      work: (pendingIDs) async {
+        final stops = await _getCtbStops(pendingIDs);
+        allStops.addAll(stops);
+        return stops.map((s) => s.stopId).toSet();
+      },
+    );
 
-      // Remove successfully retrieved stops
-      final retrievedStopsIds = stops.map((s) => s.stopId).toSet();
-      pendingStopIds.removeAll(retrievedStopsIds);
-
-      final remaining = pendingStopIds.length;
-      if (remaining > 0) {
-        print(
-          '$remaining errors received for CTB stop IDs $pendingStopIds, '
-          'waiting for ${WebServices.timeoutSeconds}s before retrying...',
-        );
-        await Future.delayed(Duration(seconds: WebServices.timeoutSeconds));
-        print('Restarting...');
-      }
-    }
     allStops.sort((a, b) => a.stopId.compareTo(b.stopId));
     return allStops;
   }
