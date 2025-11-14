@@ -3,7 +3,7 @@ class Benchmark {
     String description,
     Future<T> Function() action,
   ) async {
-    print(description);
+    print('$description...');
 
     final stopwatch = Stopwatch()..start();
     final result = await action();

@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:upbushk_data_builder/builders/minibus_route_builder.dart';
 import 'package:upbushk_data_builder/builders/minibus_stop_builder.dart';
-import 'package:upbushk_data_builder/debug/benchmark.dart';
+import 'package:upbushk_data_builder/utils/benchmark.dart';
 import 'package:upbushk_data_builder/enums/enums.dart';
 import 'package:upbushk_data_builder/files/project_paths.dart';
 import 'package:upbushk_data_builder/isar/isar_manager.dart';
@@ -77,21 +77,22 @@ class MinibusBuilder {
   static Future<(List<MinibusRoute>, Set<MinibusStop>)> _buildWithApi() async {
     // 1. Get routes by region
     final routesByRegion = await Benchmark.executeAsync(
-      'Getting minibus routes by region...',
+      'Getting minibus routes by region',
       DataServices.getMinibusRoutesByRegion,
     );
 
     // 2. Get individual routes
-    final minibusRoutes = <MinibusRoute>[];
-    final minibusStops = <MinibusStop>{};
     final pendingRegionNumberPairs = routesByRegion.entries
         .expand((e) => e.value.map((number) => MapEntry(e.key, number)))
         .toList();
+    
+    final minibusRoutes = <MinibusRoute>[];
+    final minibusStops = <MinibusStop>{};
     int retries = 0;
-
+    
     while (pendingRegionNumberPairs.isNotEmpty &&
         retries < WebServices.maxRetries) {
-      final results = await _apiBuild(pendingRegionNumberPairs);
+      final results = await _buildRoutesAndStops(pendingRegionNumberPairs);
       final (routes, stops) = results;
       minibusRoutes.addAll(routes);
       minibusStops.addAll(stops);
@@ -103,7 +104,7 @@ class MinibusBuilder {
         ),
       );
 
-      final remaining = pendingRegionNumberPairs.length;
+      final remaining = pendingRegionNumberPairs.length;//todo
       if (remaining > 0) {
         retries++;
         print(
@@ -120,7 +121,7 @@ class MinibusBuilder {
 
   /// Return a tuple of (List<MinibusRoute>, Set<MinibusStop>) for the given
   /// [regionNumberPairs].
-  static Future<(List<MinibusRoute>, Set<MinibusStop>)> _apiBuild(
+  static Future<(List<MinibusRoute>, Set<MinibusStop>)> _buildRoutesAndStops(
     List<MapEntry<Region, String>> regionNumberPairs,
   ) async {
     // 1. Get routes overviews based on region & number
@@ -221,7 +222,7 @@ class MinibusBuilder {
       step: 50,
     );
 
-    final routeOverviews = await Future.wait(
+    final routeOverviews = await Future.wait(//todo
       regionNumberPairs.map((e) async {
         final overview = await DataServices.getMinibusRouteOverview(
           e.key.name,

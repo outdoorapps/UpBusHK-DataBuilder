@@ -2,7 +2,7 @@ import 'package:isar_community/isar.dart';
 import 'package:upbushk_data_builder/builders/bus_stop_builder.dart';
 import 'package:upbushk_data_builder/builders/company_route_builder.dart';
 import 'package:upbushk_data_builder/builders/minibus_builder.dart';
-import 'package:upbushk_data_builder/debug/benchmark.dart';
+import 'package:upbushk_data_builder/utils/benchmark.dart';
 import 'package:upbushk_data_builder/enums/company.dart';
 import 'package:upbushk_data_builder/files/project_paths.dart';
 import 'package:upbushk_data_builder/isar/isar_manager.dart';
