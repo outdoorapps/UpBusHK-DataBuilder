@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
-import 'package:synchronized/synchronized.dart';
 import 'package:upbushk_data_builder/builders/minibus_route_builder.dart';
 import 'package:upbushk_data_builder/builders/minibus_stop_builder.dart';
 import 'package:upbushk_data_builder/debug/benchmark.dart';
@@ -16,6 +15,7 @@ import 'package:upbushk_data_builder/json/minibus_geo_json.dart';
 import 'package:upbushk_data_builder/json/minibus_route_info.dart';
 import 'package:upbushk_data_builder/network/data_services.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
+import 'package:upbushk_data_builder/utils/progress_tracker.dart';
 import 'package:upbushk_data_builder/utils/string_x.dart';
 
 class MinibusBuilder {
@@ -124,10 +124,9 @@ class MinibusBuilder {
     List<MapEntry<Region, String>> regionNumberPairs,
   ) async {
     // 1. Get routes overviews based on region & number
-    final routeOverviews = await Future.wait(
-      regionNumberPairs.map(
-        (e) => DataServices.getMinibusRouteOverview(e.key.name, e.value),
-      ),
+    final routeOverviews = await Benchmark.executeAsync(
+      'Getting minibus route overviews',
+      () => _getRouteOverviews(regionNumberPairs),
     );
 
     // 2. Separate the routes overviews by bound
@@ -137,9 +136,11 @@ class MinibusBuilder {
 
     // 3. Get route stops for each route from the API
     final total = routeOverviewToBound.length;
-    int completed = 0;
-    final lock = Lock();
-    final start = DateTime.now();
+    final tracker = ProgressTracker(
+      label: "Getting minibus routes",
+      total: total,
+      step: 50,
+    );
 
     final results = await Future.wait(
       routeOverviewToBound.map((e) async {
@@ -149,19 +150,7 @@ class MinibusBuilder {
           govRoute.routeId,
           direction.routeSeq,
         );
-
-        // Update progress counter atomically
-        lock.synchronized(() {
-          completed++;
-          if (completed % 50 == 0 || completed == total) {
-            final percent = (completed / total * 100).toStringAsFixed(1);
-            final elapsed = DateTime.now().difference(start).inSeconds;
-            stdout.write(
-              '\rGetting minibus routes: $completed/$total  $percent%  (${elapsed}s)',
-            );
-            if (completed == total) stdout.writeln();
-          }
-        });
+        await tracker.increment(); // Update progress
         return (govRoute, direction, routeStops);
       }),
     );
@@ -187,9 +176,10 @@ class MinibusBuilder {
       );
       minibusRoutes.add(route);
     }
+    minibusRoutes.sort((a, b) => a.routeId.compareTo(b.routeId));
 
     // 5. Build stops
-    final minibusStops = <MinibusStop>{};
+    final minibusStopList = <MinibusStop>[];
 
     final allRouteStops = results.expand((r) => r.$3);
     final stopIdGroups = groupBy(allRouteStops, (e) => e.stopId);
@@ -205,7 +195,7 @@ class MinibusBuilder {
         }
       }
 
-      minibusStops.add(
+      minibusStopList.add(
         MinibusStop(
           stopId: '$stopId',
           engName: stopWithShortestChiTName.nameEn.trim(),
@@ -214,7 +204,34 @@ class MinibusBuilder {
         ),
       );
     });
+    minibusStopList.sort((a, b) => a.stopId.compareTo(b.stopId));
+    final minibusStops = minibusStopList.toSet();
+
     return (minibusRoutes, minibusStops);
+  }
+
+  /// Get route overviews for the given [regionNumberPairs]. The overviews
+  /// contains route ID, descriptions and origins & destinations for bounds.
+  static Future<List<GovMinibusRoute>> _getRouteOverviews(
+    List<MapEntry<Region, String>> regionNumberPairs,
+  ) async {
+    final tracker = ProgressTracker(
+      label: "Getting minibus route overviews",
+      total: regionNumberPairs.length,
+      step: 50,
+    );
+
+    final routeOverviews = await Future.wait(
+      regionNumberPairs.map((e) async {
+        final overview = await DataServices.getMinibusRouteOverview(
+          e.key.name,
+          e.value,
+        );
+        await tracker.increment();
+        return overview;
+      }),
+    );
+    return routeOverviews.whereType<GovMinibusRoute>().toList();
   }
 
   static Future<MinibusGeoJson> _readMinibusData() async {

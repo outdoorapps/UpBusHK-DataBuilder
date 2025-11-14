@@ -13,7 +13,7 @@ import 'package:upbushk_data_builder/network/web_services.dart';
 
 void main() async {
   await Benchmark.executeAsync('Initializing....', _init);
-  await Benchmark.executeAsync('Downloading gov data....', _downloadGovData);
+  // await Benchmark.executeAsync('Downloading gov data....', _downloadGovData);
 
   await Benchmark.executeAsync(
     'Building company bus routes....',

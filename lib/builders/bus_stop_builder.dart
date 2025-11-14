@@ -1,6 +1,3 @@
-import 'dart:io';
-
-import 'package:synchronized/synchronized.dart';
 import 'package:upbushk_data_builder/builders/mtrb_parser.dart';
 import 'package:upbushk_data_builder/enums/company.dart';
 import 'package:upbushk_data_builder/files/project_paths.dart';
@@ -9,6 +6,7 @@ import 'package:upbushk_data_builder/isar/models/company_bus_route.dart';
 import 'package:upbushk_data_builder/isar/models/lat_lng.dart';
 import 'package:upbushk_data_builder/network/data_services.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
+import 'package:upbushk_data_builder/utils/progress_tracker.dart';
 
 class BusStopBuilder {
   static Future<List<BusStop>> buildKmbStops() async {
@@ -64,9 +62,11 @@ class BusStopBuilder {
   static Future<List<BusStop>> _getCtbStops(Set<String> stopIds) async {
     final List<BusStop> stops = [];
     final total = stopIds.length;
-    final start = DateTime.now();
-    final lock = Lock();
-    int completed = 0;
+    final tracker = ProgressTracker(
+      label: "Getting CTB stops",
+      total: total,
+      step: 50,
+    );
 
     // Run all requests concurrently
     await Future.wait(
@@ -86,19 +86,7 @@ class BusStopBuilder {
             ),
           );
         }
-
-        // Synchronized to ensure reporting is atomic
-        lock.synchronized(() {
-          completed++;
-          if (completed % 50 == 0 || completed == total) {
-            final percent = (completed / total * 100).toStringAsFixed(1);
-            final elapsed = DateTime.now().difference(start).inSeconds;
-            stdout.write(
-              '\rProgress: $completed/$total  $percent%  (${elapsed}s)',
-            );
-            if (completed == total) stdout.writeln();
-          }
-        });
+        await tracker.increment();
       }),
     );
     return stops;
@@ -110,45 +98,35 @@ class BusStopBuilder {
     final List<BusStop> nlbStops = [];
     final existingStopIds = <String>{};
     final total = nlbCompanyBusRoutes.length;
-    final start = DateTime.now();
-    final lock = Lock();
-    var completed = 0;
+
+    final tracker = ProgressTracker(
+      label: "Getting NLB stops",
+      total: total,
+      step: 50,
+    );
 
     await Future.wait(
       nlbCompanyBusRoutes.map((route) async {
         final stops = await DataServices.getNlbRouteStops(route.nlbRouteId!);
 
-        await lock.synchronized(() {
-          for (final stop in stops) {
-            if (!existingStopIds.contains(stop.stopId)) {
-              existingStopIds.add(stop.stopId);
-              nlbStops.add(
-                BusStop(
-                  company: Company.NLB,
-                  stopId: stop.stopId,
-                  engName: stop.stopNameE,
-                  chiTName: stop.stopNameC,
-                  latLng: LatLng(
-                    lat: double.tryParse(stop.latitude) ?? 0.0,
-                    long: double.tryParse(stop.longitude) ?? 0.0,
-                  ),
+        for (final stop in stops) {
+          if (!existingStopIds.contains(stop.stopId)) {
+            existingStopIds.add(stop.stopId);
+            nlbStops.add(
+              BusStop(
+                company: Company.NLB,
+                stopId: stop.stopId,
+                engName: stop.stopNameE,
+                chiTName: stop.stopNameC,
+                latLng: LatLng(
+                  lat: double.tryParse(stop.latitude) ?? 0.0,
+                  long: double.tryParse(stop.longitude) ?? 0.0,
                 ),
-              );
-            }
-          }
-        });
-
-        await lock.synchronized(() {
-          completed++;
-          if (completed % 10 == 0 || completed == total) {
-            final percent = (completed / total * 100).toStringAsFixed(1);
-            final elapsed = DateTime.now().difference(start).inSeconds;
-            stdout.write(
-              '\rProgress: $completed/$total  $percent%  (${elapsed}s)',
+              ),
             );
-            if (completed == total) stdout.writeln();
           }
-        });
+        }
+        await tracker.increment();
       }),
     );
 
