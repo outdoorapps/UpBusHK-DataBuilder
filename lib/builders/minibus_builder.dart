@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:upbushk_data_builder/builders/minibus_route_builder.dart';
 import 'package:upbushk_data_builder/builders/minibus_stop_builder.dart';
-import 'package:upbushk_data_builder/enums/enums.dart';
 import 'package:upbushk_data_builder/files/project_paths.dart';
 import 'package:upbushk_data_builder/isar/isar_manager.dart';
 import 'package:upbushk_data_builder/isar/models/lat_lng.dart';
@@ -84,13 +83,13 @@ class MinibusBuilder {
 
     // 2. Get individual routes
     final pendingRegionNumberPairs = response.data.routesByRegion.entries
-        .expand((e) => e.value.map((number) => MapEntry(e.key, number)))
+        .expand((e) => e.value.map((number) => '${e.key.name}-$number'))
         .toSet();
 
     final minibusRoutes = <MinibusRoute>[];
     final minibusStops = <MinibusStop>{};
 
-    await WebServices.retryBatch<MapEntry<Region, String>>(
+    await WebServices.retryBatch<String>(
       pending: pendingRegionNumberPairs,
       pendingTypeLabel: "minibus routes",
       work: (pendingBatch) async {
@@ -99,7 +98,7 @@ class MinibusBuilder {
         minibusRoutes.addAll(routes);
         minibusStops.addAll(stops);
 
-        return routes.map((r) => MapEntry(r.region, r.number)).toSet();
+        return routes.map((r) => '${r.region.name}-${r.number}').toSet();
       },
     );
     return (minibusRoutes, minibusStops);
@@ -108,7 +107,7 @@ class MinibusBuilder {
   /// Return a tuple of (List<MinibusRoute>, Set<MinibusStop>) for the given
   /// [regionNumberPairs].
   static Future<(List<MinibusRoute>, Set<MinibusStop>)> _buildBatch(
-    Set<MapEntry<Region, String>> regionNumberPairs,
+    Set<String> regionNumberPairs,
   ) async {
     // 1. Get routes overviews based on region & number
     final routeOverviews = await Benchmark.executeAsync(
@@ -200,19 +199,20 @@ class MinibusBuilder {
   /// Get route overviews for the given [regionNumberPairs]. The overviews
   /// contains route ID, descriptions and origins & destinations for bounds.
   static Future<List<GovMinibusRoute>> _getRouteOverviews(
-    Set<MapEntry<Region, String>> regionNumberPairs,
+    Set<String> regionNumberPairs,
   ) async {
     final routeOverviews =
-        await AsyncUtils.mapAsyncWithProgress<
-          MapEntry<Region, String>,
-          GovMinibusRoute?
-        >(
+        await AsyncUtils.mapAsyncWithProgress<String, GovMinibusRoute?>(
           items: regionNumberPairs,
           label: "Getting minibus route overviews",
-          worker: (pair) async {
+          worker: (key) async {
+            final parts = key.split('-');
+            final region = parts[0];
+            final number = parts[1];
+
             final response = await WebServices.minibus.getRouteOverview(
-              pair.key.name,
-              pair.value,
+              region,
+              number,
             );
             return response.routes.firstOrNull;
           },
