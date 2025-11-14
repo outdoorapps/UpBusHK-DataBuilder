@@ -39,6 +39,10 @@ class IsarManager {
       TrackSchema,
     ], directory: ProjectPaths.isarDir.path);
 
+    await isar.writeTxn(() async {
+      await isar.clear(); // Clear it every time on init
+    });
+
     GetIt.I.registerSingleton<Isar>(isar);
   }
 }
