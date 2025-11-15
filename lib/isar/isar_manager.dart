@@ -9,7 +9,7 @@ import 'package:up_bus_hk_core/isar/models/company_bus_route.dart';
 import 'package:up_bus_hk_core/isar/models/minibus_route.dart';
 import 'package:up_bus_hk_core/isar/models/minibus_stop.dart';
 import 'package:up_bus_hk_core/isar/models/track.dart';
-import 'package:upbushk_data_builder/files/project_paths.dart';
+import 'package:up_bus_hk_data_builder/files/project_paths.dart';
 
 Isar get isar => GetIt.I<Isar>();
 

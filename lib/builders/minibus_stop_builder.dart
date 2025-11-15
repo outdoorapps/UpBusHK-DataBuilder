@@ -1,10 +1,10 @@
 import 'package:collection/collection.dart';
 import 'package:up_bus_hk_core/isar/models/minibus_stop.dart';
-import 'package:upbushk_data_builder/json/minibus_geo_json.dart';
-import 'package:upbushk_data_builder/network/data_services.dart';
-import 'package:upbushk_data_builder/network/web_services.dart';
-import 'package:upbushk_data_builder/utils/async_utils.dart';
-import 'package:upbushk_data_builder/extension/string_x.dart';
+import 'package:up_bus_hk_data_builder/json/minibus_geo_json.dart';
+import 'package:up_bus_hk_data_builder/network/data_services.dart';
+import 'package:up_bus_hk_data_builder/network/web_services.dart';
+import 'package:up_bus_hk_data_builder/utils/async_utils.dart';
+import 'package:up_bus_hk_data_builder/extension/string_x.dart';
 
 class MinibusStopBuilder {
   static List<MinibusStop> buildWithJson(MinibusGeoJson geoJson) {

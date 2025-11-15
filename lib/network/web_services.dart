@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
-import 'package:upbushk_data_builder/network/api.dart';
+import 'package:up_bus_hk_data_builder/network/api.dart';
 
 typedef BatchWorker<T> = Future<Set<T>> Function(Set<T> pending);
 

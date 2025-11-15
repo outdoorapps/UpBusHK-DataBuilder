@@ -1,15 +1,15 @@
 import 'package:isar_community/isar.dart';
-import 'package:upbushk_data_builder/builders/bus_stop_builder.dart';
-import 'package:upbushk_data_builder/builders/company_route_builder.dart';
-import 'package:upbushk_data_builder/builders/minibus_builder.dart';
+import 'package:up_bus_hk_data_builder/builders/bus_stop_builder.dart';
+import 'package:up_bus_hk_data_builder/builders/company_route_builder.dart';
+import 'package:up_bus_hk_data_builder/builders/minibus_builder.dart';
 import 'package:up_bus_hk_core/enums/company.dart';
-import 'package:upbushk_data_builder/files/project_paths.dart';
-import 'package:upbushk_data_builder/isar/isar_manager.dart';
+import 'package:up_bus_hk_data_builder/files/project_paths.dart';
+import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
 import 'package:up_bus_hk_core/isar/models/company_bus_route.dart';
-import 'package:upbushk_data_builder/network/links.dart';
-import 'package:upbushk_data_builder/network/web_services.dart';
-import 'package:upbushk_data_builder/utils/benchmark.dart';
+import 'package:up_bus_hk_data_builder/network/links.dart';
+import 'package:up_bus_hk_data_builder/network/web_services.dart';
+import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
 
 void main() async {
   await Benchmark.executeAsync('Initializing', _init);

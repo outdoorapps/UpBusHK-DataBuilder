@@ -1,4 +1,4 @@
-import 'package:upbushk_data_builder/utils/progress_tracker.dart';
+import 'package:up_bus_hk_data_builder/utils/progress_tracker.dart';
 
 typedef AsyncMapper<I, O> = Future<O> Function(I input);
 
