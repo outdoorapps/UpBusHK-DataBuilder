@@ -28,6 +28,7 @@ dependencies:
 
   # Parsing
   xml: ^6.6.1
+  json_events: ^1.2.2
 
   # Utils
   path: ^1.9.1

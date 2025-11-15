@@ -60,8 +60,8 @@ class ProgressTracker {
   void finish() {
     if (_finished) return;
     _finished = true;
-    final elapsed = DateTime.now().difference(_start).inSeconds;
+    final elapsed = DateTime.now().difference(_start).inMilliseconds;
     _timer.cancel();
-    stdout.write('\r[Completed] $label: $_completed  (${elapsed}s)\n');
+    stdout.write('\r[Completed] $label: $_completed  (${elapsed / 1000}s)\n');
   }
 }

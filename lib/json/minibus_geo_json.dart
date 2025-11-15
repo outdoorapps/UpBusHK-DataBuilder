@@ -1,5 +1,4 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:up_bus_hk_core/enums/bound.dart';
 import 'package:up_bus_hk_core/enums/region.dart';
 import 'package:up_bus_hk_core/isar/models/lat_lng.dart';
 import 'package:up_bus_hk_data_builder/json/json_converters.dart';
