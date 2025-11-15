@@ -3,9 +3,10 @@ import 'dart:io';
 
 import 'package:get_it/get_it.dart';
 import 'package:isar_community/isar.dart';
+import 'package:up_bus_hk_core/isar/data_builder_models/bus_fare.dart';
+import 'package:up_bus_hk_core/isar/data_builder_models/company_bus_route.dart';
 import 'package:up_bus_hk_core/isar/models/bus_route.dart';
 import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
-import 'package:up_bus_hk_core/isar/models/company_bus_route.dart';
 import 'package:up_bus_hk_core/isar/models/minibus_route.dart';
 import 'package:up_bus_hk_core/isar/models/minibus_stop.dart';
 import 'package:up_bus_hk_core/isar/models/track.dart';
@@ -31,6 +32,7 @@ class IsarManager {
 
     final isar = await Isar.open([
       CompanyBusRouteSchema,
+      BusFareSchema,
       BusRouteSchema,
       BusStopSchema,
       MinibusRouteSchema,

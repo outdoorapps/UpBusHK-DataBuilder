@@ -1,10 +1,10 @@
 import 'dart:io';
 
+import 'package:up_bus_hk_core/isar/data_builder_models/company_bus_route.dart';
 import 'package:up_bus_hk_data_builder/builders/mtrb_parser.dart';
 import 'package:up_bus_hk_core/enums/company.dart';
 import 'package:up_bus_hk_data_builder/files/project_paths.dart';
 import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
-import 'package:up_bus_hk_core/isar/models/company_bus_route.dart';
 import 'package:up_bus_hk_core/isar/models/lat_lng.dart';
 import 'package:up_bus_hk_data_builder/network/data_services.dart';
 import 'package:up_bus_hk_data_builder/network/web_services.dart';

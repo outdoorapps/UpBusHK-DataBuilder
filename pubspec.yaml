@@ -26,6 +26,9 @@ dependencies:
   # Storage
   isar_community: *isar_version
 
+  # Parsing
+  xml: ^6.6.1
+
   # Utils
   path: ^1.9.1
   collection: any

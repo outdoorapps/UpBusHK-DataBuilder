@@ -12,3 +12,4 @@ resources/
 generated/
 /bin/libisar.*
 debug/
+/bin/test.dart
