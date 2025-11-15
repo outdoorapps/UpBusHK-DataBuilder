@@ -191,8 +191,8 @@ class MinibusBuilder {
     final minibusStops = minibusStopList.toSet();
 
     print(
-      'Minibus routes: ${minibusRoutes.length}'
-      '\nMinibus stops: ${minibusStops.length}',
+      '- Minibus routes: ${minibusRoutes.length}'
+      '\n- Minibus stops: ${minibusStops.length}',
     );
     return (minibusRoutes, minibusStops);
   }
