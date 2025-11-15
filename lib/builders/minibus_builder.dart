@@ -16,7 +16,7 @@ import 'package:upbushk_data_builder/network/data_services.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';
 import 'package:upbushk_data_builder/utils/async_utils.dart';
 import 'package:upbushk_data_builder/utils/benchmark.dart';
-import 'package:upbushk_data_builder/utils/string_x.dart';
+import 'package:upbushk_data_builder/extension/string_x.dart';
 
 class MinibusBuilder {
   static Future<void> buildMinibusData() async {
@@ -144,7 +144,7 @@ class MinibusBuilder {
     for (final (govRoute, direction, routeStops) in results) {
       final bound = direction.bound;
       final route = MinibusRoute(
-        routeId: '${govRoute.routeId}-$bound',
+        routeId: MinibusRoute.generateRouteId(govRoute.routeId, bound),
         region: govRoute.region,
         number: govRoute.routeCode,
         bound: bound,

@@ -46,7 +46,5 @@ class MinibusRouteRegionData {
       _$MinibusRouteRegionDataFromJson(json);
 
   Map<String, dynamic> toJson() => _$MinibusRouteRegionDataToJson(this);
-
-  String get re => 'routesByRegion';
 }
 

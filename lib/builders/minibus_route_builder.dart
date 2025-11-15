@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:up_bus_hk_core/enums/bound.dart';
 import 'package:up_bus_hk_core/isar/models/minibus_route.dart';
 import 'package:upbushk_data_builder/json/minibus_geo_json.dart';
 
@@ -8,7 +9,10 @@ class MinibusRouteBuilder {
   static List<MinibusRoute> buildWithJson(MinibusGeoJson geoJson) {
     final routeToRouteStops = groupBy(
       geoJson.features,
-      (e) => e.properties.routeId,
+      (e) => MinibusRoute.generateRouteId(
+        e.properties.govRouteId,
+        Bound.fromMinibusRouteSeq(e.properties.routeSeq),
+      ),
     );
 
     return routeToRouteStops.entries.map((e) {
@@ -26,7 +30,7 @@ class MinibusRouteBuilder {
         routeId: routeId,
         region: routeInfo.region,
         number: routeInfo.routeNameE,
-        bound: routeInfo.bound,
+        bound: Bound.fromMinibusRouteSeq(routeInfo.routeSeq),
         descriptionEn: '',
         descriptionChiT: '',
         originEn: routeInfo.locStartNameE.trim(),

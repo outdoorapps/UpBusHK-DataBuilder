@@ -127,8 +127,4 @@ class MinibusProperties {
 
   /// Convenience helpers
   Region get region => Region.values.byName(district);
-
-  String get routeId => '$govRouteId-${bound.name}';
-
-  Bound get bound => routeSeq == 1 ? Bound.O : Bound.I;
 }
