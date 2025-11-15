@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:upbushk_data_builder/enums/enums.dart';
+import 'package:up_bus_hk_core/enums/region.dart';
 import 'package:upbushk_data_builder/json/json_converters.dart';
 
 part '../generated/json/minibus_route_by_region.g.dart';

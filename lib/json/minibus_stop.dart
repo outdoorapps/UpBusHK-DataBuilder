@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:upbushk_data_builder/isar/models/lat_lng.dart';
+import 'package:up_bus_hk_core/isar/models/lat_lng.dart';
 import 'package:upbushk_data_builder/json/json_converters.dart';
 
 part '../generated/json/minibus_stop.g.dart';

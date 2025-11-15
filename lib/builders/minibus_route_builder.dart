@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:upbushk_data_builder/isar/models/minibus_route.dart';
+import 'package:up_bus_hk_core/isar/models/minibus_route.dart';
 import 'package:upbushk_data_builder/json/minibus_geo_json.dart';
 
 class MinibusRouteBuilder {

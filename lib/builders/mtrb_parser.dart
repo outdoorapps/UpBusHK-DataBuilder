@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:upbushk_data_builder/enums/company.dart';
-import 'package:upbushk_data_builder/enums/enums.dart';
-import 'package:upbushk_data_builder/isar/models/bus_stop.dart';
-import 'package:upbushk_data_builder/isar/models/lat_lng.dart';
+import 'package:up_bus_hk_core/enums/bound.dart';
+import 'package:up_bus_hk_core/enums/company.dart';
+import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
+import 'package:up_bus_hk_core/isar/models/lat_lng.dart';
 
 class MtrbParser {
   static const String _TSUEN_CODE = '&#37032;';

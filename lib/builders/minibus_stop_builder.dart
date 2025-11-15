@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:upbushk_data_builder/isar/models/minibus_stop.dart';
+import 'package:up_bus_hk_core/isar/models/minibus_stop.dart';
 import 'package:upbushk_data_builder/json/minibus_geo_json.dart';
 import 'package:upbushk_data_builder/network/data_services.dart';
 import 'package:upbushk_data_builder/network/web_services.dart';

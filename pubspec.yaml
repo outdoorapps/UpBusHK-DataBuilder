@@ -8,6 +8,11 @@ environment:
 isar_version: &isar_version 3.3.0
 
 dependencies:
+  up_bus_hk_core:
+    git:
+      url: git@github.com:outdoorapps/UpBusHK-core.git
+      ref: main
+
   # Network
   dio: ^5.9.0
   dio_smart_retry: ^7.0.1

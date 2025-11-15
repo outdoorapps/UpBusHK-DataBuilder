@@ -3,14 +3,13 @@ import 'dart:io';
 
 import 'package:get_it/get_it.dart';
 import 'package:isar_community/isar.dart';
+import 'package:up_bus_hk_core/isar/models/bus_route.dart';
+import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
+import 'package:up_bus_hk_core/isar/models/company_bus_route.dart';
+import 'package:up_bus_hk_core/isar/models/minibus_route.dart';
+import 'package:up_bus_hk_core/isar/models/minibus_stop.dart';
+import 'package:up_bus_hk_core/isar/models/track.dart';
 import 'package:upbushk_data_builder/files/project_paths.dart';
-import 'package:upbushk_data_builder/isar/models/bus_route.dart';
-import 'package:upbushk_data_builder/isar/models/bus_stop.dart';
-import 'package:upbushk_data_builder/isar/models/minibus_route.dart';
-import 'package:upbushk_data_builder/isar/models/minibus_stop.dart';
-import 'package:upbushk_data_builder/isar/models/track.dart';
-
-import 'models/company_bus_route.dart';
 
 Isar get isar => GetIt.I<Isar>();
 
