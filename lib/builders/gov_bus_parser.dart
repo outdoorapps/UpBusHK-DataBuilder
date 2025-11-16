@@ -9,7 +9,7 @@ import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/json/gov_route_stop_json.dart';
 import 'package:up_bus_hk_data_builder/utils/progress_tracker.dart';
 
-class GovBusParser {
+class GovBusBuilder {
   static const _batchSize = 10000;
   final _writeController = StreamController<List<GovRouteStop>>(sync: true);
 

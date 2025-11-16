@@ -1,18 +1,19 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:dio_smart_retry/dio_smart_retry.dart';
 import 'package:up_bus_hk_data_builder/network/api.dart';
+import 'package:up_bus_hk_data_builder/network/downloader.dart';
 
 typedef BatchWorker<T> = Future<Set<T>> Function(Set<T> pending);
 
 class WebServices {
   static final Dio _dio = _createDio();
 
+  static final _downloader = Downloader(_dio, maxConcurrent: 2);
+
   static final KmbApi kmb = KmbApi(_dio);
   static final GovApi gov = GovApi(_dio);
   static final MinibusApi minibus = MinibusApi(_dio);
-
+  
   static Dio _createDio() {
     final dio = Dio(
       BaseOptions(
@@ -45,62 +46,9 @@ class WebServices {
   /// Parallel downloads with maximum of 5 concurrent downloads.
   static Future<void> downloadAll(
     Map<String, String> urlToPath, {
-    int maxConcurrent = 5,
+    int maxConcurrent = 2,
   }) async {
-    final entries = urlToPath.entries.toList();
-    int completed = 0;
-
-    print('Starting ${entries.length} downloads...');
-
-    // process in groups of maxConcurrent
-    for (var i = 0; i < entries.length; i += maxConcurrent) {
-      final batch = entries.skip(i).take(maxConcurrent).toList();
-
-      // start these downloads in parallel
-      await Future.wait(
-        batch.map((entry) async {
-          await downloadFile(entry.key, entry.value);
-          completed++;
-          print('✅ [$completed/${urlToPath.length}] ${entry.value}');
-        }),
-      );
-    }
-
-    print('All ${urlToPath.length} downloads completed!');
-  }
-
-  static Future<void> downloadFile(String url, String savePath) async {
-    final fileName = url.split('/').last;
-    final response = await _dio.get<ResponseBody>(
-      url,
-      options: Options(responseType: ResponseType.stream),
-    );
-
-    final file = File(savePath);
-    final sink = file.openWrite();
-
-    final total = response.data?.contentLength ?? 0;
-    int received = 0;
-    double lastProgress = 0;
-
-    await for (final chunk in response.data!.stream) {
-      received += chunk.length;
-      sink.add(chunk);
-
-      if (total > 0) {
-        final progress = received / total * 100;
-        if (progress - lastProgress >= 2) {
-          lastProgress = progress;
-          stdout.write('\r[$fileName] ${progress.toStringAsFixed(1)}%');
-        }
-      }
-    }
-
-    await sink.close();
-    stdout.write('\r[$fileName] 100%');
-    print(
-      ' Download completed (${(received / 1024 / 1024).toStringAsFixed(1)} MB)',
-    );
+    await _downloader.downloadAll(urlToPath);
   }
 
   static Future<T?> safeApiCall<T>(Future<T> Function() call) async {
