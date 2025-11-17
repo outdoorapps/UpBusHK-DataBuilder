@@ -29,6 +29,7 @@ class GovRouteStopJson {
       routeType: properties.routeType,
       serviceMode: properties.serviceMode,
       specialType: properties.specialType,
+      journeyTime: properties.journeyTime,
 
       locStartNameC: properties.locStartNameC,
       locStartNameE: properties.locStartNameE,

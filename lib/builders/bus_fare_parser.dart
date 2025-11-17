@@ -16,7 +16,7 @@ class BusFareParser {
   /// Parse bus fare data from FARE_BUS.xml and write to Isar
   Future<void> parseBusFareData() async {
     // Clear existing data
-    await isar.writeTxn(() => isar.busFares.clear());
+    await builderIsar.writeTxn(() => builderIsar.busFares.clear());
 
     final file = File(ProjectPaths.busFarePath);
     final batch = <BusFare>[];
@@ -71,7 +71,7 @@ class BusFareParser {
 
   Future<void> _processWriteQueue(Stream<List<BusFare>> stream) async {
     await for (final batch in stream) {
-      await isar.writeTxn(() => isar.busFares.putAll(batch));
+      await builderIsar.writeTxn(() => builderIsar.busFares.putAll(batch));
     }
   }
 }

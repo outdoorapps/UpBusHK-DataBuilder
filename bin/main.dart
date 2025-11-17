@@ -65,22 +65,22 @@ Future<void> _buildCompanyBusRoutes() async {
     '\n- Total: ${companyRoutes.length}',
   );
 
-  await isar.writeTxn(() async {
-    await isar.companyBusRoutes.clear();
-    await isar.companyBusRoutes.putAll(companyRoutes);
+  await builderIsar.writeTxn(() async {
+    await builderIsar.companyBusRoutes.clear();
+    await builderIsar.companyBusRoutes.putAll(companyRoutes);
   });
 }
 
 Future<void> _buildBusStops() async {
   final kmbStops = await BusStopBuilder.buildKmbStops();
 
-  final ctbCompanyBusRoute = await isar.companyBusRoutes
+  final ctbCompanyBusRoute = await builderIsar.companyBusRoutes
       .filter()
       .companyEqualTo(Company.CTB)
       .findAll();
   final ctbStops = await BusStopBuilder.buildCtbStops(ctbCompanyBusRoute);
 
-  final nlbCompanyBusRoute = await isar.companyBusRoutes
+  final nlbCompanyBusRoute = await builderIsar.companyBusRoutes
       .filter()
       .companyEqualTo(Company.NLB)
       .findAll();
@@ -90,7 +90,7 @@ Future<void> _buildBusStops() async {
 
   final busStops = [...kmbStops, ...ctbStops, ...nlbStops, ...mtrbStops];
 
-  final companyBusRoutes = await isar.companyBusRoutes.where().findAll();
+  final companyBusRoutes = await builderIsar.companyBusRoutes.where().findAll();
   BusStopBuilder.validateStops(companyBusRoutes, busStops);
 
   print(

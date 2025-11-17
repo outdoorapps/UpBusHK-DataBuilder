@@ -2,39 +2,88 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:isar_community/isar.dart';
 import 'package:json_events/json_events.dart';
+import 'package:up_bus_hk_core/isar/data_builder_models/gov_bus_route.dart';
 import 'package:up_bus_hk_core/isar/data_builder_models/gov_route_stop.dart';
+import 'package:up_bus_hk_core/isar/data_builder_models/gov_stop_coordinate.dart';
 import 'package:up_bus_hk_data_builder/files/project_paths.dart';
-import 'package:up_bus_hk_data_builder/isar/gov_stop_coordinate.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/json/gov_route_stop_json.dart';
 import 'package:up_bus_hk_data_builder/json/gov_stop_coordinate_json.dart';
 import 'package:up_bus_hk_data_builder/utils/progress_tracker.dart';
 
 class GovBusBuilder {
+  Future<void> build() async {
+    // await parseRouteStops();
+    // await parseStops();
+
+    final routeHeaders = await builderIsar.govRouteStops
+        .where()
+        .distinctByRouteId()
+        .distinctByRouteSeq()
+        .findAll();
+
+    routeHeaders.map((e) {
+      GovBusRoute(
+        routeId: e.routeId,
+        routeSeq: e.routeSeq,
+        companyCode: e.companyCode,
+        routeNameE: e.routeName,
+        originEn: e.locStartNameE,
+        originChiT: e.locStartNameC,
+        destEn: e.locEndNameE,
+        destChiT: e.locEndNameC,
+        serviceMode: e.serviceMode,
+        specialType: e.specialType,
+        journeyTime: e.journeyTime,
+        fullFare: e.fullFare,
+        stops: [],
+        fares: [],
+      );
+    });
+
+    print('${routeHeaders.length}');
+
+    routeHeaders.forEach((routeHeader) {
+      final companyCode = routeHeader.companyCode;
+      if (companyCode != 'CTB' &&
+          companyCode != 'KMB' &&
+          companyCode != 'NLB' &&
+          companyCode != 'LWB' &&
+          !companyCode.contains('+')) {
+        print(
+          '${routeHeader.routeName}-${routeHeader.routeSeq}, ${routeHeader.companyCode}',
+        );
+      }
+    });
+  }
+
   Future<void> parseRouteStops() async {
     // Clear existing data
-    await isar.writeTxn(() => isar.govRouteStops.clear());
+    await builderIsar.writeTxn(() => builderIsar.govRouteStops.clear());
 
-    _parseData<GovRouteStop>(
+    await _parseData<GovRouteStop>(
       File(ProjectPaths.busRouteStopJsonPath),
+      label: 'Parsing gov bus route-stops',
       fromJson: (itemJson) =>
           GovRouteStopJson.fromJson(itemJson).toGovRouteStop(),
       writeToIsar: (batch) =>
-          isar.writeTxn(() => isar.govRouteStops.putAll(batch)),
+          builderIsar.writeTxn(() => builderIsar.govRouteStops.putAll(batch)),
     );
   }
 
   Future<void> parseStops() async {
     // Clear existing data
-    await isar.writeTxn(() => isar.govStopCoordinates.clear());
+    await builderIsar.writeTxn(() => builderIsar.govStopCoordinates.clear());
 
-    _parseData<GovStopCoordinate>(
+    await _parseData<GovStopCoordinate>(
       File(ProjectPaths.govStopCoordinatesJsonPath),
+      label: 'Parsing gov bus stop coordinates',
       fromJson: (itemJson) =>
           GovStopCoordinateJson.fromJson(itemJson).toGovStopCoordinate(),
       writeToIsar: (batch) =>
-          isar.writeTxn(() => isar.govStopCoordinates.putAll(batch)),
+          builderIsar.writeTxn(() => builderIsar.govStopCoordinates.putAll(batch)),
     );
   }
 
@@ -52,6 +101,7 @@ class GovBusBuilder {
   /// [writeToIsar] is the function that write T to Isar
   Future<void> _parseData<T>(
     File file, {
+    required String label,
     required T Function(Map<String, dynamic> itemJson) fromJson,
     required Function(List<T>) writeToIsar,
   }) async {
@@ -72,7 +122,7 @@ class GovBusBuilder {
     final stack = <dynamic>[]; // List<Map<String,dynamic> or List>
     final keyStack = <String?>[]; // current key for each object level
 
-    final tracker = ProgressTracker(label: 'Parsing gov bus route-stops');
+    final tracker = ProgressTracker(label: label);
     await file
         .openRead()
         .transform(utf8.decoder)
