@@ -4,9 +4,11 @@ import 'dart:io';
 
 import 'package:isar_community/isar.dart';
 import 'package:json_events/json_events.dart';
+import 'package:up_bus_hk_core/isar/data_builder_models/bus_fare.dart';
 import 'package:up_bus_hk_core/isar/data_builder_models/gov_bus_route.dart';
 import 'package:up_bus_hk_core/isar/data_builder_models/gov_route_stop.dart';
 import 'package:up_bus_hk_core/isar/data_builder_models/gov_stop_coordinate.dart';
+import 'package:up_bus_hk_data_builder/builders/bus_fare_parser.dart';
 import 'package:up_bus_hk_data_builder/files/project_paths.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/json/gov_route_stop_json.dart';
@@ -15,48 +17,75 @@ import 'package:up_bus_hk_data_builder/utils/progress_tracker.dart';
 
 class GovBusBuilder {
   Future<void> build() async {
-    // await parseRouteStops();
-    // await parseStops();
+    await parseRouteStops();
+    await parseStops();
+    await BusFareParser().parseBusFareData();
 
     final routeHeaders = await builderIsar.govRouteStops
         .where()
         .distinctByRouteId()
         .distinctByRouteSeq()
         .findAll();
+    final routes = <GovBusRoute>[];
+    final tracker = ProgressTracker(label: 'Building gov bus routes');
 
-    routeHeaders.map((e) {
-      GovBusRoute(
-        routeId: e.routeId,
-        routeSeq: e.routeSeq,
-        companyCode: e.companyCode,
-        routeNameE: e.routeName,
-        originEn: e.locStartNameE,
-        originChiT: e.locStartNameC,
-        destEn: e.locEndNameE,
-        destChiT: e.locEndNameC,
-        serviceMode: e.serviceMode,
-        specialType: e.specialType,
-        journeyTime: e.journeyTime,
-        fullFare: e.fullFare,
-        stops: [],
-        fares: [],
-      );
-    });
+    await Future.wait(
+      routeHeaders.map((e) async {
+        final stops = await builderIsar.govRouteStops
+            .where()
+            .routeIdRouteSeqEqualTo(e.routeId, e.routeSeq)
+            .sortByRouteSeq()
+            .findAll();
 
-    print('${routeHeaders.length}');
+        final busFares = await builderIsar.busFares
+            .where()
+            .routeIdRouteSeqEqualTo(e.routeId, e.routeSeq)
+            .sortByOnSeq()
+            .findAll();
+        final fares = stops.length == busFares.length
+            ? busFares.map((f) => f.fare).toList()
+            : <double>[];
 
-    routeHeaders.forEach((routeHeader) {
-      final companyCode = routeHeader.companyCode;
-      if (companyCode != 'CTB' &&
-          companyCode != 'KMB' &&
-          companyCode != 'NLB' &&
-          companyCode != 'LWB' &&
-          !companyCode.contains('+')) {
-        print(
-          '${routeHeader.routeName}-${routeHeader.routeSeq}, ${routeHeader.companyCode}',
+        final route = GovBusRoute(
+          routeId: e.routeId,
+          routeSeq: e.routeSeq,
+          companyCode: e.companyCode,
+          routeNameE: e.routeName,
+          originEn: e.locStartNameE,
+          originChiT: e.locStartNameC,
+          destEn: e.locEndNameE,
+          destChiT: e.locEndNameC,
+          serviceMode: e.serviceMode,
+          specialType: e.specialType,
+          journeyTime: e.journeyTime,
+          fullFare: e.fullFare,
+          stops: stops.map((s) => s.stopId).toList(),
+          fares: fares,
         );
-      }
-    });
+        routes.add(route);
+        tracker.increment();
+      }),
+      //todo stops
+    );
+    routes.sort((a, b) => a.routeId.compareTo(b.routeId));
+
+    await builderIsar.writeTxn(() => builderIsar.govBusRoutes.putAll(routes));
+    tracker.finish();
+
+    // print('${routeHeaders.length}');
+
+    // routeHeaders.forEach((routeHeader) {
+    //   final companyCode = routeHeader.companyCode;
+    //   if (companyCode != 'CTB' &&
+    //       companyCode != 'KMB' &&
+    //       companyCode != 'NLB' &&
+    //       companyCode != 'LWB' &&
+    //       !companyCode.contains('+')) {
+    //     print(
+    //       '${routeHeader.routeName}-${routeHeader.routeSeq}, ${routeHeader.companyCode}',
+    //     );
+    //   }
+    // });
   }
 
   Future<void> parseRouteStops() async {
@@ -82,8 +111,9 @@ class GovBusBuilder {
       label: 'Parsing gov bus stop coordinates',
       fromJson: (itemJson) =>
           GovStopCoordinateJson.fromJson(itemJson).toGovStopCoordinate(),
-      writeToIsar: (batch) =>
-          builderIsar.writeTxn(() => builderIsar.govStopCoordinates.putAll(batch)),
+      writeToIsar: (batch) => builderIsar.writeTxn(
+        () => builderIsar.govStopCoordinates.putAll(batch),
+      ),
     );
   }
 

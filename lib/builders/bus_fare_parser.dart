@@ -32,7 +32,7 @@ class BusFareParser {
         .toXmlNodes()
         .expand((nodes) => nodes)
         .forEach((e) {
-          final govBusRouteId = int.tryParse(
+          final routeId = int.tryParse(
             e.getElement('ROUTE_ID')?.innerText ?? '',
           );
           final routeSeq = int.tryParse(
@@ -42,13 +42,13 @@ class BusFareParser {
           final offSeq = int.tryParse(e.getElement('OFF_SEQ')?.innerText ?? '');
           final fare = double.tryParse(e.getElement('PRICE')?.innerText ?? '');
 
-          if (govBusRouteId != null &&
+          if (routeId != null &&
               routeSeq != null &&
               onSeq != null &&
               offSeq != null &&
               fare != null) {
             final busFare = BusFare(
-              govBusRouteId: govBusRouteId,
+              routeId: routeId,
               routeSeq: routeSeq,
               onSeq: onSeq,
               offSeq: offSeq,
