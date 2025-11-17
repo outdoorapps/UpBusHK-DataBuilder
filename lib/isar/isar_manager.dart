@@ -21,15 +21,10 @@ class IsarManager {
   /// For future reference: for any schema change, putting an updated database
   /// in the asset folder will trigger a database rebuild
   static Future<void> init({bool clearPreviousData = false}) async {
-    final isarBinaries = Directory('${Directory.current.path}')
-        .listSync()
-        .whereType<File>()
-        .where(
-          (file) => file.path
-              .split(Platform.pathSeparator)
-              .last
-              .startsWith('libisar'),
-        );
+    final isarBinaries = Directory.current.listSync().whereType<File>().where(
+      (file) =>
+          file.path.split(Platform.pathSeparator).last.startsWith('libisar'),
+    );
 
     final download = isarBinaries.isNotEmpty;
 

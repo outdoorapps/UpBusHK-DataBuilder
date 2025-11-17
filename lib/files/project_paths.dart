@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:path/path.dart';
 
 class ProjectPath {
-  static final Directory projectRoot = Directory.current.parent;
+  static final Directory projectRoot = Directory.current;
 
   static final resourcesDir = Directory(join(projectRoot.path, 'resources'));
   static final dataDir = Directory(join(projectRoot.path, 'data'));
