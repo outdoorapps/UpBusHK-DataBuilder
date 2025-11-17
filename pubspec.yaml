@@ -36,6 +36,7 @@ dependencies:
   collection: any
   synchronized: ^3.4.0
   get_it: ^9.0.5
+  latlong2: ^0.9.1
 
 # Developer-only dependencies (for testing, linting, etc.)
 dev_dependencies:
