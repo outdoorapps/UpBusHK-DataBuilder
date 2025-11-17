@@ -1,7 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:up_bus_hk_core/isar/builder_models/gov_stop_coordinate.dart';
+import 'package:up_bus_hk_core/isar/models/lat_lng.dart';
 import 'package:up_bus_hk_data_builder/json/geometry.dart';
-import 'package:up_bus_hk_data_builder/utils/crs_2326.dart';
 
 part '../generated/json/gov_stop_coordinate_json.g.dart';
 
@@ -19,7 +19,7 @@ class GovStopCoordinateJson {
 
   GovStopCoordinate toGovStopCoordinate() => GovStopCoordinate(
     stopId: properties.stopId,
-    latLng: Crs2326.convert(geometry.coordinates[0], geometry.coordinates[1]),
+    latLng: LatLng(lat: geometry.coordinates[1], long: geometry.coordinates[0]),
   );
 }
 

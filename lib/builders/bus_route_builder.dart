@@ -5,6 +5,7 @@ import 'package:up_bus_hk_core/isar/builder_models/gov_bus_route.dart';
 import 'package:up_bus_hk_core/isar/builder_models/gov_stop.dart';
 import 'package:up_bus_hk_core/isar/models/bus_route.dart';
 import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
+import 'package:up_bus_hk_data_builder/builders/gov_bus_builder.dart';
 import 'package:up_bus_hk_data_builder/extension/lat_lng_x.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/utils/builder_utils.dart';
@@ -86,7 +87,6 @@ class BusRouteBuilder {
               : q.companyCodeContains(route.company.name),
         )
         .findAll();
-    print('potentials: ${potentials.length}');
     if (potentials.isEmpty) return null;
 
     // 2. Match bound
