@@ -24,7 +24,7 @@ void main() async {
 }
 
 Future<void> _init() async {
-  await IsarManager.init();
+  await IsarManager.init(clearPreviousData: true);
 }
 
 Future<void> _downloadGovData() async {

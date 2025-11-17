@@ -1,16 +1,22 @@
+import 'dart:io';
+
+import 'package:up_bus_hk_data_builder/utils/builder_utils.dart';
+
 class Benchmark {
   static Future<T> executeAsync<T>(
     String description,
     Future<T> Function() action,
   ) async {
-    print('$description...');
+    stdout.write('[Running] $description...');
 
     final stopwatch = Stopwatch()..start();
     final result = await action();
     stopwatch.stop();
 
     final elapsed = stopwatch.elapsed;
-    print('Finished in ${_formatDuration(elapsed)}');
+    stdout.write(
+      '\r[Completed] $description (${BuilderUtils.formatDuration(elapsed)})\n',
+    );
 
     return result;
   }
@@ -23,15 +29,10 @@ class Benchmark {
     stopwatch.stop();
 
     final elapsed = stopwatch.elapsed;
-    print('Finished in ${_formatDuration(elapsed)}');
+    stdout.write(
+      '\r[Completed] $description (${BuilderUtils.formatDuration(elapsed)})\n',
+    );
 
     return result;
-  }
-
-  static String _formatDuration(Duration d) {
-    if (d.inMilliseconds < 1000) return '${d.inMilliseconds} ms';
-    if (d.inSeconds < 60)
-      return '${d.inSeconds}.${(d.inMilliseconds % 1000).toString().padLeft(3, '0')} s';
-    return '${d.inMinutes} min ${d.inSeconds % 60} s';
   }
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:synchronized/synchronized.dart';
+import 'package:up_bus_hk_data_builder/utils/builder_utils.dart';
 
 class ProgressTracker {
   final String label;
@@ -16,21 +17,23 @@ class ProgressTracker {
   ProgressTracker({required this.label, this.total}) {
     // Initial print
     total == null
-        ? stdout.write('\r$label...  (0s)')
-        : stdout.write('\r$label: 0/$total  0%  (0s)');
+        ? stdout.write('\r[Running] $label...  (0s)')
+        : stdout.write('\r[Running] $label: 0/$total  0%  (0s)');
 
     // Print every second until finished
     _timer = Timer.periodic(const Duration(seconds: 1), (_) {
       _lock.synchronized(() {
-        final elapsed = DateTime.now().difference(_start).inSeconds;
+        final elapsed = DateTime.now().difference(_start);
 
         if (total == null) {
-          stdout.write('\r$label: $_completed  (${elapsed}s)');
+          final duration = BuilderUtils.formatDuration(elapsed, showMs: false);
+          stdout.write('\r[Running] $label: $_completed ($duration)');
         } else if (_completed < total!) {
           // don't overprint final result
           final percent = (_completed / total! * 100).toStringAsFixed(1);
+          final duration = BuilderUtils.formatDuration(elapsed, showMs: false);
           stdout.write(
-            '\r$label: $_completed/$total  $percent%  (${elapsed}s)',
+            '\r[Running] $label: $_completed/$total $percent% ($duration)',
           );
         }
       });
@@ -43,15 +46,7 @@ class ProgressTracker {
       _completed++;
 
       if (total != null && _completed >= total!) {
-        _finished = true;
-
-        // Final print
-        final elapsed = DateTime.now().difference(_start).inSeconds;
-        final percent = (_completed / total! * 100).toStringAsFixed(1);
-        stdout.write(
-          '\r$label: $_completed/$total  $percent%  (${elapsed}s)\n',
-        );
-        _timer.cancel();
+        finish();
       }
     });
   }
@@ -60,8 +55,9 @@ class ProgressTracker {
   void finish() {
     if (_finished) return;
     _finished = true;
-    final elapsed = DateTime.now().difference(_start).inMilliseconds;
+    final elapsed = DateTime.now().difference(_start);
+    final duration = BuilderUtils.formatDuration(elapsed);
     _timer.cancel();
-    stdout.write('\r[Completed] $label: $_completed  (${elapsed / 1000}s)\n');
+    stdout.write('\r[Completed] $label: $_completed ($duration)\n');
   }
 }

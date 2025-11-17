@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:isar_community/isar.dart';
 import 'package:up_bus_hk_core/enums/company.dart';
 import 'package:up_bus_hk_core/isar/builder_models/company_bus_route.dart';
@@ -11,6 +9,7 @@ import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/network/data_services.dart';
 import 'package:up_bus_hk_data_builder/network/web_services.dart';
 import 'package:up_bus_hk_data_builder/utils/async_utils.dart';
+import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
 
 class BusStopBuilder {
   /// Use the [CompanyBusRoute] stored in Isar and fetch from the online APIs
@@ -20,7 +19,10 @@ class BusStopBuilder {
       await isar.writeTxn(() async => isar.busStops.clear());
     }
 
-    final kmbStops = await _buildKmbStops();
+    final kmbStops = await Benchmark.executeAsync(
+      'Building KMB stops',
+      _buildKmbStops,
+    );
 
     final ctbCompanyBusRoute = await builderIsar.companyBusRoutes
         .filter()
@@ -34,7 +36,10 @@ class BusStopBuilder {
         .findAll();
     final nlbStops = await _buildNlbStops(nlbCompanyBusRoute);
 
-    final mtrbStops = await _buildMtrbStops();
+    final mtrbStops = await Benchmark.executeAsync(
+      'Building MTRB stops',
+      _buildMtrbStops,
+    );
 
     final busStops = [...kmbStops, ...ctbStops, ...nlbStops, ...mtrbStops];
     await isar.writeTxn(() async => await isar.busStops.putAll(busStops));
@@ -54,7 +59,6 @@ class BusStopBuilder {
   }
 
   static Future<List<BusStop>> _buildKmbStops() async {
-    print('Building KMB stops...');
     final response = await WebServices.kmb.getStops();
     final stops = response.data.map((e) {
       final lat = double.tryParse(e.lat);
@@ -71,7 +75,6 @@ class BusStopBuilder {
         latLng: latLng,
       );
     }).toList();
-    stdout.writeln('Done');
     return stops;
   }
 
@@ -163,7 +166,6 @@ class BusStopBuilder {
   }
 
   static Future<List<BusStop>> _buildMtrbStops() async {
-    stdout.write('Building MTRB stops...');
     final mtrbRouteMap = await MtrbParser.parseMtrbData(
       ProjectPaths.mtrbDataPath,
     );
@@ -171,7 +173,6 @@ class BusStopBuilder {
         .expand((boundMap) => boundMap.values)
         .expand((stops) => stops)
         .toList();
-    stdout.writeln('Building KMB stops...');
     return stops;
   }
 
