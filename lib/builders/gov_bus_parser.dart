@@ -40,9 +40,12 @@ class GovBusBuilder {
         final busFares = await builderIsar.busFares
             .where()
             .routeIdRouteSeqEqualTo(e.routeId, e.routeSeq)
-            .sortByOnSeq()
+            .sortByOffSeqDesc() // Get the max price for the starting stop
+            .distinctByOnSeq()
             .findAll();
-        final fares = stops.length == busFares.length
+
+        // The last stop has no pairing fare
+        final fares = stops.length == busFares.length + 1
             ? busFares.map((f) => f.fare).toList()
             : <double>[];
 
@@ -71,21 +74,6 @@ class GovBusBuilder {
 
     await builderIsar.writeTxn(() => builderIsar.govBusRoutes.putAll(routes));
     tracker.finish();
-
-    // print('${routeHeaders.length}');
-
-    // routeHeaders.forEach((routeHeader) {
-    //   final companyCode = routeHeader.companyCode;
-    //   if (companyCode != 'CTB' &&
-    //       companyCode != 'KMB' &&
-    //       companyCode != 'NLB' &&
-    //       companyCode != 'LWB' &&
-    //       !companyCode.contains('+')) {
-    //     print(
-    //       '${routeHeader.routeName}-${routeHeader.routeSeq}, ${routeHeader.companyCode}',
-    //     );
-    //   }
-    // });
   }
 
   Future<void> parseRouteStops() async {
