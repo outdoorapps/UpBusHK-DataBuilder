@@ -1,4 +1,5 @@
 import 'package:proj4dart/proj4dart.dart';
+import 'package:up_bus_hk_core/isar/models/lat_lng.dart';
 
 class Crs2326 {
   static final _epsg2326 = Projection.add(
@@ -12,8 +13,9 @@ class Crs2326 {
 
   static final _wgs84 = Projection.get('EPSG:4326');
 
-  static (double lat, double lng) convert(double x2326, double y2326) {
+  /// Convert from EPSG:2326 (HK1980) to EPSG:4326 (WGS84) coordinates
+  static LatLng convert(double x2326, double y2326) {
     final p = _epsg2326.transform(_wgs84!, Point(x: x2326, y: y2326));
-    return (p.y, p.x); // (lat, lng)
+    return LatLng(lat: p.y, long: p.x); // y is latitude, x is longitude
   }
 }

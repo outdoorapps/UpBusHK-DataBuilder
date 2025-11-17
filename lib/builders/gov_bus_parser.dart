@@ -5,8 +5,10 @@ import 'dart:io';
 import 'package:json_events/json_events.dart';
 import 'package:up_bus_hk_core/isar/data_builder_models/gov_route_stop.dart';
 import 'package:up_bus_hk_data_builder/files/project_paths.dart';
+import 'package:up_bus_hk_data_builder/isar/gov_stop_coordinate.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/json/gov_route_stop_json.dart';
+import 'package:up_bus_hk_data_builder/json/gov_stop_coordinate_json.dart';
 import 'package:up_bus_hk_data_builder/utils/progress_tracker.dart';
 
 class GovBusBuilder {
@@ -20,6 +22,19 @@ class GovBusBuilder {
           GovRouteStopJson.fromJson(itemJson).toGovRouteStop(),
       writeToIsar: (batch) =>
           isar.writeTxn(() => isar.govRouteStops.putAll(batch)),
+    );
+  }
+
+  Future<void> parseStops() async {
+    // Clear existing data
+    await isar.writeTxn(() => isar.govStopCoordinates.clear());
+
+    _parseData<GovStopCoordinate>(
+      File(ProjectPaths.govStopCoordinatesJsonPath),
+      fromJson: (itemJson) =>
+          GovStopCoordinateJson.fromJson(itemJson).toGovStopCoordinate(),
+      writeToIsar: (batch) =>
+          isar.writeTxn(() => isar.govStopCoordinates.putAll(batch)),
     );
   }
 
@@ -50,6 +65,7 @@ class GovBusBuilder {
         await writeToIsar(batch);
       }
     }
+
     final writeFuture = processWriteQueue(writeController.stream);
 
     // Stack for building nested objects/arrays

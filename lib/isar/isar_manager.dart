@@ -13,6 +13,7 @@ import 'package:up_bus_hk_core/isar/models/minibus_route.dart';
 import 'package:up_bus_hk_core/isar/models/minibus_stop.dart';
 import 'package:up_bus_hk_core/isar/models/track.dart';
 import 'package:up_bus_hk_data_builder/files/project_paths.dart';
+import 'package:up_bus_hk_data_builder/isar/gov_stop_coordinate.dart';
 
 Isar get isar => GetIt.I<Isar>();
 
@@ -36,6 +37,7 @@ class IsarManager {
       CompanyBusRouteSchema,
       BusFareSchema,
       GovRouteStopSchema,
+      GovStopCoordinateSchema,
       GovBusRouteSchema,
       BusRouteSchema,
       BusStopSchema,
