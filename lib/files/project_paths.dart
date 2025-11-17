@@ -26,7 +26,7 @@ class ProjectPath {
       join(govDataDir.path, 'JSON_GMB.json');
 
   static String get govStopCoordinatesJsonPath =>
-      join(govDataDir.path, 'STOP_BUS.gdb_converted.json');
+      join(govDataDir.path, 'STOP_BUS.gdb_converted.geojson');
 
   static String get busFarePath => join(govDataDir.path, 'FARE_BUS.xml');
 
