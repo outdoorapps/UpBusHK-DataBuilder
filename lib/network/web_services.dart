@@ -46,7 +46,7 @@ class WebServices {
   /// Parallel downloads with maximum of 5 concurrent downloads.
   static Future<void> downloadAll(
     Map<String, String> urlToPath, {
-    int maxConcurrent = 2,
+    int maxConcurrent = 5,
   }) async {
     await _downloader.downloadAll(urlToPath);
   }
