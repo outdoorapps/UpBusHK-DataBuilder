@@ -22,6 +22,9 @@ class ProjectPaths {
   static String get minibusDataJsonPath =>
       join(govDataDir.path, 'JSON_GMB.json');
 
+  static String get govStopCoordinatesJsonPath =>
+      join(govDataDir.path, 'STOP_BUS.gdb_converted.json');
+
   static String get busFarePath => join(govDataDir.path, 'FARE_BUS.xml');
 
   static String get mtrbDataPath => join(dataDir.path, 'mtrb.txt');
