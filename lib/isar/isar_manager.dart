@@ -21,14 +21,23 @@ class IsarManager {
   /// For future reference: for any schema change, putting an updated database
   /// in the asset folder will trigger a database rebuild
   static Future<void> init({bool clearPreviousData = false}) async {
-    final f = File('bin/libisar.so');
-    final download = !await f.exists();
+    final isarBinaries = Directory('${Directory.current.path}')
+        .listSync()
+        .whereType<File>()
+        .where(
+          (file) => file.path
+              .split(Platform.pathSeparator)
+              .last
+              .startsWith('libisar'),
+        );
+
+    final download = isarBinaries.isNotEmpty;
 
     try {
       await Isar.initializeIsarCore(download: download);
-    } on IsarError {
+    } catch (e) {
       // Try removing the old Isar Core binaries
-      await f.delete();
+      await Future.wait(isarBinaries.map((f) => f.delete()));
       await Isar.initializeIsarCore(download: true);
     }
 

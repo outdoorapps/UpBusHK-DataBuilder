@@ -43,6 +43,8 @@ class BusRouteBuilder {
     int count = 0;
     for (final route in kmbCompanyRoutes) {
       final govRoute = await _matchGovRoute(route);
+
+      // todo joint
       if (govRoute != null) count++;
 
       // BusRoute(

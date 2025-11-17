@@ -3,12 +3,15 @@ import 'dart:io';
 import 'package:path/path.dart';
 
 class ProjectPaths {
-  static final resourcesDir = Directory('resources');
-  static final govDataDir = Directory(join(resourcesDir.path, 'govData'));
+  static final Directory projectRoot = Directory.current.parent;
+
+  static final resourcesDir = Directory(join(projectRoot.path, 'resources'));
+  static final dataDir = Directory(join(projectRoot.path, 'data'));
+
+  static final govDataDir  = Directory(join(resourcesDir.path, 'govData'));
   static final generatedDir = Directory(join(resourcesDir.path, 'generated'));
   static final debugDir = Directory(join(resourcesDir.path, 'debug'));
   static final isarDir = Directory(join(resourcesDir.path, 'isar'));
-  static final dataDir = Directory('data');
 
   static String get busRoutesGeoJsonPath =>
       join(govDataDir.path, 'BusRoute_GEOJSON.zip');

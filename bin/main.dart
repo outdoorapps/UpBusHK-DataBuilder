@@ -10,7 +10,7 @@ import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
 
 void main() async {
   await Benchmark.executeAsync('Initializing', _init);
-  // await Benchmark.executeAsync('Downloading gov data', _downloadGovData);
+  await Benchmark.executeAsync('Downloading gov data', _downloadGovData);
 
   await Benchmark.executeAsync(
     'Building company bus routes',
