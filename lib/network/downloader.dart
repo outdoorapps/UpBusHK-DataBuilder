@@ -4,16 +4,18 @@ import 'package:dio/dio.dart';
 
 class Downloader {
   final Dio dio;
-  final int maxConcurrent;
 
-  Downloader(this.dio, {this.maxConcurrent = 5});
+  Downloader(this.dio);
 
   late final List<String> _urls;
   late final List<String> _paths;
   late final List<String> _names;
   late final List<double> _sizesMB;
 
-  Future<void> downloadAll(Map<String, String> urlToPath) async {
+  Future<void> downloadAll(
+    Map<String, String> urlToPath, {
+    int maxConcurrent = 5,
+  }) async {
     final entries = urlToPath.entries.toList();
     final total = entries.length;
 

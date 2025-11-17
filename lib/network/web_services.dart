@@ -8,12 +8,12 @@ typedef BatchWorker<T> = Future<Set<T>> Function(Set<T> pending);
 class WebServices {
   static final Dio _dio = _createDio();
 
-  static final _downloader = Downloader(_dio, maxConcurrent: 2);
+  static final _downloader = Downloader(_dio);
 
   static final KmbApi kmb = KmbApi(_dio);
   static final GovApi gov = GovApi(_dio);
   static final MinibusApi minibus = MinibusApi(_dio);
-  
+
   static Dio _createDio() {
     final dio = Dio(
       BaseOptions(
@@ -48,7 +48,7 @@ class WebServices {
     Map<String, String> urlToPath, {
     int maxConcurrent = 5,
   }) async {
-    await _downloader.downloadAll(urlToPath);
+    await _downloader.downloadAll(urlToPath, maxConcurrent: maxConcurrent);
   }
 
   static Future<T?> safeApiCall<T>(Future<T> Function() call) async {
