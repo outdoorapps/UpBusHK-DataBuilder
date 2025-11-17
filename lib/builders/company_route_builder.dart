@@ -250,7 +250,7 @@ class CompanyRouteBuilder {
 
     await Benchmark.executeAsync('Building MTRB routes', () async {
       final mtrbRouteMap = await MtrbParser.parseMtrbData(
-        ProjectPaths.mtrbDataPath,
+        ProjectPath.mtrbDataPath,
       );
 
       mtrbRouteMap.forEach((routeName, boundMap) {

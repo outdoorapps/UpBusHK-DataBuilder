@@ -167,7 +167,7 @@ class BusStopBuilder {
 
   static Future<List<BusStop>> _buildMtrbStops() async {
     final mtrbRouteMap = await MtrbParser.parseMtrbData(
-      ProjectPaths.mtrbDataPath,
+      ProjectPath.mtrbDataPath,
     );
     final stops = mtrbRouteMap.values
         .expand((boundMap) => boundMap.values)

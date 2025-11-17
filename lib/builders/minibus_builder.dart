@@ -230,7 +230,7 @@ class MinibusBuilder {
   }
 
   static Future<MinibusGeoJson> _readMinibusData() async {
-    final file = File(ProjectPaths.minibusDataJsonPath);
+    final file = File(ProjectPath.minibusDataJsonPath);
     final jsonString = await file.readAsString();
     final jsonData = jsonDecode(jsonString) as Map<String, dynamic>;
     return MinibusGeoJson.fromJson(jsonData);

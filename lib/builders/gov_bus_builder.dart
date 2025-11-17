@@ -126,7 +126,7 @@ class GovBusBuilder {
 
   static Future<void> _parseRouteStops() async {
     await _parseData<GovRouteStop>(
-      File(ProjectPaths.busRouteStopJsonPath),
+      File(ProjectPath.busRouteStopJsonPath),
       label: 'Parsing gov bus route-stops',
       fromJson: (itemJson) =>
           GovRouteStopJson.fromJson(itemJson).toGovRouteStop(),
@@ -137,7 +137,7 @@ class GovBusBuilder {
 
   static Future<void> _parseStops() async {
     await _parseData<GovStopCoordinate>(
-      File(ProjectPaths.govStopCoordinatesJsonPath),
+      File(ProjectPath.govStopCoordinatesJsonPath),
       label: 'Parsing gov bus stop coordinates',
       fromJson: (itemJson) =>
           GovStopCoordinateJson.fromJson(itemJson).toGovStopCoordinate(),
@@ -278,7 +278,7 @@ class GovBusBuilder {
     // Clear existing data
     await builderIsar.writeTxn(() => builderIsar.busFares.clear());
 
-    final file = File(ProjectPaths.busFarePath);
+    final file = File(ProjectPath.busFarePath);
     final batch = <BusFare>[];
 
     // Define the write queue

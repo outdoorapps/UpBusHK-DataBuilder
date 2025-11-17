@@ -43,13 +43,13 @@ class IsarManager {
 
     final builderIsar = await Isar.open(
       UpBusHkSchema.builderSchemas,
-      directory: ProjectPaths.isarDir.path,
+      directory: ProjectPath.isarDir.path,
       name: 'builder',
     );
 
     final isar = await Isar.open(
       UpBusHkSchema.schemas,
-      directory: ProjectPaths.isarDir.path,
+      directory: ProjectPath.isarDir.path,
     );
 
     if (clearPreviousData) {

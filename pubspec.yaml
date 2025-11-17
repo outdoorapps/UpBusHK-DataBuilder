@@ -37,6 +37,7 @@ dependencies:
   synchronized: ^3.4.0
   get_it: ^9.0.5
   latlong2: ^0.9.1
+  archive: ^4.0.7
 
 # Developer-only dependencies (for testing, linting, etc.)
 dev_dependencies:
@@ -53,7 +54,6 @@ dev_dependencies:
 
 dependency_overrides:
   analyzer: 8.3.0 # For source_gen 3.0.0
-
 
 # Optional: specify an entrypoint if needed (for multiple scripts)
 # executables:
