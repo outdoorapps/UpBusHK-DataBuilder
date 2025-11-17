@@ -10,19 +10,30 @@ import 'package:up_bus_hk_core/isar/builder_models/gov_route_stop.dart';
 import 'package:up_bus_hk_core/isar/builder_models/gov_stop.dart';
 import 'package:up_bus_hk_core/isar/builder_models/gov_stop_coordinate.dart';
 import 'package:up_bus_hk_core/isar/models/lat_lng.dart';
-import 'package:up_bus_hk_data_builder/builders/bus_fare_parser.dart';
 import 'package:up_bus_hk_data_builder/files/project_paths.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/json/gov_route_stop_json.dart';
 import 'package:up_bus_hk_data_builder/json/gov_stop_coordinate_json.dart';
 import 'package:up_bus_hk_data_builder/utils/progress_tracker.dart';
+import 'package:xml/xml.dart';
+import 'package:xml/xml_events.dart';
 
 class GovBusBuilder {
-  Future<void> build() async {
-    // 1. Parse source
+  static Future<void> build({bool clearPreviousData = false}) async {
+    if (clearPreviousData) {
+      await isar.writeTxn(() async {
+        isar.busFares.clear();
+        isar.govRouteStops.clear();
+        isar.govStopCoordinates.clear();
+        isar.govStops.clear();
+        isar.govBusRoutes.clear();
+      });
+    }
+
+    // 1. Build intermediates
     await _parseRouteStops();
     await _parseStops();
-    await BusFareParser().parseBusFareData();
+    await _buildBusFareData();
 
     // 2. Build routes
     final routeHeaders = await builderIsar.govRouteStops
@@ -109,7 +120,7 @@ class GovBusBuilder {
     stopTracker.finish();
   }
 
-  Future<void> _parseRouteStops() async {
+  static Future<void> _parseRouteStops() async {
     await _parseData<GovRouteStop>(
       File(ProjectPaths.busRouteStopJsonPath),
       label: 'Parsing gov bus route-stops',
@@ -120,7 +131,7 @@ class GovBusBuilder {
     );
   }
 
-  Future<void> _parseStops() async {
+  static Future<void> _parseStops() async {
     await _parseData<GovStopCoordinate>(
       File(ProjectPaths.govStopCoordinatesJsonPath),
       label: 'Parsing gov bus stop coordinates',
@@ -144,7 +155,7 @@ class GovBusBuilder {
   /// [file] is the json file to be parse
   /// [fromJson] is the function that create object T from json
   /// [writeToIsar] is the function that write T to Isar
-  Future<void> _parseData<T>(
+  static Future<void> _parseData<T>(
     File file, {
     required String label,
     required T Function(Map<String, dynamic> itemJson) fromJson,
@@ -249,10 +260,77 @@ class GovBusBuilder {
     tracker.finish();
   }
 
-  bool _isFeature(dynamic obj) {
+  static bool _isFeature(dynamic obj) {
     return obj is Map<String, dynamic> &&
         obj['type'] == 'Feature' &&
         obj.containsKey('geometry') &&
         obj.containsKey('properties');
+  }
+
+  /// Build bus fare data from FARE_BUS.xml and write to Isar
+  static Future<void> _buildBusFareData() async {
+    const _batchSize = 10000;
+
+    // Clear existing data
+    await builderIsar.writeTxn(() => builderIsar.busFares.clear());
+
+    final file = File(ProjectPaths.busFarePath);
+    final batch = <BusFare>[];
+
+    // Define the write queue
+    final writeController = StreamController<List<BusFare>>(sync: true);
+    Future<void> processWriteQueue(Stream<List<BusFare>> stream) async {
+      await for (final batch in stream) {
+        await builderIsar.writeTxn(() => builderIsar.busFares.putAll(batch));
+      }
+    }
+
+    final writeFuture = processWriteQueue(writeController.stream);
+
+    final tracker = ProgressTracker(label: 'Parsing bus fare');
+    await file
+        .openRead()
+        .transform(utf8.decoder)
+        .toXmlEvents()
+        .normalizeEvents()
+        .selectSubtreeEvents((event) => event.name == 'FARE')
+        .toXmlNodes()
+        .expand((nodes) => nodes)
+        .forEach((e) {
+          final routeId = int.tryParse(
+            e.getElement('ROUTE_ID')?.innerText ?? '',
+          );
+          final routeSeq = int.tryParse(
+            e.getElement('ROUTE_SEQ')?.innerText ?? '',
+          );
+          final onSeq = int.tryParse(e.getElement('ON_SEQ')?.innerText ?? '');
+          final offSeq = int.tryParse(e.getElement('OFF_SEQ')?.innerText ?? '');
+          final fare = double.tryParse(e.getElement('PRICE')?.innerText ?? '');
+
+          if (routeId != null &&
+              routeSeq != null &&
+              onSeq != null &&
+              offSeq != null &&
+              fare != null) {
+            final busFare = BusFare(
+              routeId: routeId,
+              routeSeq: routeSeq,
+              onSeq: onSeq,
+              offSeq: offSeq,
+              fare: fare,
+            );
+            batch.add(busFare);
+            if (batch.length >= _batchSize) {
+              writeController.add(List<BusFare>.from(batch));
+              batch.clear();
+            }
+            tracker.increment();
+          }
+        });
+
+    if (batch.isNotEmpty) writeController.add(List<BusFare>.from(batch));
+    writeController.close();
+    await writeFuture;
+    tracker.finish();
   }
 }

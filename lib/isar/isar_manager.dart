@@ -20,7 +20,7 @@ class IsarManager {
   /// This must be called before any data is read
   /// For future reference: for any schema change, putting an updated database
   /// in the asset folder will trigger a database rebuild
-  static Future<void> init() async {
+  static Future<void> init({bool clearPreviousData = false}) async {
     final f = File('bin/libisar.so');
     final download = !await f.exists();
 
@@ -37,13 +37,16 @@ class IsarManager {
       directory: ProjectPaths.isarDir.path,
       name: 'builder',
     );
-    await builderIsar.writeTxn(() => builderIsar.clear());
 
     final isar = await Isar.open(
       UpBusHkSchema.schemas,
       directory: ProjectPaths.isarDir.path,
     );
-    await isar.writeTxn(() => isar.clear());
+
+    if (clearPreviousData) {
+      await builderIsar.writeTxn(() => builderIsar.clear());
+      await isar.writeTxn(() => isar.clear());
+    }
 
     GetIt.I.registerSingleton<Isar>(builderIsar, instanceName: builderIsarName);
     GetIt.I.registerSingleton<Isar>(isar, instanceName: defaultIsarName);

@@ -1,17 +1,59 @@
 import 'dart:io';
 
+import 'package:isar_community/isar.dart';
 import 'package:up_bus_hk_core/enums/company.dart';
 import 'package:up_bus_hk_core/isar/builder_models/company_bus_route.dart';
 import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
 import 'package:up_bus_hk_core/isar/models/lat_lng.dart';
 import 'package:up_bus_hk_data_builder/builders/mtrb_parser.dart';
 import 'package:up_bus_hk_data_builder/files/project_paths.dart';
+import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/network/data_services.dart';
 import 'package:up_bus_hk_data_builder/network/web_services.dart';
 import 'package:up_bus_hk_data_builder/utils/async_utils.dart';
 
 class BusStopBuilder {
-  static Future<List<BusStop>> buildKmbStops() async {
+  /// Use the [CompanyBusRoute] stored in Isar and fetch from the online APIs
+  /// to build a list of [BusStop] and save them to Isar.
+  static Future<void> build({bool clearPreviousData = false}) async {
+    if (clearPreviousData) {
+      await isar.writeTxn(() async => isar.busStops.clear());
+    }
+
+    final kmbStops = await _buildKmbStops();
+
+    final ctbCompanyBusRoute = await builderIsar.companyBusRoutes
+        .filter()
+        .companyEqualTo(Company.CTB)
+        .findAll();
+    final ctbStops = await _buildCtbStops(ctbCompanyBusRoute);
+
+    final nlbCompanyBusRoute = await builderIsar.companyBusRoutes
+        .filter()
+        .companyEqualTo(Company.NLB)
+        .findAll();
+    final nlbStops = await _buildNlbStops(nlbCompanyBusRoute);
+
+    final mtrbStops = await _buildMtrbStops();
+
+    final busStops = [...kmbStops, ...ctbStops, ...nlbStops, ...mtrbStops];
+    await isar.writeTxn(() async => await isar.busStops.putAll(busStops));
+
+    final companyBusRoutes = await builderIsar.companyBusRoutes
+        .where()
+        .findAll();
+    _validateStops(companyBusRoutes, busStops);
+
+    print(
+      '- KMB stops: ${kmbStops.length}, '
+      '\n- CTB stops: ${ctbStops.length}, '
+      '\n- NLB stops: ${nlbStops.length}, '
+      '\n- MTRB stops: ${mtrbStops.length} '
+      '\n- Total: ${busStops.length}',
+    );
+  }
+
+  static Future<List<BusStop>> _buildKmbStops() async {
     print('Building KMB stops...');
     final response = await WebServices.kmb.getStops();
     final stops = response.data.map((e) {
@@ -33,7 +75,7 @@ class BusStopBuilder {
     return stops;
   }
 
-  static Future<List<BusStop>> buildCtbStops(
+  static Future<List<BusStop>> _buildCtbStops(
     List<CompanyBusRoute> ctbCompanyBusRoutes,
   ) async {
     // Collect all unique stop IDs from all routes
@@ -84,7 +126,7 @@ class BusStopBuilder {
     return stops.whereType<BusStop>().toList();
   }
 
-  static Future<List<BusStop>> buildNlbStops(
+  static Future<List<BusStop>> _buildNlbStops(
     List<CompanyBusRoute> nlbCompanyBusRoutes,
   ) async {
     final results =
@@ -120,7 +162,7 @@ class BusStopBuilder {
     return stops;
   }
 
-  static Future<List<BusStop>> buildMtrbStops() async {
+  static Future<List<BusStop>> _buildMtrbStops() async {
     stdout.write('Building MTRB stops...');
     final mtrbRouteMap = await MtrbParser.parseMtrbData(
       ProjectPaths.mtrbDataPath,
@@ -133,7 +175,7 @@ class BusStopBuilder {
     return stops;
   }
 
-  static Set<String> validateStops(
+  static Set<String> _validateStops(
     List<CompanyBusRoute> companyBusRoutes,
     List<BusStop> busStops,
   ) {

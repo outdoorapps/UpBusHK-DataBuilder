@@ -1,9 +1,10 @@
 import 'package:collection/collection.dart';
+import 'package:up_bus_hk_core/enums/bound.dart';
+import 'package:up_bus_hk_core/enums/company.dart';
 import 'package:up_bus_hk_core/isar/builder_models/company_bus_route.dart';
 import 'package:up_bus_hk_data_builder/builders/mtrb_parser.dart';
-import 'package:up_bus_hk_core/enums/company.dart';
-import 'package:up_bus_hk_core/enums/bound.dart';
 import 'package:up_bus_hk_data_builder/files/project_paths.dart';
+import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/json/ctb_route.dart';
 import 'package:up_bus_hk_data_builder/json/kmb_route.dart';
 import 'package:up_bus_hk_data_builder/network/data_services.dart';
@@ -13,7 +14,41 @@ import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
 import 'package:up_bus_hk_data_builder/utils/progress_tracker.dart';
 
 class CompanyRouteBuilder {
-  static Future<List<CompanyBusRoute>> buildKmbRoutes() async {
+  /// Fetch from the online APIs to build a list of [CompanyBusRoute] and save
+  /// them to Isar.
+  static Future<void> build({bool clearPreviousData = false}) async {
+    if (clearPreviousData) {
+      await builderIsar.writeTxn(
+        () async => builderIsar.companyBusRoutes.clear(),
+      );
+    }
+
+    final kmbRoutes = await _buildKmbRoutes();
+    final ctbRoutes = await _buildCtbRoutes();
+    final nlbRoutes = await _buildNlbRoutes();
+    final mtrbRoutes = await _buildMtrbRoutes();
+
+    final companyRoutes = [
+      ...kmbRoutes,
+      ...ctbRoutes,
+      ...nlbRoutes,
+      ...mtrbRoutes,
+    ];
+    companyRoutes.sort((a, b) => a.number.compareTo(b.number));
+    await builderIsar.writeTxn(
+      () async => builderIsar.companyBusRoutes.putAll(companyRoutes),
+    );
+
+    print(
+      '- KMB routes: ${kmbRoutes.length}'
+      '\n- CTB routes: ${ctbRoutes.length}'
+      '\n- NLB routes: ${nlbRoutes.length}'
+      '\n- MTRB routes: ${mtrbRoutes.length}'
+      '\n- Total: ${companyRoutes.length}',
+    );
+  }
+
+  static Future<List<CompanyBusRoute>> _buildKmbRoutes() async {
     final results = await Benchmark.executeAsync(
       'Getting KMB routes',
       WebServices.kmb.getRoutes,
@@ -74,7 +109,7 @@ class CompanyRouteBuilder {
   /// info in its route API, we will need to try get route stops for both
   /// bounds. If a bound doesn't exist, it will return no stops and we will
   /// skip that bound.
-  static Future<List<CompanyBusRoute>> buildCtbRoutes() async {
+  static Future<List<CompanyBusRoute>> _buildCtbRoutes() async {
     final response = await Benchmark.executeAsync(
       'Getting CTB routes',
       WebServices.gov.getCtbRoutes,
@@ -149,7 +184,7 @@ class CompanyRouteBuilder {
     return results.whereType<CompanyBusRoute>().toList();
   }
 
-  static Future<List<CompanyBusRoute>> buildNlbRoutes() async {
+  static Future<List<CompanyBusRoute>> _buildNlbRoutes() async {
     final response = await Benchmark.executeAsync(
       'Getting NLB routes',
       WebServices.gov.getNlbRoutes,
@@ -210,7 +245,7 @@ class CompanyRouteBuilder {
     return nlbCompanyBusRoutes;
   }
 
-  static Future<List<CompanyBusRoute>> buildMtrbRoutes() async {
+  static Future<List<CompanyBusRoute>> _buildMtrbRoutes() async {
     final List<CompanyBusRoute> mtrbCompanyBusRoutes = [];
 
     await Benchmark.executeAsync('Building MTRB routes', () async {

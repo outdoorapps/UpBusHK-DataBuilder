@@ -1,5 +1,4 @@
 import 'package:up_bus_hk_core/isar/models/bus_route.dart';
-import 'package:up_bus_hk_data_builder/builders/bus_fare_parser.dart';
 import 'package:up_bus_hk_data_builder/builders/gov_bus_builder.dart';
 
 class BusRouteBuilder {
@@ -9,9 +8,7 @@ class BusRouteBuilder {
   static const double stopMatchErrorDistanceMeters = 50.0;
 
   Future<List<BusRoute>> build() async {
-    await BusFareParser().parseBusFareData();
-
-    // await GovBusParser().parseRouteStops();
+    await GovBusBuilder.build();
 
 
     return [];
