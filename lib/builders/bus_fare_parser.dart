@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:up_bus_hk_core/isar/data_builder_models/bus_fare.dart';
+import 'package:up_bus_hk_core/isar/builder_models/bus_fare.dart';
 import 'package:up_bus_hk_data_builder/files/project_paths.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/utils/progress_tracker.dart';

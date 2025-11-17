@@ -3,16 +3,7 @@ import 'dart:io';
 
 import 'package:get_it/get_it.dart';
 import 'package:isar_community/isar.dart';
-import 'package:up_bus_hk_core/isar/data_builder_models/bus_fare.dart';
-import 'package:up_bus_hk_core/isar/data_builder_models/company_bus_route.dart';
-import 'package:up_bus_hk_core/isar/data_builder_models/gov_bus_route.dart';
-import 'package:up_bus_hk_core/isar/data_builder_models/gov_route_stop.dart';
-import 'package:up_bus_hk_core/isar/data_builder_models/gov_stop_coordinate.dart';
-import 'package:up_bus_hk_core/isar/models/bus_route.dart';
-import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
-import 'package:up_bus_hk_core/isar/models/minibus_route.dart';
-import 'package:up_bus_hk_core/isar/models/minibus_stop.dart';
-import 'package:up_bus_hk_core/isar/models/track.dart';
+import 'package:up_bus_hk_core/isar/up_bus_hk_schema.dart';
 import 'package:up_bus_hk_data_builder/files/project_paths.dart';
 
 /// For final app use
@@ -42,31 +33,17 @@ class IsarManager {
     }
 
     final builderIsar = await Isar.open(
-      [
-        CompanyBusRouteSchema,
-        BusFareSchema,
-        GovRouteStopSchema,
-        GovStopCoordinateSchema,
-        GovBusRouteSchema,
-      ],
+      UpBusHkSchema.builderSchemas,
       directory: ProjectPaths.isarDir.path,
       name: 'builder',
     );
-    await builderIsar.writeTxn(() async {
-      await builderIsar.clear();
-    });
+    await builderIsar.writeTxn(() => builderIsar.clear());
 
-    final isar = await Isar.open([
-      BusRouteSchema,
-      BusStopSchema,
-      MinibusRouteSchema,
-      MinibusStopSchema,
-      TrackSchema,
-    ], directory: ProjectPaths.isarDir.path);
-
-    await isar.writeTxn(() async {
-      await isar.clear();
-    });
+    final isar = await Isar.open(
+      UpBusHkSchema.schemas,
+      directory: ProjectPaths.isarDir.path,
+    );
+    await isar.writeTxn(() => isar.clear());
 
     GetIt.I.registerSingleton<Isar>(builderIsar, instanceName: builderIsarName);
     GetIt.I.registerSingleton<Isar>(isar, instanceName: defaultIsarName);

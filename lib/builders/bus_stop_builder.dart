@@ -1,11 +1,11 @@
 import 'dart:io';
 
-import 'package:up_bus_hk_core/isar/data_builder_models/company_bus_route.dart';
-import 'package:up_bus_hk_data_builder/builders/mtrb_parser.dart';
 import 'package:up_bus_hk_core/enums/company.dart';
-import 'package:up_bus_hk_data_builder/files/project_paths.dart';
+import 'package:up_bus_hk_core/isar/builder_models/company_bus_route.dart';
 import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
 import 'package:up_bus_hk_core/isar/models/lat_lng.dart';
+import 'package:up_bus_hk_data_builder/builders/mtrb_parser.dart';
+import 'package:up_bus_hk_data_builder/files/project_paths.dart';
 import 'package:up_bus_hk_data_builder/network/data_services.dart';
 import 'package:up_bus_hk_data_builder/network/web_services.dart';
 import 'package:up_bus_hk_data_builder/utils/async_utils.dart';
@@ -15,15 +15,18 @@ class BusStopBuilder {
     print('Building KMB stops...');
     final response = await WebServices.kmb.getStops();
     final stops = response.data.map((e) {
+      final lat = double.tryParse(e.lat);
+      final long = double.tryParse(e.lng);
+      final latLng = lat != null && long != null
+          ? LatLng(lat: lat, long: long)
+          : LatLng.empty();
+
       return BusStop(
         company: Company.KMB,
         stopId: e.stop,
         engName: e.nameEn,
         chiTName: e.nameTc,
-        latLng: LatLng(
-          lat: double.tryParse(e.lat) ?? 0,
-          long: double.tryParse(e.lng) ?? 0,
-        ),
+        latLng: latLng,
       );
     }).toList();
     stdout.writeln('Done');
@@ -63,15 +66,18 @@ class BusStopBuilder {
         final ctbStop = await DataServices.getCtbStop(stopId);
         if (ctbStop == null) return null;
 
+        final lat = double.tryParse(ctbStop.lat);
+        final long = double.tryParse(ctbStop.long);
+        final latLng = lat != null && long != null
+            ? LatLng(lat: lat, long: long)
+            : LatLng.empty();
+
         return BusStop(
           company: Company.CTB,
           stopId: ctbStop.stop,
           engName: ctbStop.nameEn,
           chiTName: ctbStop.nameTc,
-          latLng: LatLng(
-            lat: double.tryParse(ctbStop.lat) ?? 0.0,
-            long: double.tryParse(ctbStop.long) ?? 0.0,
-          ),
+          latLng: latLng,
         );
       },
     );
@@ -89,20 +95,22 @@ class BusStopBuilder {
             final response = await WebServices.gov.getNlbRouteStops(
               route.nlbRouteId!,
             );
-            return response.stops
-                .map(
-                  (s) => BusStop(
-                    company: Company.NLB,
-                    stopId: s.stopId,
-                    engName: s.stopNameE,
-                    chiTName: s.stopNameC,
-                    latLng: LatLng(
-                      lat: double.tryParse(s.latitude) ?? 0.0,
-                      long: double.tryParse(s.longitude) ?? 0.0,
-                    ),
-                  ),
-                )
-                .toList();
+
+            return response.stops.map((s) {
+              final lat = double.tryParse(s.latitude);
+              final long = double.tryParse(s.longitude);
+              final latLng = lat != null && long != null
+                  ? LatLng(lat: lat, long: long)
+                  : LatLng.empty();
+
+              return BusStop(
+                company: Company.NLB,
+                stopId: s.stopId,
+                engName: s.stopNameE,
+                chiTName: s.stopNameC,
+                latLng: latLng,
+              );
+            }).toList();
           },
         );
 

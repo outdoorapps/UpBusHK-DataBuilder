@@ -1,5 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:up_bus_hk_core/isar/data_builder_models/company_bus_route.dart';
+import 'package:up_bus_hk_core/isar/builder_models/company_bus_route.dart';
 import 'package:up_bus_hk_data_builder/builders/mtrb_parser.dart';
 import 'package:up_bus_hk_core/enums/company.dart';
 import 'package:up_bus_hk_core/enums/bound.dart';

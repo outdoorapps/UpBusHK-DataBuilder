@@ -1,5 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
-import 'package:up_bus_hk_core/isar/data_builder_models/gov_stop_coordinate.dart';
+import 'package:up_bus_hk_core/isar/builder_models/gov_stop_coordinate.dart';
 import 'package:up_bus_hk_data_builder/json/geometry.dart';
 import 'package:up_bus_hk_data_builder/utils/crs_2326.dart';
 

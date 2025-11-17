@@ -4,10 +4,12 @@ import 'dart:io';
 
 import 'package:isar_community/isar.dart';
 import 'package:json_events/json_events.dart';
-import 'package:up_bus_hk_core/isar/data_builder_models/bus_fare.dart';
-import 'package:up_bus_hk_core/isar/data_builder_models/gov_bus_route.dart';
-import 'package:up_bus_hk_core/isar/data_builder_models/gov_route_stop.dart';
-import 'package:up_bus_hk_core/isar/data_builder_models/gov_stop_coordinate.dart';
+import 'package:up_bus_hk_core/isar/builder_models/bus_fare.dart';
+import 'package:up_bus_hk_core/isar/builder_models/gov_bus_route.dart';
+import 'package:up_bus_hk_core/isar/builder_models/gov_route_stop.dart';
+import 'package:up_bus_hk_core/isar/builder_models/gov_stop.dart';
+import 'package:up_bus_hk_core/isar/builder_models/gov_stop_coordinate.dart';
+import 'package:up_bus_hk_core/isar/models/lat_lng.dart';
 import 'package:up_bus_hk_data_builder/builders/bus_fare_parser.dart';
 import 'package:up_bus_hk_data_builder/files/project_paths.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
@@ -17,17 +19,19 @@ import 'package:up_bus_hk_data_builder/utils/progress_tracker.dart';
 
 class GovBusBuilder {
   Future<void> build() async {
-    await parseRouteStops();
-    await parseStops();
+    // 1. Parse source
+    await _parseRouteStops();
+    await _parseStops();
     await BusFareParser().parseBusFareData();
 
+    // 2. Build routes
     final routeHeaders = await builderIsar.govRouteStops
         .where()
         .distinctByRouteId()
         .distinctByRouteSeq()
         .findAll();
     final routes = <GovBusRoute>[];
-    final tracker = ProgressTracker(label: 'Building gov bus routes');
+    final routeTracker = ProgressTracker(label: 'Building gov bus routes');
 
     await Future.wait(
       routeHeaders.map((e) async {
@@ -66,20 +70,46 @@ class GovBusBuilder {
           fares: fares,
         );
         routes.add(route);
-        tracker.increment();
+        await routeTracker.increment();
       }),
-      //todo stops
     );
     routes.sort((a, b) => a.routeId.compareTo(b.routeId));
-
     await builderIsar.writeTxn(() => builderIsar.govBusRoutes.putAll(routes));
-    tracker.finish();
+    routeTracker.finish();
+
+    // 3. Build stops
+    final stops = <GovStop>[];
+    final stopTracker = ProgressTracker(label: 'Building gov bus routes');
+
+    final stopHeaders = await builderIsar.govRouteStops
+        .where()
+        .distinctByStopId()
+        .findAll();
+
+    await Future.wait(
+      stopHeaders.map((e) async {
+        final govStopCoordinate = await builderIsar.govStopCoordinates
+            .where()
+            .stopIdEqualTo(e.stopId)
+            .findFirst();
+
+        final stop = GovStop(
+          stopId: e.stopId,
+          latLng: govStopCoordinate?.latLng ?? LatLng.empty(),
+          stopNameE: e.stopNameE,
+          stopNameC: e.stopNameC,
+        );
+        stops.add(stop);
+        await stopTracker.increment();
+      }),
+    );
+
+    stops.sort((a, b) => a.stopId.compareTo(b.stopId));
+    await builderIsar.writeTxn(() => builderIsar.govStops.putAll(stops));
+    stopTracker.finish();
   }
 
-  Future<void> parseRouteStops() async {
-    // Clear existing data
-    await builderIsar.writeTxn(() => builderIsar.govRouteStops.clear());
-
+  Future<void> _parseRouteStops() async {
     await _parseData<GovRouteStop>(
       File(ProjectPaths.busRouteStopJsonPath),
       label: 'Parsing gov bus route-stops',
@@ -90,10 +120,7 @@ class GovBusBuilder {
     );
   }
 
-  Future<void> parseStops() async {
-    // Clear existing data
-    await builderIsar.writeTxn(() => builderIsar.govStopCoordinates.clear());
-
+  Future<void> _parseStops() async {
     await _parseData<GovStopCoordinate>(
       File(ProjectPaths.govStopCoordinatesJsonPath),
       label: 'Parsing gov bus stop coordinates',

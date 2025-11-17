@@ -1,6 +1,6 @@
 import 'package:up_bus_hk_core/isar/models/bus_route.dart';
 import 'package:up_bus_hk_data_builder/builders/bus_fare_parser.dart';
-import 'package:up_bus_hk_data_builder/builders/gov_bus_parser.dart';
+import 'package:up_bus_hk_data_builder/builders/gov_bus_builder.dart';
 
 class BusRouteBuilder {
   static const double routeInfoErrorDistanceMeters = 220.0; // 38X cap

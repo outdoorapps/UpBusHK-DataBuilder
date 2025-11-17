@@ -1,6 +1,6 @@
 import 'package:isar_community/isar.dart';
 import 'package:up_bus_hk_core/enums/company.dart';
-import 'package:up_bus_hk_core/isar/data_builder_models/company_bus_route.dart';
+import 'package:up_bus_hk_core/isar/builder_models/company_bus_route.dart';
 import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
 import 'package:up_bus_hk_data_builder/builders/bus_stop_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/company_route_builder.dart';
@@ -66,8 +66,8 @@ Future<void> _buildCompanyBusRoutes() async {
   );
 
   await builderIsar.writeTxn(() async {
-    await builderIsar.companyBusRoutes.clear();
-    await builderIsar.companyBusRoutes.putAll(companyRoutes);
+    builderIsar.companyBusRoutes.clear();
+    builderIsar.companyBusRoutes.putAll(companyRoutes);
   });
 }
 

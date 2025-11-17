@@ -718,7 +718,7 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: "9eb8d0b1e0dcf14ac156b1d6ded9d204e04d5d98"
+      resolved-ref: "47f0cd53af7fa3c364597c953bfae007ee1c6162"
       url: "git@github.com:outdoorapps/UpBusHK-core.git"
     source: git
     version: "0.0.0"
