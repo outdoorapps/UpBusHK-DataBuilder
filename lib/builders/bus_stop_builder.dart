@@ -70,8 +70,8 @@ class BusStopBuilder {
       return BusStop(
         company: Company.KMB,
         stopId: e.stop,
-        engName: e.nameEn,
-        chiTName: e.nameTc,
+        nameE: e.nameEn,
+        nameC: e.nameTc,
         latLng: latLng,
       );
     }).toList();
@@ -120,8 +120,8 @@ class BusStopBuilder {
         return BusStop(
           company: Company.CTB,
           stopId: ctbStop.stop,
-          engName: ctbStop.nameEn,
-          chiTName: ctbStop.nameTc,
+          nameE: ctbStop.nameEn,
+          nameC: ctbStop.nameTc,
           latLng: latLng,
         );
       },
@@ -151,8 +151,8 @@ class BusStopBuilder {
               return BusStop(
                 company: Company.NLB,
                 stopId: s.stopId,
-                engName: s.stopNameE,
-                chiTName: s.stopNameC,
+                nameE: s.stopNameE,
+                nameC: s.stopNameC,
                 latLng: latLng,
               );
             }).toList();

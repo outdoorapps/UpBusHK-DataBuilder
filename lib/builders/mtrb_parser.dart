@@ -71,8 +71,8 @@ class MtrbParser {
         final stop = BusStop(
           company: Company.MTRB,
           stopId: stopId,
-          engName: engName,
-          chiTName: chiName,
+          nameE: engName,
+          nameC: chiName,
           latLng: LatLng(lat: lat, long: long),
         );
 
