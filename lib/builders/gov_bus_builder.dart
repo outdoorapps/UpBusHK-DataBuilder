@@ -21,12 +21,12 @@ import 'package:xml/xml_events.dart';
 class GovBusBuilder {
   static Future<void> build({bool clearPreviousData = false}) async {
     if (clearPreviousData) {
-      await isar.writeTxn(() async {
-        isar.busFares.clear();
-        isar.govRouteStops.clear();
-        isar.govStopCoordinates.clear();
-        isar.govStops.clear();
-        isar.govBusRoutes.clear();
+      await builderIsar.writeTxn(() async {
+        builderIsar.busFares.clear();
+        builderIsar.govRouteStops.clear();
+        builderIsar.govStopCoordinates.clear();
+        builderIsar.govStops.clear();
+        builderIsar.govBusRoutes.clear();
       });
     }
 
@@ -64,15 +64,19 @@ class GovBusBuilder {
             ? busFares.map((f) => f.fare).toList()
             : <double>[];
 
+        final companyCode = e.companyCode == 'LRTFeeder'
+            ? 'MTRB'
+            : e.companyCode;
+
         final route = GovBusRoute(
           routeId: e.routeId,
           routeSeq: e.routeSeq,
-          companyCode: e.companyCode,
-          routeNameE: e.routeName,
-          originEn: e.locStartNameE,
-          originChiT: e.locStartNameC,
-          destEn: e.locEndNameE,
-          destChiT: e.locEndNameC,
+          companyCode: companyCode,
+          number: e.routeName,
+          originE: e.locStartNameE,
+          originC: e.locStartNameC,
+          destE: e.locEndNameE,
+          destC: e.locEndNameC,
           serviceMode: e.serviceMode,
           specialType: e.specialType,
           journeyTime: e.journeyTime,
