@@ -93,29 +93,17 @@ class BusRouteBuilder {
       );
       jointRoutes.add(jointRoute);
     }
-
-    for (final route in kmbCompanyRoutes) {
-      final govRoute = await _matchGovRoute(route);
-
-      if (govRoute == null) {
-      } else {
-        if (govRoute.companyCode.contains('+')) {
-          final ctbRoute = await _matchCtbRoute(route, ctbCompanyRoutes);
-          if (ctbRoute != null) {
-            print(
-              'No ctb route found for joint route: ${route.number}, ${route.bound}, ${route.serviceType}',
-            );
-          } else {}
-        }
-      }
-    }
     final kmbRoutes = _buildRoutes(kmbCompanyRoutes);
+    final lwbRoutes = kmbRoutes.where((e) => e.companies.contains(Company.LWB));
     final ctbRoutes = _buildRoutes(ctbCompanyRoutes);
     final nlbRoutes = _buildRoutes(nlbCompanyRoutes);
     final mtrbRoutes = _buildRoutes(mtrbCompanyRoutes);
 
-    _printMatchCount(jointRoutes);
+    print(
+      'Joint:${govJointRoutes.length} (matched:${jointRoutes.length}, unmatch:${govJointRoutes.length - jointRoutes.length})',
+    );
     _printMatchCount(kmbRoutes);
+    print('LWB:${lwbRoutes.length}');
     _printMatchCount(ctbRoutes);
     _printMatchCount(nlbRoutes);
     _printMatchCount(mtrbRoutes);
