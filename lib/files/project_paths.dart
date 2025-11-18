@@ -4,7 +4,9 @@ import 'package:path/path.dart';
 
 class ProjectPath {
   // Only works if calling from a child directory of the project root.
-  static final Directory projectRoot = Directory.current.parent;
+  static final Directory projectRoot = File.fromUri(
+    Platform.script,
+  ).parent.parent;
 
   static final resourcesDir = Directory(join(projectRoot.path, 'resources'));
   static final dataDir = Directory(join(projectRoot.path, 'data'));
