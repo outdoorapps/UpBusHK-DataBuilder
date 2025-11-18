@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:collection/collection.dart';
 import 'package:isar_community/isar.dart';
 import 'package:up_bus_hk_core/enums/bound.dart';
@@ -175,10 +173,10 @@ class BusRouteBuilder {
       number: route.number,
       bound: route.bound,
       secondaryBound: null,
-      originE: route.originEn,
-      originC: route.originChiT,
-      destE: route.destEn,
-      destC: route.destChiT,
+      originE: route.originE,
+      originC: route.originC,
+      destE: route.destE,
+      destC: route.destC,
       fullFare: govRoute?.fullFare,
       stops: route.stops,
       secondaryStops: [],

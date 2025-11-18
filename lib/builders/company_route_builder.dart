@@ -93,10 +93,10 @@ class CompanyRouteBuilder {
           company: Company.KMB,
           number: e.route,
           bound: e.bound,
-          originEn: e.origEn,
-          originChiT: e.origTc,
-          destEn: e.destEn,
-          destChiT: e.destTc,
+          originE: e.origEn,
+          originC: e.origTc,
+          destE: e.destEn,
+          destC: e.destTc,
           serviceType: int.tryParse(e.serviceType),
           nlbRouteId: null,
           stops: stops.map((s) => s.stopId).toList(),
@@ -171,10 +171,10 @@ class CompanyRouteBuilder {
               company: Company.CTB,
               number: route.route,
               bound: bound,
-              originEn: bound == Bound.O ? route.origEn : route.destEn,
-              originChiT: bound == Bound.O ? route.origTc : route.destTc,
-              destEn: bound == Bound.O ? route.destEn : route.origEn,
-              destChiT: bound == Bound.O ? route.destTc : route.origTc,
+              originE: bound == Bound.O ? route.origEn : route.destEn,
+              originC: bound == Bound.O ? route.origTc : route.destTc,
+              destE: bound == Bound.O ? route.destEn : route.origEn,
+              destC: bound == Bound.O ? route.destTc : route.origTc,
               serviceType: null,
               nlbRouteId: null,
               stops: stops.map((s) => s.stopId).toList(),
@@ -222,7 +222,7 @@ class CompanyRouteBuilder {
 
       final bound = existing.isEmpty
           ? Bound.O
-          : (existing.any((r) => r.originEn == originEn || r.destEn == destEn)
+          : (existing.any((r) => r.originE == originEn || r.destE == destEn)
                 ? Bound.O
                 : Bound.I);
 
@@ -231,10 +231,10 @@ class CompanyRouteBuilder {
           company: Company.NLB,
           number: route.number,
           bound: bound,
-          originEn: originEn,
-          originChiT: originChiT,
-          destEn: destEn,
-          destChiT: destChiT,
+          originE: originEn,
+          originC: originChiT,
+          destE: destEn,
+          destC: destChiT,
           serviceType: null,
           nlbRouteId: route.routeId,
           stops: stops.map((s) => s.stopId).toList(),
@@ -264,10 +264,10 @@ class CompanyRouteBuilder {
             company: Company.MTRB,
             number: routeName,
             bound: bound,
-            originEn: origin.nameE,
-            originChiT: origin.nameC,
-            destEn: dest.nameE,
-            destChiT: dest.nameC,
+            originE: origin.nameE,
+            originC: origin.nameC,
+            destE: dest.nameE,
+            destC: dest.nameC,
             serviceType: null,
             nlbRouteId: null,
             stops: stops.map((s) => s.stopId).toList(),
