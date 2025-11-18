@@ -10,6 +10,7 @@ import 'package:up_bus_hk_data_builder/network/data_services.dart';
 import 'package:up_bus_hk_data_builder/network/web_services.dart';
 import 'package:up_bus_hk_data_builder/utils/async_utils.dart';
 import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
+import 'package:up_bus_hk_data_builder/utils/patch.dart';
 
 class BusStopBuilder {
   /// Use the [CompanyBusRoute] stored in Isar and fetch from the online APIs
@@ -153,7 +154,7 @@ class BusStopBuilder {
                 stopId: s.stopId,
                 nameE: s.stopNameE,
                 nameC: s.stopNameC,
-                latLng: latLng,
+                latLng: Patch.stopIdToLatLng[s.stopId] ?? latLng,
               );
             }).toList();
           },

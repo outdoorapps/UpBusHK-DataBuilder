@@ -19,8 +19,6 @@ class BusRouteBuilder {
   static late final Map<int, GovStop> govStopMap;
   static late final Map<String, BusStop> busStopMap;
 
-  // todo patch mapping "152" to 12728
-
   static Future<List<BusRoute>> build() async {
     // await GovBusBuilder.build(clearPreviousData: true); //todo
     final routes = <BusRoute>[];
