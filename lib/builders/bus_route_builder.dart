@@ -1,4 +1,8 @@
+import 'dart:math';
+
+import 'package:collection/collection.dart';
 import 'package:isar_community/isar.dart';
+import 'package:up_bus_hk_core/enums/bound.dart';
 import 'package:up_bus_hk_core/enums/company.dart';
 import 'package:up_bus_hk_core/isar/builder_models/company_bus_route.dart';
 import 'package:up_bus_hk_core/isar/builder_models/gov_bus_route.dart';
@@ -9,7 +13,6 @@ import 'package:up_bus_hk_data_builder/extension/lat_lng_x.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/utils/builder_utils.dart';
 
-///
 class BusRouteBuilder {
   static const double _govRouteMatchRadiusMeters = 220.0; // 38X cap
   static const double _jointRouteMatchingRadiusMeters = 160.0;
@@ -18,10 +21,10 @@ class BusRouteBuilder {
 
   static late final Map<int, GovStop> govStopMap;
   static late final Map<String, BusStop> busStopMap;
+  static late final List<GovBusRoute> govRoutes;
 
-  static Future<List<BusRoute>> build() async {
+  static Future<void> build() async {
     // await GovBusBuilder.build(clearPreviousData: true); //todo
-    final routes = <BusRoute>[];
 
     final govStops = await builderIsar.govStops.where().findAll();
     govStopMap = Map.fromEntries(govStops.map((e) => MapEntry(e.stopId, e)));
@@ -29,7 +32,7 @@ class BusRouteBuilder {
     final busStops = await isar.busStops.where().findAll();
     busStopMap = Map.fromEntries(busStops.map((e) => MapEntry(e.stopId, e)));
 
-    final govRoutes = await builderIsar.govBusRoutes.where().findAll();
+    govRoutes = await builderIsar.govBusRoutes.where().findAll();
 
     final kmbCompanyRoutes = await builderIsar.companyBusRoutes
         .filter()
@@ -51,86 +54,159 @@ class BusRouteBuilder {
         .companyEqualTo(Company.MTRB)
         .findAll();
 
-    print('count (gov routes): ${govRoutes.length}');
+    // KMB+CTB or LWB+CTB
+    final govJointRoutes = govRoutes.where((e) => e.companyCode.contains('+'));
 
-    int count = 0;
-    for (final route in kmbCompanyRoutes) {
-      // todo remove from a bank of govRoutes?
-      final govRoute = await _matchGovRoute(route);
+    final jointRoutes = <BusRoute>[];
+    for (final route in govJointRoutes) {
+      final potentials = kmbCompanyRoutes.where(
+        (e) => e.number == route.number,
+      );
+      if (potentials.isEmpty) {
+        print('Joint route: ${route.number} has no matching KMB/LWB route');
+        continue;
+      }
+      final boundMatched = potentials.where((e) => _isGovBoundMatch(e, route));
+      if (boundMatched.isEmpty) {
+        print(
+          'Joint route: ${route.number} has no bound matching KMB/LWB route',
+        );
+        continue;
+      }
+      final kmbRoute = boundMatched.length == 1
+          ? boundMatched.first
+          : _getCompanyRouteWithMostPairingStops(route, boundMatched.toList());
+      kmbCompanyRoutes.remove(kmbRoute);
 
-      // todo joint
-      if (govRoute != null) count++;
-
-      if (govRoute != null && govRoute.companyCode.contains('+')) {
-        final ctbRoute = await _matchCtbRoute(route, ctbCompanyRoutes);
-        if (ctbRoute != null) {
-          print(
-            'No ctb route found for joint route: ${route.number}, ${route.bound}, ${route.serviceType}',
-          );
-        }
+      final ctbRoute = await _matchCtbRoute(kmbRoute, ctbCompanyRoutes);
+      if (ctbRoute != null) {
+        print(
+          'Joint route: ${route.number}-${kmbRoute.bound}-${kmbRoute.serviceType}'
+          ' has no bound matching CTB route',
+        );
+      } else {
+        ctbCompanyRoutes.remove(ctbRoute);
       }
 
-      // BusRoute(
-      //   routeId: '',
-      //   //todo generate
-      //   companies: [isLwb ? Company.LWB : Company.KMB],
-      //   number: e.number,
-      //   bound: e.bound,
-      //   secondaryBound: null,
-      //   originE: e.originEn,
-      //   originC: e.originChiT,
-      //   destE: e.destEn,
-      //   destC: e.destChiT,
-      //   fullFare: null,
-      //   stops: e.stops,
-      //   secondaryStops: [],
-      //   fares: [],
-      //   serviceType: null,
-      //   nlbRouteId: null,
-      //   trackId: null,
-      // );
+      // todo 107P use CTB as primary reference
+      final jointRoute = _buildRoute(kmbRoute, route).copyWith(
+        secondaryBound: ctbRoute?.bound,
+        secondaryStops: ctbRoute?.stops ?? [],
+      );
+      jointRoutes.add(jointRoute);
     }
-    _buildRoute(ctbCompanyRoutes);
-    _buildRoute(nlbCompanyRoutes);
-    _buildRoute(mtrbCompanyRoutes);
 
-    print('count: $count/${kmbCompanyRoutes.length}');
-
-    return [];
-  }
-
-  static Future<void> _buildRoute(List<CompanyBusRoute> routes) async {
-    int count = 0;
-    for (final route in routes) {
+    for (final route in kmbCompanyRoutes) {
       final govRoute = await _matchGovRoute(route);
-      if (govRoute != null) count++;
-    }
 
-    print('${routes.first.company.name} matched: $count/${routes.length}');
+      if (govRoute == null) {
+      } else {
+        if (govRoute.companyCode.contains('+')) {
+          final ctbRoute = await _matchCtbRoute(route, ctbCompanyRoutes);
+          if (ctbRoute != null) {
+            print(
+              'No ctb route found for joint route: ${route.number}, ${route.bound}, ${route.serviceType}',
+            );
+          } else {}
+        }
+      }
+    }
+    final kmbRoutes = _buildRoutes(kmbCompanyRoutes);
+    final ctbRoutes = _buildRoutes(ctbCompanyRoutes);
+    final nlbRoutes = _buildRoutes(nlbCompanyRoutes);
+    final mtrbRoutes = _buildRoutes(mtrbCompanyRoutes);
+
+    _printMatchCount(jointRoutes);
+    _printMatchCount(kmbRoutes);
+    _printMatchCount(ctbRoutes);
+    _printMatchCount(nlbRoutes);
+    _printMatchCount(mtrbRoutes);
+
+    final routes = <BusRoute>[];
+    //todo write to isar
   }
 
-  static Future<GovBusRoute?> _matchGovRoute(CompanyBusRoute route) async {
+  static void _printMatchCount(List<BusRoute> routes) {
+    final company = routes.first.companies.length == 1
+        ? routes.first.companies.first.name
+        : 'Joint';
+    final matchCount = routes.where((e) => e.govRouteId != null).length;
+    final unmatchCount = routes.length - matchCount;
+
+    print(
+      '$company:${routes.length} (matched:$matchCount, unmatch:$unmatchCount)',
+    );
+  }
+
+  // static List<BusRoute> _buildJointRoutes(List<GovBusRoute> routes) {
+  //
+  // }
+
+  static List<BusRoute> _buildRoutes(List<CompanyBusRoute> routes) {
+    final busRoutes = <BusRoute>[];
+
+    for (final route in routes) {
+      final govRoute = _matchGovRoute(route);
+      final busRoute = _buildRoute(route, govRoute);
+      busRoutes.add(busRoute);
+    }
+    return busRoutes;
+  }
+
+  static BusRoute _buildRoute(CompanyBusRoute route, GovBusRoute? govRoute) {
+    final companies = govRoute == null
+        ? [route.company]
+        : govRoute.companyCode
+              .split('+')
+              .map((e) => Company.values.byName(e))
+              .toList();
+
+    final routeId = _generateRouteId(
+      companies: companies,
+      number: route.number,
+      bound: route.bound,
+      serviceType: route.serviceType,
+      nlbRouteId: null,
+    );
+    // todo fill fares
+    return BusRoute(
+      routeId: routeId,
+      companies: companies,
+      number: route.number,
+      bound: route.bound,
+      secondaryBound: null,
+      originE: route.originEn,
+      originC: route.originChiT,
+      destE: route.destEn,
+      destC: route.destChiT,
+      fullFare: govRoute?.fullFare,
+      stops: route.stops,
+      secondaryStops: [],
+      fares: govRoute?.fares ?? [],
+      serviceType: route.serviceType,
+      nlbRouteId: route.nlbRouteId,
+      govRouteId: govRoute?.routeId,
+      trackId: null,
+    );
+  }
+
+  static GovBusRoute? _matchGovRoute(CompanyBusRoute route) {
     // 1. Filter by company & number
     final isKmb = route.company == Company.KMB;
-    final potentials = await builderIsar.govBusRoutes
-        .where()
-        .numberEqualTo(route.number)
-        .filter()
-        .group(
-          (q) => isKmb
-              ? q.companyCodeContains('KMB').or().companyCodeContains('LWB')
-              : q.companyCodeContains(route.company.name),
-        )
-        .findAll();
+    final potentials = govRoutes.where(
+      (e) => e.number == route.number && isKmb
+          ? e.companyCode.contains('KMB') || e.companyCode.contains('LWB')
+          : e.companyCode.contains(route.company.name),
+    );
     if (potentials.isEmpty) return null;
 
     // 2. Match bound
+    // If there are more than one candidates, return the one with the most
+    // pairing stops
     final boundMatched = potentials.where((e) => _isGovBoundMatch(route, e));
     return switch (boundMatched.length) {
       0 => null,
       1 => boundMatched.first,
-      // 3. If more than one candidates, return the one with the most pairing
-      // stops (this has been the most accurate matching method)
       _ => _getGovRouteWithMostPairingStops(route, boundMatched.toList()),
     };
   }
@@ -173,6 +249,18 @@ class BusRouteBuilder {
   ) {
     final govRouteToPairStopCount = govRoutes.map(
       (e) => MapEntry(e, _countMatchingStops(route, e)),
+    );
+    return govRouteToPairStopCount
+        .reduce((a, b) => a.value > b.value ? a : b)
+        .key;
+  }
+
+  static CompanyBusRoute _getCompanyRouteWithMostPairingStops(
+    GovBusRoute route,
+    List<CompanyBusRoute> companyRoutes,
+  ) {
+    final govRouteToPairStopCount = companyRoutes.map(
+      (e) => MapEntry(e, _countMatchingStops(e, route)),
     );
     return govRouteToPairStopCount
         .reduce((a, b) => a.value > b.value ? a : b)
@@ -236,5 +324,26 @@ class BusRouteBuilder {
     );
     if (destDistance > _jointRouteMatchingRadiusMeters) return false;
     return true;
+  }
+
+  static String _generateRouteId({
+    required List<Company> companies,
+    required String number,
+    required Bound bound,
+    int? serviceType,
+    String? nlbRouteId,
+  }) {
+    // Deterministic company ordering for consistent IDs
+    final companyCode = companies.map((e) => e.name).sorted().join(':');
+    final serviceTypeText = '${serviceType ?? ''}';
+    final routeId = companies.contains(Company.NLB) ? nlbRouteId ?? '' : '';
+    final parts = [
+      companyCode,
+      number,
+      bound.name,
+      serviceTypeText,
+      routeId,
+    ].where((e) => e.isNotEmpty);
+    return parts.join('-');
   }
 }
