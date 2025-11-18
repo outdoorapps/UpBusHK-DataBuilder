@@ -3,34 +3,39 @@ import 'dart:io';
 import 'package:path/path.dart';
 
 class ProjectPath {
-  static final Directory projectRoot = Directory.current;
+  // Only works if calling from a child directory of the project root.
+  static final Directory projectRoot = Directory.current.parent;
 
   static final resourcesDir = Directory(join(projectRoot.path, 'resources'));
   static final dataDir = Directory(join(projectRoot.path, 'data'));
 
-  static final govDataDir  = Directory(join(resourcesDir.path, 'govData'));
+  static final govDataDir = Directory(join(resourcesDir.path, 'govData'));
   static final generatedDir = Directory(join(resourcesDir.path, 'generated'));
   static final debugDir = Directory(join(resourcesDir.path, 'debug'));
   static final isarDir = Directory(join(resourcesDir.path, 'isar'));
 
-  static String get busRoutesGeoJsonPath =>
-      join(govDataDir.path, 'BusRoute_GEOJSON.zip');
+  static String busRoutesGeoJsonPath = join(
+    govDataDir.path,
+    'BusRoute_GEOJSON.zip',
+  );
 
-  static String get busStopsGeoJsonPath =>
-      join(govDataDir.path, 'CoordinateofBusStopLocation_GEOJSON.zip');
+  static String busStopsGeoJsonPath = join(
+    govDataDir.path,
+    'CoordinateofBusStopLocation_GEOJSON.zip',
+  );
 
-  static String get busRouteStopJsonPath =>
-      join(govDataDir.path, 'JSON_BUS.json');
+  static String busRouteStopJsonPath = join(govDataDir.path, 'JSON_BUS.json');
 
-  static String get minibusDataJsonPath =>
-      join(govDataDir.path, 'JSON_GMB.json');
+  static String minibusDataJsonPath = join(govDataDir.path, 'JSON_GMB.json');
 
-  static String get govStopCoordinatesJsonPath =>
-      join(govDataDir.path, 'STOP_BUS.gdb_converted.geojson');
+  static String govStopCoordinatesJsonPath = join(
+    govDataDir.path,
+    'STOP_BUS.gdb_converted.geojson',
+  );
 
-  static String get busFarePath => join(govDataDir.path, 'FARE_BUS.xml');
+  static String busFarePath = join(govDataDir.path, 'FARE_BUS.xml');
 
-  static String get mtrbDataPath => join(dataDir.path, 'mtrb.txt');
+  static String mtrbDataPath = join(dataDir.path, 'mtrb.txt');
 
   /// Ensures all required folders exist before use.
   static Future<bool> initDirectories() async {
