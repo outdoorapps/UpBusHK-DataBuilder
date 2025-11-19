@@ -7,6 +7,7 @@ import 'package:up_bus_hk_core/isar/builder_models/gov_bus_route.dart';
 import 'package:up_bus_hk_core/isar/builder_models/gov_stop.dart';
 import 'package:up_bus_hk_core/isar/models/bus_route.dart';
 import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
+import 'package:up_bus_hk_data_builder/extension/gov_bus_route_x.dart';
 import 'package:up_bus_hk_data_builder/extension/lat_lng_x.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/utils/builder_utils.dart';
@@ -20,9 +21,12 @@ class BusRouteBuilder {
   static late final Map<int, GovStop> govStopMap;
   static late final Map<String, BusStop> busStopMap;
   static late final List<GovBusRoute> govRoutes;
+  static final allRoutes = <BusRoute>[];
 
   static Future<void> build() async {
     // await GovBusBuilder.build(clearPreviousData: true); //todo
+    await isar.writeTxn(() => isar.busRoutes.clear()); //todo
+    allRoutes.clear();
 
     final govStops = await builderIsar.govStops.where().findAll();
     govStopMap = Map.fromEntries(govStops.map((e) => MapEntry(e.stopId, e)));
@@ -52,91 +56,65 @@ class BusRouteBuilder {
         .companyEqualTo(Company.MTRB)
         .findAll();
 
-    // KMB+CTB or LWB+CTB
-    final govJointRoutes = govRoutes.where((e) => e.companyCode.contains('+'));
+    await _buildRoutes(kmbCompanyRoutes);
+    await _buildRoutes(ctbCompanyRoutes);
+    await _buildRoutes(nlbCompanyRoutes);
+    await _buildRoutes(mtrbCompanyRoutes);
 
-    final jointRoutes = <BusRoute>[];
-    for (final route in govJointRoutes) {
-      final potentials = kmbCompanyRoutes.where(
-        (e) => e.number == route.number,
-      );
-      if (potentials.isEmpty) {
-        print('Joint route: ${route.number} has no matching KMB/LWB route');
-        continue;
-      }
-      final boundMatched = potentials.where((e) => _isGovBoundMatch(e, route));
-      if (boundMatched.isEmpty) {
-        print(
-          'Joint route: ${route.number} has no bound matching KMB/LWB route',
-        );
-        continue;
-      }
-      final kmbRoute = boundMatched.length == 1
-          ? boundMatched.first
-          : _getCompanyRouteWithMostPairingStops(route, boundMatched.toList());
-      kmbCompanyRoutes.remove(kmbRoute);
+    // Print stats
+    // final routes = await isar.busRoutes.where().findAll();
+    Company.values.forEach((e) => _printMatchCount(allRoutes, e));
 
-      final ctbRoute = await _matchCtbRoute(kmbRoute, ctbCompanyRoutes);
-      if (ctbRoute != null) {
-        print(
-          'Joint route: ${route.number}-${kmbRoute.bound}-${kmbRoute.serviceType}'
-          ' has no bound matching CTB route',
-        );
-      } else {
-        ctbCompanyRoutes.remove(ctbRoute);
-      }
-
-      // todo 107P use CTB as primary reference
-      final jointRoute = _buildRoute(kmbRoute, route).copyWith(
-        secondaryBound: ctbRoute?.bound,
-        secondaryStops: ctbRoute?.stops ?? [],
-      );
-      jointRoutes.add(jointRoute);
-    }
-    final kmbRoutes = _buildRoutes(kmbCompanyRoutes);
-    final lwbRoutes = kmbRoutes.where((e) => e.companies.contains(Company.LWB));
-    final ctbRoutes = _buildRoutes(ctbCompanyRoutes);
-    final nlbRoutes = _buildRoutes(nlbCompanyRoutes);
-    final mtrbRoutes = _buildRoutes(mtrbCompanyRoutes);
-
+    final govJointRoutes = govRoutes.where((e) => e.isJointRoute);
+    final jointRoutes = allRoutes.where((e) => e.companies.length > 1);
+    // todo check joint routes without secondaries
+    // todo negative unmatch routes
     print(
       'Joint:${govJointRoutes.length} (matched:${jointRoutes.length}, unmatch:${govJointRoutes.length - jointRoutes.length})',
     );
-    _printMatchCount(kmbRoutes);
-    print('LWB:${lwbRoutes.length}');
-    _printMatchCount(ctbRoutes);
-    _printMatchCount(nlbRoutes);
-    _printMatchCount(mtrbRoutes);
-
-    final routes = <BusRoute>[];
     //todo write to isar
   }
 
-  static void _printMatchCount(List<BusRoute> routes) {
-    final company = routes.first.companies.length == 1
-        ? routes.first.companies.first.name
-        : 'Joint';
-    final matchCount = routes.where((e) => e.govRouteId != null).length;
-    final unmatchCount = routes.length - matchCount;
+  static void _printMatchCount(List<BusRoute> routes, Company company) {
+    final routesOfCompany = routes.where(
+      (e) => e.companies.length == 1 && e.companies.first == company,
+    );
+    final matchCount = routesOfCompany
+        .where((e) => e.govRouteKey != null)
+        .length;
+    final unmatchCount = routesOfCompany.length - matchCount;
 
     print(
-      '$company:${routes.length} (matched:$matchCount, unmatch:$unmatchCount)',
+      '${company.name}:${routesOfCompany.length} (matched:$matchCount, unmatch:$unmatchCount)',
     );
   }
 
-  // static List<BusRoute> _buildJointRoutes(List<GovBusRoute> routes) {
-  //
-  // }
-
-  static List<BusRoute> _buildRoutes(List<CompanyBusRoute> routes) {
-    final busRoutes = <BusRoute>[];
-
+  static Future<void> _buildRoutes(List<CompanyBusRoute> routes) async {
     for (final route in routes) {
       final govRoute = _matchGovRoute(route);
+      if (govRoute != null && govRoute.isJointRoute) {
+        final existing = await isar.busRoutes
+            .where()
+            .govRouteKeyEqualTo(govRoute.key)
+            .findFirst();
+
+        // todo 107P use CTB as primary reference
+        if (existing != null) {
+          final updated = existing.copyWith(
+            secondaryBound: route.bound,
+            secondaryStops: route.stops,
+          );
+          print('Original: ${existing.id}, Updating ${updated.id}');
+          // await isar.writeTxn(() => isar.busRoutes.put(updated));
+          allRoutes.remove(existing);
+          allRoutes.add(updated);
+          continue;
+        }
+      }
       final busRoute = _buildRoute(route, govRoute);
-      busRoutes.add(busRoute);
+      allRoutes.add(busRoute);
+      // await isar.writeTxn(() async => isar.busRoutes.put(busRoute));
     }
-    return busRoutes;
   }
 
   static BusRoute _buildRoute(CompanyBusRoute route, GovBusRoute? govRoute) {
@@ -154,6 +132,7 @@ class BusRouteBuilder {
       serviceType: route.serviceType,
       nlbRouteId: null,
     );
+    print('RouteId: $routeId'); //todo
     // todo fill fares
     return BusRoute(
       routeId: routeId,
@@ -171,7 +150,7 @@ class BusRouteBuilder {
       fares: govRoute?.fares ?? [],
       serviceType: route.serviceType,
       nlbRouteId: route.nlbRouteId,
-      govRouteId: govRoute?.routeId,
+      govRouteKey: govRoute?.key,
       trackId: null,
     );
   }
@@ -179,6 +158,16 @@ class BusRouteBuilder {
   static GovBusRoute? _matchGovRoute(CompanyBusRoute route) {
     // 1. Filter by company & number
     final isKmb = route.company == Company.KMB;
+    // final potentials = await isar.govBusRoutes
+    //     .where()
+    //     .numberEqualTo(route.number)
+    //     .filter()
+    //     .group(
+    //       (q) => isKmb
+    //       ? q.companyCodeContains('KMB').or().companyCodeContains('LWB')
+    //       : q.companyCodeContains(route.company.name),
+    // )
+    //     .findAll();
     final potentials = govRoutes.where(
       (e) => e.number == route.number && isKmb
           ? e.companyCode.contains('KMB') || e.companyCode.contains('LWB')
@@ -241,18 +230,6 @@ class BusRouteBuilder {
         .key;
   }
 
-  static CompanyBusRoute _getCompanyRouteWithMostPairingStops(
-    GovBusRoute route,
-    List<CompanyBusRoute> companyRoutes,
-  ) {
-    final govRouteToPairStopCount = companyRoutes.map(
-      (e) => MapEntry(e, _countMatchingStops(e, route)),
-    );
-    return govRouteToPairStopCount
-        .reduce((a, b) => a.value > b.value ? a : b)
-        .key;
-  }
-
   static int _countMatchingStops(CompanyBusRoute route, GovBusRoute govRoute) {
     int count = 0;
     final govStops = govRoute.stops.toList();
@@ -275,41 +252,6 @@ class BusRouteBuilder {
       }
     });
     return count;
-  }
-
-  static Future<CompanyBusRoute?> _matchCtbRoute(
-    CompanyBusRoute route,
-    List<CompanyBusRoute> ctbRoutes,
-  ) async {
-    // 1. Filter by number
-    final potentials = ctbRoutes.where((e) => e.number == route.number);
-    if (potentials.isEmpty) return null;
-
-    // 2. Match bound
-    final boundMatched = potentials.where((e) => _isBoundMatch(route, e));
-    return boundMatched.isEmpty ? null : boundMatched.first;
-  }
-
-  static bool _isBoundMatch(CompanyBusRoute route, CompanyBusRoute ctbRoute) {
-    final origin = busStopMap[route.stops.first]!;
-    final govOrigin = busStopMap[ctbRoute.stops.first]!;
-    final dest = busStopMap[route.stops.last]!;
-    final govDest = busStopMap[ctbRoute.stops.last]!;
-
-    // I. Check if the origins are the same
-    final originDistance = BuilderUtils.distance(
-      origin.latLng.toLatLong(),
-      govOrigin.latLng.toLatLong(),
-    );
-    if (originDistance > _jointRouteMatchingRadiusMeters) return false;
-
-    // II. Check if the destinations are the same
-    final destDistance = BuilderUtils.distance(
-      dest.latLng.toLatLong(),
-      govDest.latLng.toLatLong(),
-    );
-    if (destDistance > _jointRouteMatchingRadiusMeters) return false;
-    return true;
   }
 
   static String _generateRouteId({
