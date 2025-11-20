@@ -58,21 +58,28 @@ class BusRouteBuilder {
     await _buildRoutes(mtrbCompanyRoutes);
 
     // Print stats
-    final allRoutes = await isar.busRoutes.where().findAll();
-    Company.values.forEach((e) => _printMatchCount(allRoutes, e));
+    final routes = await isar.busRoutes.where().findAll();
+    Company.values.forEach((e) => _printMatchCount(routes, e));
 
+    final matchedGovRouteIds = routes.map((e) => e.govRouteKey).toList();
     final govRoutes = await builderIsar.govBusRoutes.where().findAll();
     final govJointRoutes = govRoutes.where((e) => e.isJointRoute);
-    final jointRoutes = allRoutes.where((e) => e.companies.length > 1);
+    final jointRoutes = routes.where((e) => e.companies.length > 1);
     final jointRouteWithoutSecondary = jointRoutes.where(
       (e) => e.secondaryBound == null,
     );
+    final govJointRoutesNoMatch = govRoutes.where((e) => !matchedGovRouteIds.contains(e.routeId));
+
+    print(
+      'Joint:${govJointRoutes.length} (matched:${jointRoutes.length}, unmatch:${govJointRoutesNoMatch.length})',
+    );
+
     print(
       'Joint route without secondary: ${jointRouteWithoutSecondary.length}',
-    ); // todo check joint routes without secondaries
-    print(
-      'Joint:${govJointRoutes.length} (matched:${jointRoutes.length}, unmatch:${govJointRoutes.length - jointRoutes.length})',
     );
+    jointRouteWithoutSecondary.forEach((e) => print('No secondary: ${e.routeId}'));
+
+    jointRouteWithoutSecondary.forEach((e) => print('Unmatched ${e.routeId}'));
   }
 
   static void _printMatchCount(List<BusRoute> routes, Company company) {
