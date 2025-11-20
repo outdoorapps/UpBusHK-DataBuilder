@@ -20,12 +20,10 @@ class BusRouteBuilder {
 
   static late final Map<int, GovStop> govStopMap;
   static late final Map<String, BusStop> busStopMap;
-  static final allRoutes = <BusRoute>[];
 
   static Future<void> build() async {
     // await GovBusBuilder.build(clearPreviousData: true); //todo
     await isar.writeTxn(() => isar.busRoutes.clear()); //todo
-    allRoutes.clear();
 
     final govStops = await builderIsar.govStops.where().findAll();
     govStopMap = Map.fromEntries(govStops.map((e) => MapEntry(e.stopId, e)));
@@ -60,17 +58,21 @@ class BusRouteBuilder {
 
     // Print stats
     // final routes = await isar.busRoutes.where().findAll();
+    final allRoutes = await isar.busRoutes.where().findAll();
     Company.values.forEach((e) => _printMatchCount(allRoutes, e));
 
     final govRoutes = await builderIsar.govBusRoutes.where().findAll();
     final govJointRoutes = govRoutes.where((e) => e.isJointRoute);
     final jointRoutes = allRoutes.where((e) => e.companies.length > 1);
-    // todo check joint routes without secondaries
-    // todo negative unmatch routes
+    final jointRouteWithoutSecondary = jointRoutes.where(
+      (e) => e.secondaryBound == null,
+    );
+    print(
+      'Joint route without secondary: ${jointRouteWithoutSecondary.length}',
+    ); // todo check joint routes without secondaries
     print(
       'Joint:${govJointRoutes.length} (matched:${jointRoutes.length}, unmatch:${govJointRoutes.length - jointRoutes.length})',
     );
-    //todo write to isar
   }
 
   static void _printMatchCount(List<BusRoute> routes, Company company) {
@@ -102,16 +104,13 @@ class BusRouteBuilder {
             secondaryBound: route.bound,
             secondaryStops: route.stops,
           );
-          print('Original: ${existing.id}, Updating ${updated.id}');
-          // await isar.writeTxn(() => isar.busRoutes.put(updated));
-          allRoutes.remove(existing);
-          allRoutes.add(updated);
+          updated.id = existing.id;
+          await isar.writeTxn(() => isar.busRoutes.put(updated));
           continue;
         }
       }
       final busRoute = _buildRoute(route, govRoute);
-      allRoutes.add(busRoute);
-      // await isar.writeTxn(() async => isar.busRoutes.put(busRoute));
+      await isar.writeTxn(() async => isar.busRoutes.put(busRoute));
     }
   }
 
@@ -128,7 +127,7 @@ class BusRouteBuilder {
       number: route.number,
       bound: route.bound,
       serviceType: route.serviceType,
-      nlbRouteId: null,
+      nlbRouteId: route.nlbRouteId,
     );
     // todo fill fares
     return BusRoute(
@@ -253,6 +252,8 @@ class BusRouteBuilder {
     int? serviceType,
     String? nlbRouteId,
   }) {
+    assert(companies.contains(Company.NLB) ? nlbRouteId != null : true);
+
     // Deterministic company ordering for consistent IDs
     final companyCode = companies.map((e) => e.name).sorted().join(':');
     final serviceTypeText = '${serviceType ?? ''}';
