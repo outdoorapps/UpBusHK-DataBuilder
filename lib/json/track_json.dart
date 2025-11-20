@@ -1,10 +1,13 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:up_bus_hk_data_builder/json/json_converters.dart';
 
 part '../generated/json/track_json.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class TrackFeature {
   final String type;
+
+  @TrackGeometryConverter()
   final TrackGeometry geometry;
   final TrackProperties properties;
 
@@ -23,15 +26,9 @@ class TrackFeature {
 @JsonSerializable()
 class TrackGeometry {
   final String type;
-
-  /// coordinates is List<List<List<double>>>
-  /// because MultiLineString = List<Line> = List<List<Position>>
   final List<List<List<double>>> coordinates;
 
-  TrackGeometry({
-    required this.type,
-    required this.coordinates,
-  });
+  TrackGeometry({required this.type, required this.coordinates});
 
   factory TrackGeometry.fromJson(Map<String, dynamic> json) =>
       _$TrackGeometryFromJson(json);

@@ -35,11 +35,13 @@ class TrackBuilder {
     _simpleGovRouteKeys = Set.unmodifiable(cleanedKeys.toSet());
 
     await _parseTracks();
+
+    // Stats for tracks
   }
 
   static Future<void> _parseTracks() async {
     await GovFeatureParser.parseData<Track>(
-      File(ProjectPath.busRouteStopJsonPath),
+      File(ProjectPath.govTrackGeoJsonPath),
       label: 'Parsing tracks',
       fromJson: (itemJson) {
         final feature = TrackFeature.fromJson(itemJson);
@@ -58,8 +60,7 @@ class TrackBuilder {
           flatCoordinates: coordinates.expand((e) => e).toList(),
         );
       },
-      writeToIsar: (batch) =>
-          builderIsar.writeTxn(() => builderIsar.tracks.putAll(batch)),
+      writeToIsar: (batch) => isar.writeTxn(() => isar.tracks.putAll(batch)),
       batchSize: 10,
     );
   }
