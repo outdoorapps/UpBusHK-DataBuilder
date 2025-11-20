@@ -12,6 +12,7 @@ import 'package:up_bus_hk_data_builder/extension/gov_bus_route_x.dart';
 import 'package:up_bus_hk_data_builder/extension/lat_lng_x.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/utils/builder_utils.dart';
+import 'package:up_bus_hk_data_builder/utils/patch.dart';
 import 'package:up_bus_hk_data_builder/utils/progress_tracker.dart';
 
 class BusRouteBuilder {
@@ -57,6 +58,8 @@ class BusRouteBuilder {
     await _buildRoutes(ctbCompanyRoutes);
     await _buildRoutes(nlbCompanyRoutes);
     await _buildRoutes(mtrbCompanyRoutes);
+
+    await Patch.patchRoutes();
 
     // Print stats
     final routes = await isar.busRoutes.where().findAll();
