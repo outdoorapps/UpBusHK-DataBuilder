@@ -62,34 +62,28 @@ class BusRouteBuilder {
     final routes = await isar.busRoutes.where().findAll();
     Company.values.forEach((e) => _printMatchCount(routes, e));
 
-    final matchedGovRouteIds = routes.map((e) => e.govRouteKey).toList();
+    final jointRoutes = routes.where((e) => e.companies.length > 1);
+    final noSecondary = jointRoutes.where((e) => e.secondaryBound == null);
+    if (noSecondary.isNotEmpty) {
+      print('Joint routes missing secondary info: ${noSecondary.length}');
+      noSecondary.forEach((e) => print('- ${e.routeId}'));
+    }
+
     final govRoutes = await builderIsar.govBusRoutes.where().findAll();
     final govJointRoutes = govRoutes.where((e) => e.isJointRoute).toList();
-    final jointRoutes = routes.where((e) => e.companies.length > 1);
-    final jointRouteWithoutSecondary = jointRoutes.where(
-      (e) => e.secondaryBound == null,
+    final matchedGovJointRoutesIds = jointRoutes
+        .map((e) => e.govRouteKey)
+        .whereType<String>()
+        .toSet();
+    final unmatchedGovJointRoutes = govJointRoutes.where(
+      (e) => !matchedGovJointRoutesIds.contains(e.key),
     );
-    final govJointRoutesNoMatch = govJointRoutes.where(
-      (e) => !matchedGovRouteIds.contains('${e.routeId}-${e.routeSeq}'),
-    );
-
     print(
-      'Joint:${govJointRoutes.length} (matched:${jointRoutes.length}, unmatch:${govJointRoutesNoMatch.length})',
+      'Gov joint route:${govJointRoutes.length} '
+      '(matched:${matchedGovJointRoutesIds.length}, '
+      'unmatch:${unmatchedGovJointRoutes.length})',
     );
-
-    print(
-      'Joint route without secondary: ${jointRouteWithoutSecondary.length}',
-    );
-    // jointRouteWithoutSecondary.forEach(
-    //   (e) => print('No secondary: ${e.routeId}'),
-    // );
-    //
-    // print('Joint route no match: ${govJointRoutesNoMatch.length}');
-    // govJointRoutesNoMatch.forEach(
-    //   (e) => print(
-    //     'Unmatched ${e.routeId}, ${e.number}-${e.routeSeq},${e.originE},${e.destE}',
-    //   ),
-    // );
+    unmatchedGovJointRoutes.forEach((e) => print('${e.number},${e.key}'));
   }
 
   static void _printMatchCount(List<BusRoute> routes, Company company) {
@@ -282,6 +276,8 @@ class BusRouteBuilder {
     return true;
   }
 
+  /// Check if two [CompanyBusRoute]s' bounds match with each other. If either
+  /// the origins or the destinations match, return true.
   static bool _isBoundMatch(CompanyBusRoute route1, CompanyBusRoute route2) {
     final origin1 = busStopMap[route1.stops.first]!;
     final origin2 = busStopMap[route2.stops.first]!;
@@ -344,6 +340,7 @@ class BusRouteBuilder {
     return count;
   }
 
+  /// Generate a unique route ID for a [BusRoute].
   static String _generateRouteId({
     required List<Company> companies,
     required String number,
