@@ -20,7 +20,6 @@ class BusRouteBuilder {
 
   static late final Map<int, GovStop> govStopMap;
   static late final Map<String, BusStop> busStopMap;
-  static late final List<GovBusRoute> govRoutes;
   static final allRoutes = <BusRoute>[];
 
   static Future<void> build() async {
@@ -33,8 +32,6 @@ class BusRouteBuilder {
 
     final busStops = await isar.busStops.where().findAll();
     busStopMap = Map.fromEntries(busStops.map((e) => MapEntry(e.stopId, e)));
-
-    govRoutes = await builderIsar.govBusRoutes.where().findAll();
 
     final kmbCompanyRoutes = await builderIsar.companyBusRoutes
         .filter()
@@ -65,6 +62,7 @@ class BusRouteBuilder {
     // final routes = await isar.busRoutes.where().findAll();
     Company.values.forEach((e) => _printMatchCount(allRoutes, e));
 
+    final govRoutes = await builderIsar.govBusRoutes.where().findAll();
     final govJointRoutes = govRoutes.where((e) => e.isJointRoute);
     final jointRoutes = allRoutes.where((e) => e.companies.length > 1);
     // todo check joint routes without secondaries
@@ -91,7 +89,7 @@ class BusRouteBuilder {
 
   static Future<void> _buildRoutes(List<CompanyBusRoute> routes) async {
     for (final route in routes) {
-      final govRoute = _matchGovRoute(route);
+      final govRoute = await _matchGovRoute(route);
       if (govRoute != null && govRoute.isJointRoute) {
         final existing = await isar.busRoutes
             .where()
@@ -132,7 +130,6 @@ class BusRouteBuilder {
       serviceType: route.serviceType,
       nlbRouteId: null,
     );
-    print('RouteId: $routeId'); //todo
     // todo fill fares
     return BusRoute(
       routeId: routeId,
@@ -155,24 +152,19 @@ class BusRouteBuilder {
     );
   }
 
-  static GovBusRoute? _matchGovRoute(CompanyBusRoute route) {
+  static Future<GovBusRoute?> _matchGovRoute(CompanyBusRoute route) async {
     // 1. Filter by company & number
     final isKmb = route.company == Company.KMB;
-    // final potentials = await isar.govBusRoutes
-    //     .where()
-    //     .numberEqualTo(route.number)
-    //     .filter()
-    //     .group(
-    //       (q) => isKmb
-    //       ? q.companyCodeContains('KMB').or().companyCodeContains('LWB')
-    //       : q.companyCodeContains(route.company.name),
-    // )
-    //     .findAll();
-    final potentials = govRoutes.where(
-      (e) => e.number == route.number && isKmb
-          ? e.companyCode.contains('KMB') || e.companyCode.contains('LWB')
-          : e.companyCode.contains(route.company.name),
-    );
+    final potentials = await builderIsar.govBusRoutes
+        .where()
+        .numberEqualTo(route.number)
+        .filter()
+        .group(
+          (q) => isKmb
+              ? q.companyCodeContains('KMB').or().companyCodeContains('LWB')
+              : q.companyCodeContains(route.company.name),
+        )
+        .findAll();
     if (potentials.isEmpty) return null;
 
     // 2. Match bound
