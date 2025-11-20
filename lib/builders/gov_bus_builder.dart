@@ -50,7 +50,7 @@ class GovBusBuilder {
         final stops = await builderIsar.govRouteStops
             .where()
             .routeIdRouteSeqEqualTo(e.routeId, e.routeSeq)
-            .sortByRouteSeq()
+            .sortByStopSeq()
             .findAll();
 
         final busFares = await builderIsar.busFares
