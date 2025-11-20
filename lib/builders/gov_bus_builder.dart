@@ -14,6 +14,7 @@ import 'package:up_bus_hk_data_builder/files/project_paths.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/json/gov_route_stop_json.dart';
 import 'package:up_bus_hk_data_builder/json/gov_stop_coordinate_json.dart';
+import 'package:up_bus_hk_data_builder/utils/patch.dart';
 import 'package:up_bus_hk_data_builder/utils/progress_tracker.dart';
 import 'package:xml/xml.dart';
 import 'package:xml/xml_events.dart';
@@ -94,7 +95,7 @@ class GovBusBuilder {
 
     // 3. Build stops
     final stops = <GovStop>[];
-    final stopTracker = ProgressTracker(label: 'Building gov bus routes');
+    final stopTracker = ProgressTracker(label: 'Building gov bus stops');
 
     final stopHeaders = await builderIsar.govRouteStops
         .where()
@@ -107,10 +108,17 @@ class GovBusBuilder {
             .where()
             .stopIdEqualTo(e.stopId)
             .findFirst();
+        if (govStopCoordinate?.latLng == null &&
+            Patch.govStopIdToLatLng[e.stopId] == null) {
+          print('[Patching required] Gov stop ${e.stopId} has null latLng');
+        }
 
         final stop = GovStop(
           stopId: e.stopId,
-          latLng: govStopCoordinate?.latLng ?? LatLng.empty(),
+          latLng:
+              govStopCoordinate?.latLng ??
+              Patch.govStopIdToLatLng[e.stopId] ?? // Try patching it
+              LatLng.empty(),
           stopNameE: e.stopNameE,
           stopNameC: e.stopNameC,
         );

@@ -51,10 +51,10 @@ class BusStopBuilder {
     _validateStops(companyBusRoutes, busStops);
 
     print(
-      '- KMB stops: ${kmbStops.length}, '
-      '\n- CTB stops: ${ctbStops.length}, '
-      '\n- NLB stops: ${nlbStops.length}, '
-      '\n- MTRB stops: ${mtrbStops.length} '
+      '- KMB stops: ${kmbStops.length}'
+      '\n- CTB stops: ${ctbStops.length}'
+      '\n- NLB stops: ${nlbStops.length}'
+      '\n- MTRB stops: ${mtrbStops.length}'
       '\n- Total: ${busStops.length}',
     );
   }
