@@ -59,8 +59,6 @@ class BusRouteBuilder {
     await _buildRoutes(nlbCompanyRoutes);
     await _buildRoutes(mtrbCompanyRoutes);
 
-    await Patch.patchRoutes();
-
     // Print stats
     final routes = await isar.busRoutes.where().findAll();
     Company.values.forEach((e) => _printMatchCount(routes, e));

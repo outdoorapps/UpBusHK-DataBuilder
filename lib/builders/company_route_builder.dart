@@ -11,6 +11,7 @@ import 'package:up_bus_hk_data_builder/network/data_services.dart';
 import 'package:up_bus_hk_data_builder/network/web_services.dart';
 import 'package:up_bus_hk_data_builder/utils/async_utils.dart';
 import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
+import 'package:up_bus_hk_data_builder/utils/patch.dart';
 import 'package:up_bus_hk_data_builder/utils/progress_tracker.dart';
 
 class CompanyRouteBuilder {
@@ -27,6 +28,8 @@ class CompanyRouteBuilder {
     final ctbRoutes = await _buildCtbRoutes();
     final nlbRoutes = await _buildNlbRoutes();
     final mtrbRoutes = await _buildMtrbRoutes();
+
+    await Patch.patchRoutes();
 
     final companyRoutes = [
       ...kmbRoutes,
