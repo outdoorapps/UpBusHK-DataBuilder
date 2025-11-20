@@ -7,6 +7,7 @@ import 'package:up_bus_hk_core/isar/builder_models/gov_bus_route.dart';
 import 'package:up_bus_hk_core/isar/builder_models/gov_stop.dart';
 import 'package:up_bus_hk_core/isar/models/bus_route.dart';
 import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
+import 'package:up_bus_hk_core/isar/models/lat_lng.dart';
 import 'package:up_bus_hk_data_builder/extension/gov_bus_route_x.dart';
 import 'package:up_bus_hk_data_builder/extension/lat_lng_x.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
@@ -63,12 +64,14 @@ class BusRouteBuilder {
 
     final matchedGovRouteIds = routes.map((e) => e.govRouteKey).toList();
     final govRoutes = await builderIsar.govBusRoutes.where().findAll();
-    final govJointRoutes = govRoutes.where((e) => e.isJointRoute);
+    final govJointRoutes = govRoutes.where((e) => e.isJointRoute).toList();
     final jointRoutes = routes.where((e) => e.companies.length > 1);
     final jointRouteWithoutSecondary = jointRoutes.where(
       (e) => e.secondaryBound == null,
     );
-    final govJointRoutesNoMatch = govRoutes.where((e) => !matchedGovRouteIds.contains(e.routeId));
+    final govJointRoutesNoMatch = govJointRoutes.where(
+      (e) => !matchedGovRouteIds.contains('${e.routeId}-${e.routeSeq}'),
+    );
 
     print(
       'Joint:${govJointRoutes.length} (matched:${jointRoutes.length}, unmatch:${govJointRoutesNoMatch.length})',
@@ -77,9 +80,16 @@ class BusRouteBuilder {
     print(
       'Joint route without secondary: ${jointRouteWithoutSecondary.length}',
     );
-    jointRouteWithoutSecondary.forEach((e) => print('No secondary: ${e.routeId}'));
+    jointRouteWithoutSecondary.forEach(
+      (e) => print('No secondary: ${e.routeId}'),
+    );
 
-    jointRouteWithoutSecondary.forEach((e) => print('Unmatched ${e.routeId}'));
+    print('Joint route no match: ${govJointRoutesNoMatch.length}');
+    govJointRoutesNoMatch.forEach(
+      (e) => print(
+        'Unmatched ${e.routeId}, ${e.number}-${e.routeSeq},${e.originE},${e.destE}',
+      ),
+    );
   }
 
   static void _printMatchCount(List<BusRoute> routes, Company company) {
@@ -107,23 +117,68 @@ class BusRouteBuilder {
             .where()
             .govRouteKeyEqualTo(govRoute.key)
             .findFirst();
+        if (existing != null) continue;  // If the joint route was created, skip
 
-        // todo 107P use CTB as primary reference
-        if (existing != null) {
-          final updated = existing.copyWith(
-            secondaryBound: route.bound,
-            secondaryStops: route.stops,
-          );
-          updated.id = existing.id;
-          await isar.writeTxn(() => isar.busRoutes.put(updated));
-          continue;
+        final busRoute = await _buildJointRoute(route, govRoute);
+        if (busRoute != null) {
+          await isar.writeTxn(() async => isar.busRoutes.put(busRoute));
         }
+      } else {
+        final busRoute = _buildRoute(route, govRoute);
+        await isar.writeTxn(() async => isar.busRoutes.put(busRoute));
       }
-      final busRoute = _buildRoute(route, govRoute);
-      await isar.writeTxn(() async => isar.busRoutes.put(busRoute));
       await tracker.increment();
     }
     tracker.finish();
+  }
+
+  static Future<BusRoute?> _buildJointRoute(
+    CompanyBusRoute route,
+    GovBusRoute govRoute,
+  ) async {
+    // 1. Find potential match by number & company
+    final isKmb = route.company == Company.KMB;
+    final potentials = await builderIsar.companyBusRoutes
+        .where()
+        .numberEqualTo(route.number)
+        .filter()
+        .companyEqualTo(isKmb ? Company.CTB : Company.KMB)
+        .findAll();
+    final pairRoute = potentials.firstWhereOrNull(
+      (e) => _isBoundMatch(route, e),
+    );
+    if (pairRoute == null) {
+      print('No pair route found for ${route.company}-${route.number}-${route.bound}-${route.serviceType}');
+      return null;
+    }
+
+    // 2. Build the secondary stop list by matching each stop with the closest
+    // pairing stop.
+    final secondaryStops = <String>[];
+    final primaryStops = List.from(route.stops);
+
+    for (final stop in primaryStops) {
+      final latLong = busStopMap[stop]!.latLng.toLatLong();
+      final distances = pairRoute.stops.map((e) {
+        final potentialPair = busStopMap[e]!;
+        return MapEntry(
+          e,
+          BuilderUtils.distance(latLong, potentialPair.latLng.toLatLong()),
+        );
+      });
+      final closestStop = distances.reduce((a, b) => a.value < b.value ? a : b);
+      if (closestStop.value <= _stopPairingRadiusMeters) {
+        secondaryStops.add(closestStop.key);
+        primaryStops.remove(closestStop.key); // Remove matched Stop
+      }
+    }
+
+    // todo 107P use CTB as primary reference
+    final busRoute = _buildRoute(
+      route,
+      govRoute,
+    ).copyWith(secondaryBound: pairRoute.bound, secondaryStops: secondaryStops);
+    return busRoute;
   }
 
   static BusRoute _buildRoute(CompanyBusRoute route, GovBusRoute? govRoute) {
@@ -196,31 +251,58 @@ class BusRouteBuilder {
     final govDest = govStopMap[govRoute.stops.last]!;
 
     // I. Check if the origins are the same
-    final originDistance = BuilderUtils.distance(
-      origin.latLng.toLatLong(),
-      govOrigin.latLng.toLatLong(),
+    final originMatch = _isLatLngMatch(
+      origin.latLng,
+      govOrigin.latLng,
+      _govRouteMatchRadiusMeters,
     );
-    if (originDistance > _govRouteMatchRadiusMeters) return false;
+    if (!originMatch) return false;
 
     // II. Check if the destinations are the same
-    final destDistance = BuilderUtils.distance(
-      dest.latLng.toLatLong(),
-      govDest.latLng.toLatLong(),
+    final destMatch = _isLatLngMatch(
+      dest.latLng,
+      govDest.latLng,
+      _govRouteMatchRadiusMeters,
     );
-    if (destDistance > _govRouteMatchRadiusMeters) return false;
+    if (!destMatch) return false;
 
     // III. For a circular route, gov route omits the last stop. Check if the
     // company route destination is the same as the gov route origin.
     if (govRoute.originE == govRoute.destE) {
-      final terminalDistance = BuilderUtils.distance(
-        govOrigin.latLng.toLatLong(),
-        dest.latLng.toLatLong(),
+      final terminalMatch = _isLatLngMatch(
+        dest.latLng,
+        govOrigin.latLng,
+        _circularRouteMatchingRadiusMeters,
       );
-      if (terminalDistance <= _circularRouteMatchingRadiusMeters) return true;
+      if (terminalMatch) return true;
     }
     return true;
   }
 
+  static bool _isBoundMatch(CompanyBusRoute route1, CompanyBusRoute route2) {
+    final origin1 = busStopMap[route1.stops.first]!;
+    final origin2 = busStopMap[route2.stops.first]!;
+    final dest1 = busStopMap[route1.stops.last]!;
+    final dest2 = busStopMap[route2.stops.last]!;
+    return _isLatLngMatch(
+          origin1.latLng,
+          origin2.latLng,
+          _jointRouteMatchingRadiusMeters,
+        ) &&
+        _isLatLngMatch(
+          dest1.latLng,
+          dest2.latLng,
+          _jointRouteMatchingRadiusMeters,
+        );
+  }
+
+  /// Check if two [LatLng]s are within a given [radius] in meters
+  /// [radius] Matching radius in meters
+  static bool _isLatLngMatch(LatLng latLng1, LatLng latLng2, double radius) =>
+      BuilderUtils.distance(latLng1.toLatLong(), latLng2.toLatLong()) <= radius;
+
+  /// Find the [GovBusRoute] with the most stops that are within
+  /// [_stopPairingRadiusMeters] with the stops in [route].
   static GovBusRoute _getGovRouteWithMostPairingStops(
     CompanyBusRoute route,
     List<GovBusRoute> govRoutes,
@@ -233,6 +315,8 @@ class BusRouteBuilder {
         .key;
   }
 
+  /// Find the number of stops in [route] and [govRoute] that are within
+  /// [_stopPairingRadiusMeters] of each other.
   static int _countMatchingStops(CompanyBusRoute route, GovBusRoute govRoute) {
     int count = 0;
     final govStops = govRoute.stops.toList();
