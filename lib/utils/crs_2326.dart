@@ -14,8 +14,8 @@ class Crs2326 {
   static final _wgs84 = Projection.get('EPSG:4326');
 
   /// Convert from EPSG:2326 (HK1980) to EPSG:4326 (WGS84) coordinates
-  static LatLng convert(double x2326, double y2326) {
+  static List<double> convert(double x2326, double y2326) {
     final p = _epsg2326.transform(_wgs84!, Point(x: x2326, y: y2326));
-    return LatLng(lat: p.y, long: p.x); // y is latitude, x is longitude
+    return [p.y, p.x]; // y is latitude, x is longitude
   }
 }

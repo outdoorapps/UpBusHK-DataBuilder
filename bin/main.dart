@@ -40,11 +40,11 @@ Future<void> _downloadGovData() async {
   await WebServices.downloadAll(urlToPath);
 }
 
-Future<void> _extractFiles() async {
-  // await Extractor.extractZipFile(
-  //   ProjectPath.busRoutesGeoJsonPath,
-  //   ProjectPath.govDataDir.path,
-  // );
+Future<void> _extractFiles() async {//todo read directly without temp file
+  await Extractor.extractZipFile(
+    ProjectPath.busRoutesGeoJsonPath,
+    ProjectPath.govDataDir.path,
+  );
 
   await Extractor.extractZipFile(
     ProjectPath.busStopsGeoJsonPath,

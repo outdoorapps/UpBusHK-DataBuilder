@@ -1,0 +1,66 @@
+import 'dart:io';
+
+import 'package:isar_community/isar.dart';
+import 'package:up_bus_hk_core/isar/models/bus_route.dart';
+import 'package:up_bus_hk_core/isar/models/track.dart';
+import 'package:up_bus_hk_data_builder/builders/gov_feature_parser.dart';
+import 'package:up_bus_hk_data_builder/files/project_paths.dart';
+import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
+import 'package:up_bus_hk_data_builder/json/track_json.dart';
+import 'package:up_bus_hk_data_builder/utils/crs_2326.dart';
+import 'package:up_bus_hk_data_builder/utils/ramer_douglas_peucker.dart';
+
+class TrackBuilder {
+  static late final Set<String> _simpleGovRouteKeys;
+
+  static Future<void> build({bool clearPreviousData = false}) async {
+    if (clearPreviousData) {
+      await isar.writeTxn(() async => isar.tracks.clear());
+    }
+
+    // Get all distinct gov route keys, and clear the serviceMode part
+    final routes = await isar.busRoutes
+        .where()
+        .distinctByGovRouteKey()
+        .findAll();
+
+    final govRouteKeys = routes
+        .map((e) => e.govRouteKey)
+        .whereType<String>()
+        .toSet();
+    final cleanedKeys = govRouteKeys.map((e) {
+      final parts = e.split('-')..removeLast();
+      return parts.join('-');
+    });
+    _simpleGovRouteKeys = Set.unmodifiable(cleanedKeys.toSet());
+
+    await _parseTracks();
+  }
+
+  static Future<void> _parseTracks() async {
+    await GovFeatureParser.parseData<Track>(
+      File(ProjectPath.busRouteStopJsonPath),
+      label: 'Parsing tracks',
+      fromJson: (itemJson) {
+        final feature = TrackFeature.fromJson(itemJson);
+
+        // Skip track not used be any route
+        if (!_simpleGovRouteKeys.contains(feature.properties.key)) return null;
+
+        final hk1980Coordinates = feature.geometry.coordinates
+            .expand((e) => e)
+            .toList();
+        final hk1980Track = RamerDouglasPeucker.simplify(hk1980Coordinates);
+
+        final coordinates = hk1980Track.map((e) => Crs2326.convert(e[0], e[1]));
+        return Track(
+          trackId: feature.properties.objectId,
+          flatCoordinates: coordinates.expand((e) => e).toList(),
+        );
+      },
+      writeToIsar: (batch) =>
+          builderIsar.writeTxn(() => builderIsar.tracks.putAll(batch)),
+      batchSize: 10,
+    );
+  }
+}
