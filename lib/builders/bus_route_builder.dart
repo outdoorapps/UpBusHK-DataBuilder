@@ -11,6 +11,7 @@ import 'package:up_bus_hk_data_builder/extension/gov_bus_route_x.dart';
 import 'package:up_bus_hk_data_builder/extension/lat_lng_x.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/utils/builder_utils.dart';
+import 'package:up_bus_hk_data_builder/utils/progress_tracker.dart';
 
 class BusRouteBuilder {
   static const double _govRouteMatchRadiusMeters = 220.0; // 38X cap
@@ -57,7 +58,6 @@ class BusRouteBuilder {
     await _buildRoutes(mtrbCompanyRoutes);
 
     // Print stats
-    // final routes = await isar.busRoutes.where().findAll();
     final allRoutes = await isar.busRoutes.where().findAll();
     Company.values.forEach((e) => _printMatchCount(allRoutes, e));
 
@@ -90,6 +90,9 @@ class BusRouteBuilder {
   }
 
   static Future<void> _buildRoutes(List<CompanyBusRoute> routes) async {
+    final tracker = ProgressTracker(
+      label: 'Creating ${routes.first.company.name} bus routes',
+    );
     for (final route in routes) {
       final govRoute = await _matchGovRoute(route);
       if (govRoute != null && govRoute.isJointRoute) {
@@ -111,7 +114,9 @@ class BusRouteBuilder {
       }
       final busRoute = _buildRoute(route, govRoute);
       await isar.writeTxn(() async => isar.busRoutes.put(busRoute));
+      await tracker.increment();
     }
+    tracker.finish();
   }
 
   static BusRoute _buildRoute(CompanyBusRoute route, GovBusRoute? govRoute) {
