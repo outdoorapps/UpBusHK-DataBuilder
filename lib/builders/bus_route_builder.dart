@@ -12,7 +12,6 @@ import 'package:up_bus_hk_data_builder/extension/gov_bus_route_x.dart';
 import 'package:up_bus_hk_data_builder/extension/lat_lng_x.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/utils/builder_utils.dart';
-import 'package:up_bus_hk_data_builder/utils/patch.dart';
 import 'package:up_bus_hk_data_builder/utils/progress_tracker.dart';
 
 class BusRouteBuilder {
@@ -21,18 +20,30 @@ class BusRouteBuilder {
   static const double _circularRouteMatchingRadiusMeters = 250.0; // CTB 25 cap
   static const double _stopPairingRadiusMeters = 50.0;
 
-  static late final Map<int, GovStop> govStopMap;
-  static late final Map<String, BusStop> busStopMap;
+  static late final Set<String> _jointRouteNumbers;
+  static late final Map<int, GovStop> _govStopMap;
+  static late final Map<String, BusStop> _busStopMap;
+  static final _matchedGovRouteKeys = <String>{};
 
   static Future<void> build() async {
     // await GovBusBuilder.build(clearPreviousData: true); //todo
     await isar.writeTxn(() => isar.busRoutes.clear()); //todo
 
+    final govRoutes = await builderIsar.govBusRoutes.where().findAll();
+    final govJointRoutes = govRoutes.where((e) => e.isJointRoute).toList();
+    _jointRouteNumbers = Set.unmodifiable(
+      govJointRoutes.map((e) => e.number).toSet(),
+    );
+
     final govStops = await builderIsar.govStops.where().findAll();
-    govStopMap = Map.fromEntries(govStops.map((e) => MapEntry(e.stopId, e)));
+    _govStopMap = Map.unmodifiable(
+      Map.fromEntries(govStops.map((e) => MapEntry(e.stopId, e))),
+    );
 
     final busStops = await isar.busStops.where().findAll();
-    busStopMap = Map.fromEntries(busStops.map((e) => MapEntry(e.stopId, e)));
+    _busStopMap = Map.unmodifiable(
+      Map.fromEntries(busStops.map((e) => MapEntry(e.stopId, e))),
+    );
 
     final kmbCompanyRoutes = await builderIsar.companyBusRoutes
         .filter()
@@ -64,14 +75,6 @@ class BusRouteBuilder {
     Company.values.forEach((e) => _printMatchCount(routes, e));
 
     final jointRoutes = routes.where((e) => e.companies.length > 1);
-    final noSecondary = jointRoutes.where((e) => e.secondaryBound == null);
-    if (noSecondary.isNotEmpty) {
-      print('Joint routes missing secondary info: ${noSecondary.length}');
-      noSecondary.forEach((e) => print('- ${e.routeId}'));
-    }
-
-    final govRoutes = await builderIsar.govBusRoutes.where().findAll();
-    final govJointRoutes = govRoutes.where((e) => e.isJointRoute).toList();
     final matchedGovJointRoutesIds = jointRoutes
         .map((e) => e.govRouteKey)
         .whereType<String>()
@@ -80,11 +83,18 @@ class BusRouteBuilder {
       (e) => !matchedGovJointRoutesIds.contains(e.key),
     );
     print(
-      'Gov joint route:${govJointRoutes.length} '
+      'Joint:${govJointRoutes.length} '
       '(matched:${matchedGovJointRoutesIds.length}, '
-      'unmatch:${unmatchedGovJointRoutes.length})',
+      'unmatched:${unmatchedGovJointRoutes.length})',
     );
     unmatchedGovJointRoutes.forEach((e) => print('${e.number},${e.key}'));
+
+    // Log routes with missing secondary info
+    final noSecondary = jointRoutes.where((e) => e.secondaryBound == null);
+    if (noSecondary.isNotEmpty) {
+      print('Joint routes missing secondary info: ${noSecondary.length}');
+      noSecondary.forEach((e) => print('- ${e.routeId}'));
+    }
   }
 
   static void _printMatchCount(List<BusRoute> routes, Company company) {
@@ -97,7 +107,7 @@ class BusRouteBuilder {
     final unmatchCount = routesOfCompany.length - matchCount;
 
     print(
-      '${company.name}:${routesOfCompany.length} (matched:$matchCount, unmatch:$unmatchCount)',
+      '${company.name}:${routesOfCompany.length} (matched:$matchCount, unmatched:$unmatchCount)',
     );
   }
 
@@ -106,23 +116,19 @@ class BusRouteBuilder {
       label: 'Creating ${routes.first.company.name} bus routes',
     );
     for (final route in routes) {
-      final govRoute = await _matchGovRoute(route);
-      if (govRoute != null && govRoute.isJointRoute) {
-        final existing = await isar.busRoutes
-            .where()
-            .govRouteKeyEqualTo(govRoute.key)
-            .findFirst();
-        if (existing != null) continue; // If the joint route was created, skip
+      // Joint route for CTB should have been created, skip
+      if (route.company == Company.CTB && _isJointRoute(route)) continue;
 
-        final busRoute = await _buildJointRoute(route, govRoute);
-        if (busRoute != null) {
-          await isar.writeTxn(() async => isar.busRoutes.put(busRoute));
-        }
-      } else {
-        final busRoute = _buildRoute(route, govRoute);
+      final govRoute = await _matchGovRoute(route);
+
+      final busRoute = govRoute != null && govRoute.isJointRoute
+          ? await _buildJointRoute(route, govRoute)
+          : _buildRoute(route, govRoute);
+
+      if (busRoute != null) {
         await isar.writeTxn(() async => isar.busRoutes.put(busRoute));
+        await tracker.increment();
       }
-      await tracker.increment();
     }
     tracker.finish();
   }
@@ -156,9 +162,9 @@ class BusRouteBuilder {
     final primaryStops = List.from(route.stops);
 
     for (final stop in primaryStops) {
-      final latLong = busStopMap[stop]!.latLng.toLatLong();
+      final latLong = _busStopMap[stop]!.latLng.toLatLong();
       final distances = pairRoute.stops.map((e) {
-        final potentialPair = busStopMap[e]!;
+        final potentialPair = _busStopMap[e]!;
         return MapEntry(
           e,
           BuilderUtils.distance(latLong, potentialPair.latLng.toLatLong()),
@@ -229,24 +235,30 @@ class BusRouteBuilder {
               : q.companyCodeContains(route.company.name),
         )
         .findAll();
+
+    // Exclude gov routes that has already been matched to a company bus route
+    potentials.removeWhere((e) => _matchedGovRouteKeys.contains(e.key));
     if (potentials.isEmpty) return null;
 
     // 2. Match bound
     // If there are more than one candidates, return the one with the most
     // pairing stops
     final boundMatched = potentials.where((e) => _isGovBoundMatch(route, e));
-    return switch (boundMatched.length) {
+    final matchedGovRoute = switch (boundMatched.length) {
       0 => null,
       1 => boundMatched.first,
       _ => _getGovRouteWithMostPairingStops(route, boundMatched.toList()),
     };
+
+    if (matchedGovRoute != null) _matchedGovRouteKeys.add(matchedGovRoute.key);
+    return matchedGovRoute;
   }
 
   static bool _isGovBoundMatch(CompanyBusRoute route, GovBusRoute govRoute) {
-    final origin = busStopMap[route.stops.first]!;
-    final govOrigin = govStopMap[govRoute.stops.first]!;
-    final dest = busStopMap[route.stops.last]!;
-    final govDest = govStopMap[govRoute.stops.last]!;
+    final origin = _busStopMap[route.stops.first]!;
+    final govOrigin = _govStopMap[govRoute.stops.first]!;
+    final dest = _busStopMap[route.stops.last]!;
+    final govDest = _govStopMap[govRoute.stops.last]!;
 
     // I. Check if the origins are the same
     final originMatch = _isLatLngMatch(
@@ -280,10 +292,10 @@ class BusRouteBuilder {
   /// Check if two [CompanyBusRoute]s' bounds match with each other. If either
   /// the origins or the destinations match, return true.
   static bool _isBoundMatch(CompanyBusRoute route1, CompanyBusRoute route2) {
-    final origin1 = busStopMap[route1.stops.first]!;
-    final origin2 = busStopMap[route2.stops.first]!;
-    final dest1 = busStopMap[route1.stops.last]!;
-    final dest2 = busStopMap[route2.stops.last]!;
+    final origin1 = _busStopMap[route1.stops.first]!;
+    final origin2 = _busStopMap[route2.stops.first]!;
+    final dest1 = _busStopMap[route1.stops.last]!;
+    final dest2 = _busStopMap[route2.stops.last]!;
     return _isLatLngMatch(
           origin1.latLng,
           origin2.latLng,
@@ -322,11 +334,11 @@ class BusRouteBuilder {
     final govStops = govRoute.stops.toList();
 
     route.stops.forEach((s) {
-      final busStop = busStopMap[s]!;
+      final busStop = _busStopMap[s]!;
       final latLong = busStop.latLng.toLatLong();
 
       final distances = govStops.map((e) {
-        final govStop = govStopMap[e]!;
+        final govStop = _govStopMap[e]!;
         return MapEntry(
           e,
           BuilderUtils.distance(latLong, govStop.latLng.toLatLong()),
@@ -364,4 +376,8 @@ class BusRouteBuilder {
     ].where((e) => e.isNotEmpty);
     return parts.join('-');
   }
+
+  static bool _isJointRoute(CompanyBusRoute route) =>
+      (route.company == Company.KMB || route.company == Company.CTB) &&
+      _jointRouteNumbers.contains(route.number);
 }
