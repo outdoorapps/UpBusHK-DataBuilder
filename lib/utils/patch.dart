@@ -16,6 +16,10 @@ class Patch {
     '152': LatLng(lat: 22.501070, long: 113.945650),
   };
 
+  static final accountedJointRoute = {
+    '8774-1-T' // Likely an obsolete route
+  };
+
   static Future<void> patchRoutes() async {
     // "60C1F7910C07C52B" for 115,I,1 KOWLOON CITY FERRY BUS TERMINUS (KC949)
     // need no matching with a CTB stop, KMB included two consecutive

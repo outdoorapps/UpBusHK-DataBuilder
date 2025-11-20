@@ -12,6 +12,7 @@ import 'package:up_bus_hk_data_builder/extension/gov_bus_route_x.dart';
 import 'package:up_bus_hk_data_builder/extension/lat_lng_x.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/utils/builder_utils.dart';
+import 'package:up_bus_hk_data_builder/utils/patch.dart';
 import 'package:up_bus_hk_data_builder/utils/progress_tracker.dart';
 
 class BusRouteBuilder {
@@ -25,9 +26,10 @@ class BusRouteBuilder {
   static late final Map<String, BusStop> _busStopMap;
   static final _matchedGovRouteKeys = <String>{};
 
-  static Future<void> build() async {
-    // await GovBusBuilder.build(clearPreviousData: true); //todo
-    await isar.writeTxn(() => isar.busRoutes.clear()); //todo
+  static Future<void> build({bool clearPreviousData = false}) async {
+    if (clearPreviousData) {
+      await isar.writeTxn(() => isar.busRoutes.clear());
+    }
 
     final govRoutes = await builderIsar.govBusRoutes.where().findAll();
     final govJointRoutes = govRoutes.where((e) => e.isJointRoute).toList();
@@ -83,11 +85,14 @@ class BusRouteBuilder {
       (e) => !matchedGovJointRoutesIds.contains(e.key),
     );
     print(
-      'Joint:${govJointRoutes.length} '
-      '(matched:${matchedGovJointRoutesIds.length}, '
-      'unmatched:${unmatchedGovJointRoutes.length})',
+      'Joint:${matchedGovJointRoutesIds.length} '
+      '(Total:${govJointRoutes.length}, '
+      'unused:${unmatchedGovJointRoutes.length})',
     );
-    unmatchedGovJointRoutes.forEach((e) => print('${e.number},${e.key}'));
+    // Log unmatched gov joint routes
+    unmatchedGovJointRoutes
+        .where((e) => !Patch.accountedJointRoute.contains(e.key))
+        .forEach((e) => print('${e.number},${e.key}'));
 
     // Log routes with missing secondary info
     final noSecondary = jointRoutes.where((e) => e.secondaryBound == null);
@@ -107,7 +112,8 @@ class BusRouteBuilder {
     final unmatchCount = routesOfCompany.length - matchCount;
 
     print(
-      '${company.name}:${routesOfCompany.length} (matched:$matchCount, unmatched:$unmatchCount)',
+      '${company.name}:${routesOfCompany.length} (matched:$matchCount, '
+      'unmatched:$unmatchCount)',
     );
   }
 
