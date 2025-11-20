@@ -80,16 +80,16 @@ class BusRouteBuilder {
     print(
       'Joint route without secondary: ${jointRouteWithoutSecondary.length}',
     );
-    jointRouteWithoutSecondary.forEach(
-      (e) => print('No secondary: ${e.routeId}'),
-    );
-
-    print('Joint route no match: ${govJointRoutesNoMatch.length}');
-    govJointRoutesNoMatch.forEach(
-      (e) => print(
-        'Unmatched ${e.routeId}, ${e.number}-${e.routeSeq},${e.originE},${e.destE}',
-      ),
-    );
+    // jointRouteWithoutSecondary.forEach(
+    //   (e) => print('No secondary: ${e.routeId}'),
+    // );
+    //
+    // print('Joint route no match: ${govJointRoutesNoMatch.length}');
+    // govJointRoutesNoMatch.forEach(
+    //   (e) => print(
+    //     'Unmatched ${e.routeId}, ${e.number}-${e.routeSeq},${e.originE},${e.destE}',
+    //   ),
+    // );
   }
 
   static void _printMatchCount(List<BusRoute> routes, Company company) {
@@ -117,7 +117,7 @@ class BusRouteBuilder {
             .where()
             .govRouteKeyEqualTo(govRoute.key)
             .findFirst();
-        if (existing != null) continue;  // If the joint route was created, skip
+        if (existing != null) continue; // If the joint route was created, skip
 
         final busRoute = await _buildJointRoute(route, govRoute);
         if (busRoute != null) {
@@ -144,11 +144,14 @@ class BusRouteBuilder {
         .filter()
         .companyEqualTo(isKmb ? Company.CTB : Company.KMB)
         .findAll();
+
     final pairRoute = potentials.firstWhereOrNull(
       (e) => _isBoundMatch(route, e),
     );
     if (pairRoute == null) {
-      print('No pair route found for ${route.company}-${route.number}-${route.bound}-${route.serviceType}');
+      print(
+        'No pair route found for ${route.company}-${route.number}-${route.bound}-${route.serviceType}',
+      );
       return null;
     }
 
@@ -288,7 +291,7 @@ class BusRouteBuilder {
           origin1.latLng,
           origin2.latLng,
           _jointRouteMatchingRadiusMeters,
-        ) &&
+        ) ||
         _isLatLngMatch(
           dest1.latLng,
           dest2.latLng,
