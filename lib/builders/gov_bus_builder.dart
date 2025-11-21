@@ -62,19 +62,17 @@ class GovBusBuilder {
         final busFares = await builderIsar.busFares
             .where()
             .routeIdRouteSeqEqualTo(e.routeId, e.routeSeq)
-            .sortByOffSeqDesc() // Get the max price for the starting stop
+            .sortByFareDesc() // Get the max fare for the boarding stop
             .distinctByOnSeq()
             .findAll();
 
-        // The last stop has no pairing fare
-        final fares = busFares.map<double?>((f) => f.fare).toList()..add(null);
-        final faresValid = stops.length == fares.length;
-        final stopFares = faresValid
-            ? List.generate(
-                stops.length,
-                (i) => GovStopFare(stopId: stops[i].stopId, fare: fares[i]),
-              )
-            : stops.map((s) => GovStopFare(stopId: s.stopId)).toList();
+        final fares = Map.fromEntries(
+          busFares.map((f) => MapEntry(f.onSeq, f.fare)),
+        );
+        final stopFares = List.generate(stops.length, (i) {
+          final onSeq = i + 1;
+          return GovStopFare(stopId: stops[i].stopId, fare: fares[onSeq]);
+        });
 
         final route = GovBusRoute(
           routeId: e.routeId,
