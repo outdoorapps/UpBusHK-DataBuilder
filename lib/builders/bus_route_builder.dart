@@ -72,7 +72,8 @@ class BusRouteBuilder {
     await _buildRoutes(ctbCompanyRoutes);
     await _buildRoutes(nlbCompanyRoutes);
     await _buildRoutes(mtrbCompanyRoutes);
-
+    // todo fill fares
+    // todo 107P use CTB as primary reference
     // Print stats
     final routes = await isar.busRoutes.where().findAll();
     Company.values.forEach((e) => _printMatchCount(routes, e));
@@ -144,7 +145,7 @@ class BusRouteBuilder {
     CompanyBusRoute route,
     GovBusRoute govRoute,
   ) async {
-    // 1. Find potential match by number & company
+    // 1. Find the matching joint route
     final isKmb = route.company == Company.KMB;
     final potentials = await builderIsar.companyBusRoutes
         .where()
@@ -160,19 +161,20 @@ class BusRouteBuilder {
       return null;
     }
 
-    // 2. Build the secondary stop list by matching each stop with the closest
-    // pairing stop
+    // 2. Build the stop-fare list
     final jointStops = List.from(jointRoute.stops);
 
-    final stopFares = route.stops.map((s) {
-      // For each stop, create MapEntry of joint stops to distance
-      final latLong1 = _busStopMap[s]!.latLng.toLatLong();
+    final stopFares = route.stops.map((stop) {
+      // 2a. For each stop, find the closest joint stop
+      // For each stop, create MapEntries of joint stops to distance
+      final latLong1 = _busStopMap[stop]!.latLng.toLatLong();
       final distances = jointStops.map((j) {
         final potentialStop = _busStopMap[j]!;
         final latLong2 = potentialStop.latLng.toLatLong();
         return MapEntry(j, BuilderUtils.distance(latLong1, latLong2));
       });
 
+      // Find the closest stop
       final closest = distances.reduce((a, b) => a.value < b.value ? a : b);
       final closestStopId = closest.key;
       final closestDistance = closest.value;
@@ -182,10 +184,9 @@ class BusRouteBuilder {
         jointStopId = closestStopId;
         jointStops.remove(closestStopId); // Remove id to avoid double matching
       }
-      return BusStopFare(stopId: s, jointStopId: jointStopId);
+      return BusStopFare(stopId: stop, jointStopId: jointStopId);
     }).toList();
 
-    // todo 107P use CTB as primary reference
     return _buildRoute(
       route,
       govRoute,
@@ -207,7 +208,16 @@ class BusRouteBuilder {
               .map((e) => Company.values.byName(e))
               .toList();
 
-    // todo fill fares
+    final isFareValid = route.stops.length == govRoute?.stopFares.length;
+    final List<BusStopFare> busStopFares = List.generate(
+      route.stops.length,
+      (i) => BusStopFare(
+        stopId: route.stops[i],
+        jointStopId: stopFares?[i].jointStopId,
+        fare: isFareValid ? govRoute?.stopFares[i].fare : null,
+      ),
+    );
+
     return BusRoute(
       companies: companies,
       number: route.number,
@@ -218,8 +228,7 @@ class BusRouteBuilder {
       destE: route.destE,
       destC: route.destC,
       fullFare: govRoute?.fullFare,
-      stopFares:
-          stopFares ?? route.stops.map((s) => BusStopFare(stopId: s)).toList(),
+      stopFares: busStopFares,
       serviceType: route.serviceType,
       nlbRouteId: route.nlbRouteId,
       govRouteKey: govRoute?.key,
