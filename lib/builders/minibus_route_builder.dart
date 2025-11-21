@@ -16,7 +16,6 @@ class MinibusRouteBuilder {
     );
 
     return routeToRouteStops.entries.map((e) {
-      final routeId = e.key;
       final routeStops = e.value;
       routeStops.sort(
         (a, b) => a.properties.stopSeq.compareTo(b.properties.stopSeq),
@@ -27,7 +26,7 @@ class MinibusRouteBuilder {
       final routeInfo = routeStops.last.properties;
 
       return MinibusRoute(
-        routeId: routeId,
+        govRouteId: routeInfo.govRouteId,
         region: routeInfo.region,
         number: routeInfo.routeNameE,
         bound: Bound.fromMinibusRouteSeq(routeInfo.routeSeq),

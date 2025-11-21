@@ -1,4 +1,4 @@
-import 'package:up_bus_hk_core/isar/models/lat_lng.dart';
+import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
 import 'package:up_bus_hk_data_builder/json/ctb_route_stop.dart';
 import 'package:up_bus_hk_data_builder/json/ctb_stop.dart';
 import 'package:up_bus_hk_data_builder/json/kmb_route_stop.dart';

@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:up_bus_hk_core/enums/bound.dart';
 import 'package:up_bus_hk_core/enums/company.dart';
 import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
-import 'package:up_bus_hk_core/isar/models/lat_lng.dart';
+import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
 
 class MtrbParser {
   static const String _TSUEN_CODE = '&#37032;';

@@ -1,5 +1,4 @@
 import 'package:proj4dart/proj4dart.dart';
-import 'package:up_bus_hk_core/isar/models/lat_lng.dart';
 
 class Crs2326 {
   static final _epsg2326 = Projection.add(

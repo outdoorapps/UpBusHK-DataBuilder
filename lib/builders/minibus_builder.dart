@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:collection/collection.dart';
-import 'package:up_bus_hk_core/isar/models/lat_lng.dart';
+import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
 import 'package:up_bus_hk_core/isar/models/minibus_route.dart';
 import 'package:up_bus_hk_core/isar/models/minibus_stop.dart';
 import 'package:up_bus_hk_data_builder/builders/minibus_route_builder.dart';
@@ -152,7 +152,7 @@ class MinibusBuilder {
     for (final (govRoute, direction, routeStops) in results) {
       final bound = direction.bound;
       final route = MinibusRoute(
-        routeId: MinibusRoute.generateRouteId(govRoute.routeId, bound),
+        govRouteId: govRoute.routeId,
         region: govRoute.region,
         number: govRoute.routeCode,
         bound: bound,

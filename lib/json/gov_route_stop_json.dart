@@ -1,6 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:up_bus_hk_core/isar/builder_models/gov_route_stop.dart';
-import 'package:up_bus_hk_core/isar/models/lat_lng.dart';
+import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
 import 'package:up_bus_hk_data_builder/json/geometry.dart';
 
 part '../generated/json/gov_route_stop_json.g.dart';

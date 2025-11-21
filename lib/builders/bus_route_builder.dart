@@ -5,9 +5,10 @@ import 'package:up_bus_hk_core/enums/company.dart';
 import 'package:up_bus_hk_core/isar/builder_models/company_bus_route.dart';
 import 'package:up_bus_hk_core/isar/builder_models/gov_bus_route.dart';
 import 'package:up_bus_hk_core/isar/builder_models/gov_stop.dart';
+import 'package:up_bus_hk_core/isar/embedded/bus_stop_fare.dart';
+import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
 import 'package:up_bus_hk_core/isar/models/bus_route.dart';
 import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
-import 'package:up_bus_hk_core/isar/models/lat_lng.dart';
 import 'package:up_bus_hk_data_builder/extension/gov_bus_route_x.dart';
 import 'package:up_bus_hk_data_builder/extension/lat_lng_x.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
@@ -95,7 +96,7 @@ class BusRouteBuilder {
         .forEach((e) => print('${e.number},${e.key}'));
 
     // Log routes with missing secondary info
-    final noSecondary = jointRoutes.where((e) => e.secondaryBound == null);
+    final noSecondary = jointRoutes.where((e) => e.jointBound == null);
     if (noSecondary.isNotEmpty) {
       print('Joint routes missing secondary info: ${noSecondary.length}');
       noSecondary.forEach((e) => print('- ${e.routeId}'));
@@ -151,47 +152,54 @@ class BusRouteBuilder {
         .filter()
         .companyEqualTo(isKmb ? Company.CTB : Company.KMB)
         .findAll();
-
-    final pairRoute = potentials.firstWhereOrNull(
+    final jointRoute = potentials.firstWhereOrNull(
       (e) => _isBoundMatch(route, e),
     );
-    if (pairRoute == null) {
-      print(
-        'No pair route found for ${route.company}-${route.number}-${route.bound}-${route.serviceType}',
-      );
+    if (jointRoute == null) {
+      print('No pairing route found for route:$route');
       return null;
     }
 
     // 2. Build the secondary stop list by matching each stop with the closest
-    // pairing stop.
-    final secondaryStops = <String>[];
-    final primaryStops = List.from(route.stops);
+    // pairing stop
+    final jointStops = List.from(jointRoute.stops);
 
-    for (final stop in primaryStops) {
-      final latLong = _busStopMap[stop]!.latLng.toLatLong();
-      final distances = pairRoute.stops.map((e) {
-        final potentialPair = _busStopMap[e]!;
-        return MapEntry(
-          e,
-          BuilderUtils.distance(latLong, potentialPair.latLng.toLatLong()),
-        );
+    final stopFares = route.stops.map((s) {
+      // For each stop, create MapEntry of joint stops to distance
+      final latLong1 = _busStopMap[s]!.latLng.toLatLong();
+      final distances = jointStops.map((j) {
+        final potentialStop = _busStopMap[j]!;
+        final latLong2 = potentialStop.latLng.toLatLong();
+        return MapEntry(j, BuilderUtils.distance(latLong1, latLong2));
       });
-      final closestStop = distances.reduce((a, b) => a.value < b.value ? a : b);
-      if (closestStop.value <= _stopPairingRadiusMeters) {
-        secondaryStops.add(closestStop.key);
-        primaryStops.remove(closestStop.key); // Remove matched Stop
+
+      final closest = distances.reduce((a, b) => a.value < b.value ? a : b);
+      final closestStopId = closest.key;
+      final closestDistance = closest.value;
+
+      String? jointStopId;
+      if (closestDistance <= _stopPairingRadiusMeters) {
+        jointStopId = closestStopId;
+        jointStops.remove(closestStopId); // Remove id to avoid double matching
       }
-    }
+      return BusStopFare(stopId: s, jointStopId: jointStopId);
+    }).toList();
 
     // todo 107P use CTB as primary reference
-    final busRoute = _buildRoute(
+    return _buildRoute(
       route,
       govRoute,
-    ).copyWith(secondaryBound: pairRoute.bound, secondaryStops: secondaryStops);
-    return busRoute;
+      jointBound: jointRoute.bound,
+      stopFares: stopFares,
+    );
   }
 
-  static BusRoute _buildRoute(CompanyBusRoute route, GovBusRoute? govRoute) {
+  static BusRoute _buildRoute(
+    CompanyBusRoute route,
+    GovBusRoute? govRoute, {
+    Bound? jointBound,
+    List<BusStopFare>? stopFares,
+  }) {
     final companies = govRoute == null
         ? [route.company]
         : govRoute.companyCode
@@ -199,28 +207,19 @@ class BusRouteBuilder {
               .map((e) => Company.values.byName(e))
               .toList();
 
-    final routeId = _generateRouteId(
-      companies: companies,
-      number: route.number,
-      bound: route.bound,
-      serviceType: route.serviceType,
-      nlbRouteId: route.nlbRouteId,
-    );
     // todo fill fares
     return BusRoute(
-      routeId: routeId,
       companies: companies,
       number: route.number,
       bound: route.bound,
-      secondaryBound: null,
+      jointBound: jointBound,
       originE: route.originE,
       originC: route.originC,
       destE: route.destE,
       destC: route.destC,
       fullFare: govRoute?.fullFare,
-      stops: route.stops,
-      secondaryStops: [],
-      fares: govRoute?.fares ?? [],
+      stopFares:
+          stopFares ?? route.stops.map((s) => BusStopFare(stopId: s)).toList(),
       serviceType: route.serviceType,
       nlbRouteId: route.nlbRouteId,
       govRouteKey: govRoute?.key,
@@ -357,30 +356,6 @@ class BusRouteBuilder {
       }
     });
     return count;
-  }
-
-  /// Generate a unique route ID for a [BusRoute].
-  static String _generateRouteId({
-    required List<Company> companies,
-    required String number,
-    required Bound bound,
-    int? serviceType,
-    String? nlbRouteId,
-  }) {
-    assert(companies.contains(Company.NLB) ? nlbRouteId != null : true);
-
-    // Deterministic company ordering for consistent IDs
-    final companyCode = companies.map((e) => e.name).sorted().join(':');
-    final serviceTypeText = '${serviceType ?? ''}';
-    final routeId = companies.contains(Company.NLB) ? nlbRouteId ?? '' : '';
-    final parts = [
-      companyCode,
-      number,
-      bound.name,
-      serviceTypeText,
-      routeId,
-    ].where((e) => e.isNotEmpty);
-    return parts.join('-');
   }
 
   static bool _isJointRoute(CompanyBusRoute route) =>

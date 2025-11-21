@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:isar_community/isar.dart';
+import 'package:up_bus_hk_core/enums/company.dart';
 import 'package:up_bus_hk_core/isar/builder_models/bus_fare.dart';
 import 'package:up_bus_hk_core/isar/builder_models/gov_bus_route.dart';
 import 'package:up_bus_hk_core/isar/builder_models/gov_route_stop.dart';
 import 'package:up_bus_hk_core/isar/builder_models/gov_stop.dart';
 import 'package:up_bus_hk_core/isar/builder_models/gov_stop_coordinate.dart';
-import 'package:up_bus_hk_core/isar/models/lat_lng.dart';
+import 'package:up_bus_hk_core/isar/embedded/gov_stop_fare.dart';
+import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
 import 'package:up_bus_hk_data_builder/builders/gov_feature_parser.dart';
 import 'package:up_bus_hk_data_builder/files/project_paths.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
@@ -47,6 +49,10 @@ class GovBusBuilder {
 
     await Future.wait(
       routeHeaders.map((e) async {
+        final companyCode = e.companyCode == 'LRTFeeder'
+            ? Company.MTRB.name
+            : e.companyCode;
+
         final stops = await builderIsar.govRouteStops
             .where()
             .routeIdRouteSeqEqualTo(e.routeId, e.routeSeq)
@@ -61,13 +67,14 @@ class GovBusBuilder {
             .findAll();
 
         // The last stop has no pairing fare
-        final fares = stops.length == busFares.length + 1
-            ? busFares.map((f) => f.fare).toList()
-            : <double>[];
-
-        final companyCode = e.companyCode == 'LRTFeeder'
-            ? 'MTRB'
-            : e.companyCode;
+        final fares = busFares.map<double?>((f) => f.fare).toList()..add(null);
+        final faresValid = stops.length == fares.length;
+        final stopFares = faresValid
+            ? List.generate(
+                stops.length,
+                (i) => GovStopFare(stopId: stops[i].stopId, fare: fares[i]),
+              )
+            : stops.map((s) => GovStopFare(stopId: s.stopId)).toList();
 
         final route = GovBusRoute(
           routeId: e.routeId,
@@ -82,8 +89,7 @@ class GovBusBuilder {
           specialType: e.specialType,
           journeyTime: e.journeyTime,
           fullFare: e.fullFare,
-          stops: stops.map((s) => s.stopId).toList(),
-          fares: fares,
+          stopFares: stopFares,
         );
         routes.add(route);
         await routeTracker.increment();
