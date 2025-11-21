@@ -147,7 +147,7 @@ class GovBusBuilder {
 
   static Future<void> _parseStops() async {
     await GovFeatureParser.parseData<GovStopCoordinate>(
-      File(ProjectPath.govStopCoordinatesJsonPath),
+      File(ProjectPath.busStopsGeoJsonPath),
       label: 'Parsing gov bus stop coordinates',
       fromJson: (itemJson) =>
           GovStopCoordinateJson.fromJson(itemJson).toGovStopCoordinate(),

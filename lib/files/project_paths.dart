@@ -30,16 +30,6 @@ class ProjectPath {
 
   static String minibusDataJsonPath = join(govDataDir.path, 'JSON_GMB.json');
 
-  static String govStopCoordinatesJsonPath = join(
-    govDataDir.path,
-    'STOP_BUS.gdb_converted.geojson',
-  );
-
-  static String govTrackGeoJsonPath = join(
-    govDataDir.path,
-    'FB_ROUTE.gdb_converted.json',
-  );
-
   static String busFarePath = join(govDataDir.path, 'FARE_BUS.xml');
 
   static String mtrbDataPath = join(dataDir.path, 'mtrb.txt');

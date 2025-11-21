@@ -11,43 +11,37 @@ import 'package:up_bus_hk_data_builder/utils/crs_2326.dart';
 import 'package:up_bus_hk_data_builder/utils/ramer_douglas_peucker.dart';
 
 class TrackBuilder {
-  static late final Set<String> _simpleGovRouteKeys;
+  static late final Set<String> _govRouteKeys;
 
   static Future<void> build({bool clearPreviousData = false}) async {
     if (clearPreviousData) {
       await isar.writeTxn(() async => isar.tracks.clear());
     }
 
-    // Get all distinct gov route keys, and clear the serviceMode part
+    // Get all distinct gov route keys
     final routes = await isar.busRoutes
         .where()
         .distinctByGovRouteKey()
         .findAll();
 
-    final govRouteKeys = routes
-        .map((e) => e.govRouteKey)
-        .whereType<String>()
-        .toSet();
-    final cleanedKeys = govRouteKeys.map((e) {
-      final parts = e.split('-')..removeLast();
-      return parts.join('-');
-    });
-    _simpleGovRouteKeys = Set.unmodifiable(cleanedKeys.toSet());
+    _govRouteKeys = Set.unmodifiable(
+      routes.map((e) => e.govRouteKey).whereType<String>().toSet(),
+    );
 
     await _parseTracks();
 
-    // Stats for tracks
+    // todo print Stats for tracks
   }
 
   static Future<void> _parseTracks() async {
     await GovFeatureParser.parseData<Track>(
-      File(ProjectPath.govTrackGeoJsonPath),
+      File(ProjectPath.busRoutesGeoJsonPath),
       label: 'Parsing tracks',
       fromJson: (itemJson) {
         final feature = TrackFeature.fromJson(itemJson);
 
         // Skip track not used be any route
-        if (!_simpleGovRouteKeys.contains(feature.properties.key)) return null;
+        if (!_govRouteKeys.contains(feature.properties.key)) return null;
 
         final hk1980Coordinates = feature.geometry.coordinates
             .expand((e) => e)
@@ -55,12 +49,33 @@ class TrackBuilder {
         final hk1980Track = RamerDouglasPeucker.simplify(hk1980Coordinates);
 
         final coordinates = hk1980Track.map((e) => Crs2326.convert(e[0], e[1]));
+        final govRouteKey = Track.getGovRouteKey(
+          feature.properties.routeId,
+          feature.properties.routeSeq,
+        );
         return Track(
-          trackId: feature.properties.objectId,
+          objectId: feature.properties.objectId,
+          govRouteKey: govRouteKey,
           flatCoordinates: coordinates.expand((e) => e).toList(),
         );
       },
-      writeToIsar: (batch) => isar.writeTxn(() => isar.tracks.putAll(batch)),
+      writeToIsar: (batch) async {
+        await isar.writeTxn(() async {
+          for (final track in batch) {
+            await isar.tracks.put(track);
+
+            // Now establish the link
+            final route = await isar.busRoutes
+                .where()
+                .govRouteKeyEqualTo(track.govRouteKey)
+                .findFirst();
+            if (route != null) {
+              route.track.value = track;
+              await route.track.save();
+            }
+          }
+        });
+      },
       batchSize: 10,
     );
   }

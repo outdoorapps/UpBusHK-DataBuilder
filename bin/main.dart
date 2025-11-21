@@ -7,12 +7,10 @@ import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/network/links.dart';
 import 'package:up_bus_hk_data_builder/network/web_services.dart';
 import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
-import 'package:up_bus_hk_data_builder/files/extractor.dart';
 
 void main() async {
   // await Benchmark.executeAsync('Initializing', _init);
   // await Benchmark.executeAsync('Downloading gov data', _downloadGovData);
-  // await Benchmark.executeAsync('Extracting files', _extractFiles);
 
   await Benchmark.executeAsync(
     'Building company bus routes',
@@ -38,16 +36,4 @@ Future<void> _downloadGovData() async {
     Links.fareUrl: ProjectPath.busFarePath,
   };
   await WebServices.downloadAll(urlToPath);
-}
-
-Future<void> _extractFiles() async {//todo read directly without temp file
-  await Extractor.extractZipFile(
-    ProjectPath.busRoutesGeoJsonPath,
-    ProjectPath.govDataDir.path,
-  );
-
-  await Extractor.extractZipFile(
-    ProjectPath.busStopsGeoJsonPath,
-    ProjectPath.govDataDir.path,
-  );
 }

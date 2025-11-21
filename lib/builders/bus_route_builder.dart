@@ -74,9 +74,8 @@ class BusRouteBuilder {
     await _buildRoutes(ctbCompanyRoutes);
     await _buildRoutes(nlbCompanyRoutes);
     await _buildRoutes(mtrbCompanyRoutes);
-    await _printStats(govJointRoutes);
-
     await _patchFares();
+    await _printStats(govJointRoutes);
     // todo 107P use CTB as primary reference
   }
 
@@ -294,7 +293,6 @@ class BusRouteBuilder {
       serviceType: route.serviceType,
       nlbRouteId: route.nlbRouteId,
       govRouteKey: govRoute?.key,
-      trackId: null,
     );
   }
 

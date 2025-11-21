@@ -17,7 +17,7 @@ class Patch {
   };
 
   static final accountedJointRoute = {
-    '8774-1-T' // Likely an obsolete route
+    '8774-1', // Likely an obsolete route
   };
 
   static Future<void> patchRoutes() async {
