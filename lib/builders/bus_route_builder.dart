@@ -346,6 +346,8 @@ class BusRouteBuilder {
     String busStopId,
     List<GovStopFare> govStopFares,
   ) {
+    if (govStopFares.isEmpty) return (null, null);
+
     final stop = _busStopMap[busStopId]!;
 
     final distances = govStopFares.map((g) {
