@@ -243,44 +243,11 @@ class BusRouteBuilder {
               .toList();
 
     // Create the BusStopFare list
-    final List<BusStopFare> busStopFares;
-    if (govRoute == null) {
-      busStopFares = List.generate(
-        route.stops.length,
-        (i) => BusStopFare(stopId: route.stops[i]),
-      );
-    } else {
-      final allFullFare = govRoute.stopFares.every(
-        (e) => e.fare == govRoute.fullFare,
-      );
-      final sameLength = route.stops.length == govRoute.stopFares.length;
-      final matched = <int>{};
-
-      busStopFares = List.generate(route.stops.length, (i) {
-        final stopId = route.stops[i];
-        final double? fare;
-
-        if (allFullFare) {
-          fare = govRoute.fullFare; // Flat full fare
-        } else if (sameLength) {
-          fare = govRoute.stopFares[i].fare; // Direct matching
-        } else {
-          // Closest stop-based fare
-          final (index, f) = _getStopBasedFare(stopId, govRoute.stopFares);
-          if (index != null && !matched.contains(index)) {
-            matched.add(index);
-            fare = f;
-          } else {
-            fare = null;
-          }
-        }
-        return BusStopFare(
-          stopId: route.stops[i],
-          jointStopId: stopFares?[i].jointStopId,
-          fare: fare,
-        );
-      });
-    }
+    final List<BusStopFare> busStopFares = _buildStopFares(
+      route,
+      govRoute: govRoute,
+      jointStops: stopFares,
+    );
 
     return BusRoute(
       companies: companies,
@@ -298,6 +265,50 @@ class BusRouteBuilder {
       govRouteKey: govRoute?.key,
       trackId: null,
     );
+  }
+
+  static List<BusStopFare> _buildStopFares(
+    CompanyBusRoute route, {
+    GovBusRoute? govRoute,
+    List<BusStopFare>? jointStops,
+  }) {
+    if (govRoute == null) {
+      return List.generate(
+        route.stops.length,
+        (i) => BusStopFare(stopId: route.stops[i]),
+      );
+    } else {
+      final allFullFare = govRoute.stopFares.every(
+        (e) => e.fare == govRoute.fullFare,
+      );
+      final sameLength = route.stops.length == govRoute.stopFares.length;
+      final stopFaresRemaining = List<GovStopFare>.from(govRoute.stopFares);
+
+      return List.generate(route.stops.length, (i) {
+        final stopId = route.stops[i];
+        final double? fare;
+
+        if (allFullFare) {
+          fare = govRoute.fullFare; // Flat full fare
+        } else if (sameLength) {
+          fare = govRoute.stopFares[i].fare; // Direct matching
+        } else {
+          // Closest stop-based fare
+          final (index, f) = _getStopBasedFare(stopId, stopFaresRemaining);
+          if (index != null) {
+            stopFaresRemaining.removeAt(index);
+            fare = f;
+          } else {
+            fare = null;
+          }
+        }
+        return BusStopFare(
+          stopId: route.stops[i],
+          jointStopId: jointStops?[i].jointStopId,
+          fare: fare,
+        );
+      });
+    }
   }
 
   static (int?, double?) _getStopBasedFare(
