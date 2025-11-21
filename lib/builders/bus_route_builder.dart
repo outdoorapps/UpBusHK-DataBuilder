@@ -9,6 +9,7 @@ import 'package:up_bus_hk_core/isar/embedded/bus_stop_fare.dart';
 import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
 import 'package:up_bus_hk_core/isar/models/bus_route.dart';
 import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
+import 'package:up_bus_hk_data_builder/extension/bus_route_x.dart';
 import 'package:up_bus_hk_data_builder/extension/gov_bus_route_x.dart';
 import 'package:up_bus_hk_data_builder/extension/lat_lng_x.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
@@ -72,9 +73,40 @@ class BusRouteBuilder {
     await _buildRoutes(ctbCompanyRoutes);
     await _buildRoutes(nlbCompanyRoutes);
     await _buildRoutes(mtrbCompanyRoutes);
-    // todo fill fares
+    await _printStats(govJointRoutes);
+
+    await _patchFares();
     // todo 107P use CTB as primary reference
-    // Print stats
+  }
+
+  static Future<void> _patchFares() async {
+    final routes = await isar.busRoutes
+        .filter()
+        .serviceTypeIsNotNull()
+        .findAll();
+
+    final tracker = ProgressTracker(label: 'Patching bus fare data');
+    final fareGroups = groupBy(routes, (e) => e.fareGroupKey);
+    fareGroups.forEach((key, routes) {
+      if (routes.length == 1) return;
+      final unpopulatedRoutes = routes.where((route) {
+        return route.stopFares
+            .sublist(0, route.stopFares.length - 1) // Ignore the last item
+            .any((e) => e.fare == null);
+      });
+
+      final populatedRoutes = routes.where((route) {
+        return !route.stopFares
+            .sublist(0, route.stopFares.length - 1) // Ignore the last item
+            .any((e) => e.fare == null);
+      });
+
+      //todo fill fares
+    });
+    tracker.finish();
+  }
+
+  static Future<void> _printStats(List<GovBusRoute> govJointRoutes) async {
     final routes = await isar.busRoutes.where().findAll();
     Company.values.forEach((e) => _printMatchCount(routes, e));
 
