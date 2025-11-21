@@ -44,10 +44,9 @@ class GovBusBuilder {
         .distinctByRouteId()
         .distinctByRouteSeq()
         .findAll();
-    final routes = <GovBusRoute>[];
     final routeTracker = ProgressTracker(label: 'Building gov bus routes');
 
-    await Future.wait(
+    final routes = await Future.wait(
       routeHeaders.map((e) async {
         final companyCode = e.companyCode == 'LRTFeeder'
             ? Company.MTRB.name
@@ -89,8 +88,8 @@ class GovBusBuilder {
           fullFare: e.fullFare,
           stopFares: stopFares,
         );
-        routes.add(route);
         await routeTracker.increment();
+        return route;
       }),
     );
     routes.sort((a, b) => a.routeId.compareTo(b.routeId));
@@ -98,7 +97,6 @@ class GovBusBuilder {
     routeTracker.finish();
 
     // 3. Build stops
-    final stops = <GovStop>[];
     final stopTracker = ProgressTracker(label: 'Building gov bus stops');
 
     final stopHeaders = await builderIsar.govRouteStops
@@ -106,7 +104,7 @@ class GovBusBuilder {
         .distinctByStopId()
         .findAll();
 
-    await Future.wait(
+    final stops = await Future.wait(
       stopHeaders.map((e) async {
         final govStopCoordinate = await builderIsar.govStopCoordinates
             .where()
@@ -126,12 +124,12 @@ class GovBusBuilder {
           stopNameE: e.stopNameE,
           stopNameC: e.stopNameC,
         );
-        stops.add(stop);
         await stopTracker.increment();
+        return stop;
       }),
     );
-
     stops.sort((a, b) => a.stopId.compareTo(b.stopId));
+
     await builderIsar.writeTxn(() => builderIsar.govStops.putAll(stops));
     stopTracker.finish();
   }

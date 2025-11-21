@@ -86,24 +86,55 @@ class BusRouteBuilder {
         .serviceTypeIsNotNull()
         .findAll();
 
-    final tracker = ProgressTracker(label: 'Patching bus fare data');
     final fareGroups = groupBy(routes, (e) => e.fareGroupKey);
-    fareGroups.forEach((key, routes) {
+    final updatedRoutes = <BusRoute>{};
+    final tracker = ProgressTracker(label: 'Patching bus fare data');
+
+    await Future.forEach(fareGroups.values, (routes) async {
       if (routes.length == 1) return;
-      final unpopulatedRoutes = routes.where((route) {
-        return route.stopFares
-            .sublist(0, route.stopFares.length - 1) // Ignore the last item
-            .every((e) => e.fare == null);
-      });
 
-      final populatedRoutes = routes.where((route) {
-        return route.stopFares
-            .sublist(0, route.stopFares.length - 1) // Ignore the last item
-            .every((e) => e.fare != null);
-      });
+      final notFullyPopulatedRoutes = routes.where(
+        (e) => e.stopFares
+            .sublist(0, e.stopFares.length - 1) // Ignore the last item
+            .any((e) => e.fare == null),
+      );
+      if (notFullyPopulatedRoutes.isEmpty) return;
 
-      //todo fill fares
+      final populatedRoutes = routes
+          .where(
+            (e) => e.stopFares
+                .sublist(0, e.stopFares.length - 1) // Ignore the last item
+                .every((e) => e.fare != null),
+          )
+          .toList();
+      if (populatedRoutes.isEmpty) return;
+
+      // Pick the route with the most stop fares
+      final populatedRoute = populatedRoutes.reduce(
+        (a, b) => a.stopFares.length > b.stopFares.length ? a : b,
+      );
+
+      notFullyPopulatedRoutes.forEach((r) {
+        final populatedStopFares = List.from(populatedRoute.stopFares);
+        r.stopFares.forEach((stopFare) {
+          if (stopFare.fare == null) {
+            final populatedStopFare = populatedStopFares.firstWhereOrNull(
+              (e) => e.stopId == stopFare.stopId,
+            );
+            if (populatedStopFare != null) {
+              stopFare.fare = populatedStopFare?.fare;
+              populatedStopFares.remove(populatedStopFare);
+              updatedRoutes.add(r);
+            }
+          }
+        });
+      });
+      await tracker.increment(count: notFullyPopulatedRoutes.length);
     });
+
+    await isar.writeTxn(
+      () async => isar.busRoutes.putAll(updatedRoutes.toList()),
+    );
     tracker.finish();
   }
 

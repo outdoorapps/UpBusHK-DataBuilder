@@ -41,9 +41,9 @@ class ProgressTracker {
   }
 
   /// Call this whenever a task finishes
-  Future<void> increment() async {
+  Future<void> increment({int count = 1}) async {
     await _lock.synchronized(() {
-      _completed++;
+      count == 1 ? _completed++ : _completed += count;
 
       if (total != null && _completed >= total!) {
         finish();
