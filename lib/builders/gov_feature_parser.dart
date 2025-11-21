@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:archive/archive.dart';
 import 'package:json_events/json_events.dart';
@@ -55,9 +56,21 @@ class GovFeatureParser {
     if (entry == null) {
       throw Exception('Zip file is empty or has no entries: ${file.path}');
     }
+    yield* _chunked(entry.content); // entry.content is the decompressed JSON
+  }
 
-    // entry.content is already the decompressed JSON
-    yield* _chunked(entry.content as List<int>);
+  static Stream<Uint8List> _chunked(
+    Uint8List data, {
+    int size = 16 * 1024,
+  }) async* {
+    for (int i = 0; i < data.length; i += size) {
+      final end = (i + size < data.length) ? i + size : data.length;
+
+      yield Uint8List.sublistView(data, i, end);
+
+      // yield to event loop (progress tracker / GC / Isar scheduling)
+      await Future.delayed(Duration.zero);
+    }
   }
 
   static Future<void> _parseJsonStream<T>(
@@ -170,11 +183,5 @@ class GovFeatureParser {
         obj['type'] == 'Feature' &&
         obj.containsKey('geometry') &&
         obj.containsKey('properties');
-  }
-
-  static Stream<List<int>> _chunked(List<int> data, {int size = 32 * 1024}) async* {
-    for (var i = 0; i < data.length; i += size) {
-      yield data.sublist(i, i + size > data.length ? data.length : i + size);
-    }
   }
 }
