@@ -57,8 +57,7 @@ class GovFeatureParser {
     }
 
     // entry.content is already the decompressed JSON
-    final data = entry.content as List<int>;
-    yield data; // streamed as one chunk
+    yield* _chunked(entry.content as List<int>);
   }
 
   static Future<void> _parseJsonStream<T>(
@@ -171,5 +170,11 @@ class GovFeatureParser {
         obj['type'] == 'Feature' &&
         obj.containsKey('geometry') &&
         obj.containsKey('properties');
+  }
+
+  static Stream<List<int>> _chunked(List<int> data, {int size = 32 * 1024}) async* {
+    for (var i = 0; i < data.length; i += size) {
+      yield data.sublist(i, i + size > data.length ? data.length : i + size);
+    }
   }
 }
