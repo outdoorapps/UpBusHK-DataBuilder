@@ -6,6 +6,7 @@ import 'package:up_bus_hk_core/isar/builder_models/company_bus_route.dart';
 import 'package:up_bus_hk_core/isar/builder_models/gov_bus_route.dart';
 import 'package:up_bus_hk_core/isar/builder_models/gov_stop.dart';
 import 'package:up_bus_hk_core/isar/embedded/bus_stop_fare.dart';
+import 'package:up_bus_hk_core/isar/embedded/gov_stop_fare.dart';
 import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
 import 'package:up_bus_hk_core/isar/models/bus_route.dart';
 import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
@@ -92,13 +93,13 @@ class BusRouteBuilder {
       final unpopulatedRoutes = routes.where((route) {
         return route.stopFares
             .sublist(0, route.stopFares.length - 1) // Ignore the last item
-            .any((e) => e.fare == null);
+            .every((e) => e.fare == null);
       });
 
       final populatedRoutes = routes.where((route) {
-        return !route.stopFares
+        return route.stopFares
             .sublist(0, route.stopFares.length - 1) // Ignore the last item
-            .any((e) => e.fare == null);
+            .every((e) => e.fare != null);
       });
 
       //todo fill fares
@@ -233,6 +234,7 @@ class BusRouteBuilder {
     Bound? jointBound,
     List<BusStopFare>? stopFares,
   }) {
+    // Create the company list
     final companies = govRoute == null
         ? [route.company]
         : govRoute.companyCode
@@ -240,15 +242,45 @@ class BusRouteBuilder {
               .map((e) => Company.values.byName(e))
               .toList();
 
-    final isFareValid = route.stops.length == govRoute?.stopFares.length;
-    final List<BusStopFare> busStopFares = List.generate(
-      route.stops.length,
-      (i) => BusStopFare(
-        stopId: route.stops[i],
-        jointStopId: stopFares?[i].jointStopId,
-        fare: isFareValid ? govRoute?.stopFares[i].fare : null,
-      ),
-    );
+    // Create the BusStopFare list
+    final List<BusStopFare> busStopFares;
+    if (govRoute == null) {
+      busStopFares = List.generate(
+        route.stops.length,
+        (i) => BusStopFare(stopId: route.stops[i]),
+      );
+    } else {
+      final allFullFare = govRoute.stopFares.every(
+        (e) => e.fare == govRoute.fullFare,
+      );
+      final sameLength = route.stops.length == govRoute.stopFares.length;
+      final matched = <int>{};
+
+      busStopFares = List.generate(route.stops.length, (i) {
+        final stopId = route.stops[i];
+        final double? fare;
+
+        if (allFullFare) {
+          fare = govRoute.fullFare; // Flat full fare
+        } else if (sameLength) {
+          fare = govRoute.stopFares[i].fare; // Direct matching
+        } else {
+          // Closest stop-based fare
+          final (index, f) = _getStopBasedFare(stopId, govRoute.stopFares);
+          if (index != null && !matched.contains(index)) {
+            matched.add(index);
+            fare = f;
+          } else {
+            fare = null;
+          }
+        }
+        return BusStopFare(
+          stopId: route.stops[i],
+          jointStopId: stopFares?[i].jointStopId,
+          fare: fare,
+        );
+      });
+    }
 
     return BusRoute(
       companies: companies,
@@ -266,6 +298,33 @@ class BusRouteBuilder {
       govRouteKey: govRoute?.key,
       trackId: null,
     );
+  }
+
+  static (int?, double?) _getStopBasedFare(
+    String busStopId,
+    List<GovStopFare> govStopFares,
+  ) {
+    final stop = _busStopMap[busStopId]!;
+
+    final distances = govStopFares.map((g) {
+      final govStop = _govStopMap[g.stopId]!;
+      final d = BuilderUtils.distance(
+        stop.latLng.toLatLong(),
+        govStop.latLng.toLatLong(),
+      );
+      return MapEntry(g, d);
+    }).toList();
+
+    // choose closest
+    final closest = distances.reduce((a, b) => a.value < b.value ? a : b);
+
+    double? fare;
+    int? index;
+    if (closest.value <= _stopPairingRadiusMeters) {
+      fare = closest.key.fare;
+      index = govStopFares.indexOf(closest.key);
+    }
+    return (index, fare);
   }
 
   static Future<GovBusRoute?> _matchGovRoute(CompanyBusRoute route) async {
