@@ -1,3 +1,4 @@
+# v1.13 (6 Oct, 2025)
 Route 506 (Outbound)
 STATION ID STATION LATITUDE STATION LONGITUDE STATION NAME (CHI) STATION NAME (ENG)
 506-U010 22.372986 113.966502 屯門碼頭 Tuen Mun Ferry Pier
@@ -114,7 +115,7 @@ K51-D180 22.387355 113.98069 置樂花園 Chi Lok Fa Yuen
 K51-D190 22.390433 113.978805 屯門官立中學 Tuen Mun Government Secondary School
 K51-D200 22.392116 113.975082 輕鐵市中心站 LR Town Centre Stop
 K51-D210 22.395021 113.974444 港鐵屯門站 (輕鐵屯門站) MTR Tuen Mun Station (LR Tuen Mun Stop)
-K51-D220 22.397311 113.974853 聖公會聖西門呂明才中學SKH St. Simon's Lui Ming Choi Secondary School
+K51-D220 22.397311 113.974853 聖公會聖西門呂明才中學 SKH St. Simon's Lui Ming Choi Secondary School
 K51-D230 22.40334 113.979247 景峰花園 Prime View Garden
 K51-D240 22.407254 113.978641 輕鐵鳳地站 LR Fung Tei Stop
 K51-D250 22.410378 113.978607 港鐵兆康站 (南), (輕鐵兆康站) MTR Siu Hong Station (South), (LR Siu Hong Stop)
@@ -128,11 +129,10 @@ K51A-U010 22.413286 113.982895 富泰 Fu Tai
 K51A-U020 22.412025 113.983771 聚康山莊 Beneville
 K51A-U030 22.41059 113.982387 嶺南大學 Lingnan University
 K51A-U040 22.408575 113.980046 彩暉花園 Brilliant Garden
-K51A-U050 22.410247 113.978583 港鐵兆康站 (南) (輕鐵兆康站) MTR Siu Hong Station (South) (LR Siu Hong Stop) 
+K51A-U050 22.410247 113.978583 港鐵兆康站 (南) (輕鐵兆康站) MTR Siu Hong Station (South) (LR Siu Hong Stop)
 K51A-U060 22.40205 113.9776 井財街 Tseng Choi Street
 K51A-U070 22.39834 113.9752 雅都商場 ACME Shopping Arcade
-K51A-U080 22.39494 113.9746 德政圍 (港鐵屯門站) Tak Ching Court (MTR
-Tuen Mun Station)
+K51A-U080 22.39494 113.9746 德政圍 (港鐵屯門站) Tak Ching Court (MTR Tuen Mun Station)
 K51A-U090 22.39153 113.9755 屯門市中心 (輕鐵市中心站) Tuen Mun Town Centre (LR Town Centre Stop)
 K51A-U100 22.3906 113.9788 屯門官立中學 Tuen Mun Government Secondary School
 K51A-U110 22.38771 113.9807 恒順園 Handsome Court
@@ -144,7 +144,7 @@ K51A-U160 22.374926 113.986745 咖啡灣 Cafeteria Beach
 K51A-U170 22.373784 113.990756 黃金泳灘 Golden Beach
 K51A-U180 22.372025 113.993574 香港黃金海岸 Hong Kong Gold Coast
 K51A-U190 22.371605 113.9954 愛琴海岸 Aegean Coast
-K51A-U200 22.373878 113.996144 掃管笏變電站 So Kwun Wat Substation
+K51A-U200 22.373878 113.996144 掃管笏變電站 So Kwun Wat Sub-station
 K51A-U210 22.375743 113.999829 掃管笏村 So Kwun Wat Tsuen
 K51A-U220 22.372023 114.003593 掃管笏 (鄭任安夫人千禧小學) So Kwun Wat (Mrs. Cheng Yam On Millennium School)
 K51A-U230 22.374216 114.002295 掃管笏路 So Kwun Wat Road
@@ -153,10 +153,7 @@ K51A-U250 22.375743 113.999829 掃管笏村 So Kwun Wat Tsuen
 Route K51A (Inbound)
 STATION ID STATION LATITUDE STATION LONGITUDE STATION NAME (CHI) STATION NAME (ENG)
 K51A-D010 22.375743 113.999829 掃管笏村 So Kwun Wat Tsuen
-K51A-D020 22.372023 114.003593 掃管笏 (鄭任安夫人千禧小學)
-So Kwun Wat (Mrs.
-Cheng Yam On
-Millennium School)
+K51A-D020 22.372023 114.003593 掃管笏 (鄭任安夫人千禧小學) So Kwun Wat (Mrs. Cheng Yam On Millennium School)
 K51A-D030 22.374216 114.002295 掃管笏路 So Kwun Wat Road
 K51A-D040 22.373866 114.001024 管翠路 18 號 18 Kwun Chui Road
 K51A-D050 22.375123 113.997707 管翠路 Kwun Chui Road
@@ -173,10 +170,10 @@ K51A-D160 22.387355 113.98069 置樂花園 Chi Lok Fa Yuen
 K51A-D170 22.390433 113.978805 屯門官立中學 Tuen Mun Government Secondary School
 K51A-D180 22.392116 113.975082 輕鐵市中心站 LR Town Centre Stop
 K51A-D190 22.395021 113.974444 港鐵屯門站 (輕鐵屯門站) MTR Tuen Mun Station (LR Tuen Mun Stop)
-K51A-D200 22.397311 113.974853 聖公會聖西門呂明才中學SKH St. Simon's Lui Ming Choi Secondary School
+K51A-D200 22.397311 113.974853 聖公會聖西門呂明才中學 SKH St. Simon's Lui Ming Choi Secondary School
 K51A-D210 22.40334 113.979247 景峰花園 Prime View Garden
 K51A-D220 22.407254 113.978641 輕鐵鳳地站 LR Fung Tei Stop
-K51A-D230 22.410378 113.978607 港鐵兆康站 (南) (輕鐵兆康站)MTR Siu Hong Station (South) (LR Siu Hong Stop)
+K51A-D230 22.410378 113.978607 港鐵兆康站 (南) (輕鐵兆康站) MTR Siu Hong Station (South) (LR Siu Hong Stop)
 K51A-D240 22.408779 113.980397 彩暉花園 Brilliant Garden
 K51A-D250 22.410694 113.982212 嶺南大學 Lingnan University
 K51A-D260 22.411927 113.983128 倚嶺南庭 South Hillcrest
@@ -186,8 +183,8 @@ STATION ID STATION LATITUDE STATION LONGITUDE STATION NAME (CHI) STATION NAME (E
 K52-nU010 22.375261 113.968532 悅湖山莊 Yuet Wu Villa
 K52-nU020 22.372808 113.970095 邁亞美海灣 Miami Beach Towers
 K52-nU030 22.372801 113.967391 屯門碼頭 Tuen Mun Ferry Pier
-K52-nU040 22.374496 113.965605 湖景&#37032湖畔樓 Wu Boon House, Wu King Estate
-K52-nU050 22.376739 113.966289 湖景&#37032湖翠樓 Wu Tsui House, Wu King Estate
+K52-nU040 22.374496 113.965605 湖景&#37032 湖畔樓 Wu Boon House, Wu King Estate
+K52-nU050 22.376739 113.966289 湖景&#37032 湖翠樓 Wu Tsui House, Wu King Estate
 K52-nU060 22.381216 113.972293 屯門中央廣場 Tuen Mun Central Square
 K52-nU070 22.382943 113.976283 輕鐵三聖站 LR Sam Shing Stop
 K52-nU080 22.383774 113.97939 胡陳金枝中學 Mrs Aw Boon Haw Secondary School
@@ -209,18 +206,18 @@ K52-nU240 22.366727 113.94371 政府車場 Government Depot
 K52-nU250 22.36857 113.93822 內河碼頭 River Trade Terminal
 K52-nU260 22.36999 113.93403 環保園 EcoPark
 K52-nU270 22.36995 113.92874 紹榮鋼鐵 Shiu Wing Steel Mill
-K52-nU280 22.386382 113.921122 沙埔崗312號 No.312 Sha Po Kong
-K52-nU290 22.388034 113.920786 沙埔崗177號 No.177 Sha Po Kong
-K52-nU300 22.389307 113.920224 沙埔崗127號 No.127 Sha Po Kong
+K52-nU280 22.386382 113.921122 沙埔崗 312 號 No.312 Sha Po Kong
+K52-nU290 22.388034 113.920786 沙埔崗 177 號 No.177 Sha Po Kong
+K52-nU300 22.389307 113.920224 沙埔崗 127 號 No.127 Sha Po Kong
 K52-nU310 22.390617 113.920146 龍鼓灘 Lung Kwu Tan
 Route K52 (Inbound)
 STATION ID STATION LATITUDE STATION LONGITUDE STATION NAME (CHI) STATION NAME (ENG)
 K52-nD010 22.390617 113.920146 龍鼓灘 Lung Kwu Tan
-K52-nD020 22.389103 113.920301 沙埔崗127號 No.127 Sha Po Kong
-K52-nD030 22.388058 113.920786 沙埔崗177號 No.177 Sha Po Kong
-K52-nD040 22.386623 113.921158 沙埔崗288號 No.288 Sha Po Kong
-K52-nD050 22.385511 113.921257 沙埔崗351號 No.351 Sha Po Kong
-K52-nD060 22.38252 113.92102 中電 A廠 CLP (Plant A)
+K52-nD020 22.389103 113.920301 沙埔崗 127 號 No.127 Sha Po Kong
+K52-nD030 22.388058 113.920786 沙埔崗 177 號 No.177 Sha Po Kong
+K52-nD040 22.386623 113.921158 沙埔崗 288 號 No.288 Sha Po Kong
+K52-nD050 22.385511 113.921257 沙埔崗 351 號 No.351 Sha Po Kong
+K52-nD060 22.38252 113.92102 中電 A 廠 CLP (Plant A)
 K52-nD070 22.37012 113.92898 紹榮鋼鐵 Shiu Wing Steel Mill
 K52-nD080 22.37001 113.93439 環保園 EcoPark
 K52-nD090 22.36855 113.938063 內河碼頭 River Trade Terminal
@@ -240,7 +237,7 @@ K52-nD220 22.38771 113.9807 恒順園 Handsome Court
 K52-nD230 22.38519 113.981 恒豐園 Harvest Garden
 K52-nD240 22.382769 113.976256 輕鐵三聖站 LR Sam Shing Stop
 K52-nD250 22.380902 113.972021 屯門中央廣場 Tuen Mun Central Square
-K52-nD260 22.37652 113.966372 湖景&#37032湖翠樓 Wu Tsui House, Wu King Estate
+K52-nD260 22.37652 113.966372 湖景&#37032 湖翠樓 Wu Tsui House, Wu King Estate
 K52-nD270 22.374598 113.965833 兆禧苑 Siu Hei Court
 K52-nD280 22.373244 113.965958 海翠花園 Pierhead Garden
 K52-nD290 22.372843 113.969696 邁亞美海灣 Miami Beach Towers
@@ -290,11 +287,9 @@ K52A-D180 22.395064 113.969953 輕鐵建安站 LR Kin On Stop
 K52A-D190 22.394225 113.973358 屯門站 Tuen Mun Station
 Route K53 (Circular)
 STATION ID STATION LATITUDE STATION LONGITUDE STATION NAME (CHI) STATION NAME (ENG)
-K53-U010 22.394225 113.973358 屯門站 (輕鐵屯門站) Tuen Mun Station (LR
-Tuen Mun Stop)
+K53-U010 22.394225 113.973358 屯門站 (輕鐵屯門站) Tuen Mun Station (LR Tuen Mun Stop)
 K53-U020 22.391543 113.975435 屯門市中心 Tuen Mun Town Centre
-K53-U030 22.390622 113.978751 屯門官立中學 Tuen Mun Government
-Secondary School
+K53-U030 22.390622 113.978751 屯門官立中學 Tuen Mun Government Secondary School
 K53-U040 22.387719 113.980762 恒順園 Handsome Court
 K53-U050 22.385247 113.981068 恒豐園 Harvest Garden
 K53-U060 22.381732 113.978847 三聖&#37032; Sam Shing Estate
@@ -306,10 +301,7 @@ K53-U110 22.372048 113.993608 香港黃金海岸 Hong Kong Gold Coast
 K53-U120 22.371605 113.9954 愛琴海岸 Aegean Coast
 K53-U130 22.373878 113.996144 掃管笏變電站 So Kwun Wat Substation
 K53-U140 22.375743 113.999829 掃管笏村 So Kwun Wat Tsuen
-K53-D010 22.372023 114.003593 掃管笏 (鄭任安夫人千禧小學)
-So Kwun Wat (Mrs.
-Cheng Yam On
-Millennium School)
+K53-D010 22.372023 114.003593 掃管笏 (鄭任安夫人千禧小學) So Kwun Wat (Mrs. Cheng Yam On Millennium School)
 K53-D015 22.374216 114.002295 掃管笏路 So Kwun Wat Road
 K53-D020 22.373866 114.001024 管翠路 18 號 18 Kwun Chui Road
 K53-D030 22.375123 113.997707 管翠路 Kwun Chui Road
@@ -327,6 +319,12 @@ K53-D140 22.387328 113.980668 置樂花園 Chi Lok Fa Yuen
 K53-D150 22.390452 113.978855 屯門官立中學 Tuen Mun Government Secondary School
 K53-D160 22.392116 113.975082 輕鐵市中心站 LR Town Centre Stop
 K53-U011 22.394225 113.973358 屯門站 (輕鐵屯門站) Tuen Mun Station (LR Tuen Mun Stop)
+Route K53 (Circular)
+STATION ID STATION LATITUDE STATION LONGITUDE STATION NAME (CHI) STATION NAME (ENG)
+K53-U010 22.394225 113.973358 屯門站 (輕鐵屯門站) Tuen Mun Station (LR Tuen Mun Stop)
+K53-U020 22.391668 113.971547 天后路 Tin Hau Road
+K53-U030 22.38814 113.97015 業旺&#37032; Yip Wong Estate
+K53-U040 22.394225 113.973358 屯門站 (輕鐵屯門站) Tuen Mun Station (LR Tuen Mun Stop)
 Route K54 (Circular)
 STATION ID STATION LATITUDE STATION LONGITUDE STATION NAME (CHI) STATION NAME (ENG)
 K54-U010 22.4129536 113.9686386 和田&#37032; Wo Tin Estate
@@ -346,16 +344,27 @@ K54-D040 22.414907 113.977412 兆康苑 Siu Hong Court
 K54-D050 22.4130992 113.9723357 欣寶路公共運輸交匯處 Yan Po Road Public Transport Interchange
 K54-D060 22.4119741 113.9703303 菁田&#37032; Ching Tin Estate
 K54-D070 22.4129536 113.9686386 和田&#37032; Wo Tin Estate
+Route K54A (Outbound)
+STATION ID STATION LATITUDE STATION LONGITUDE STATION NAME (CHI) STATION NAME (ENG)
+K54A-U010 22.41295362 113.9686386 和田&#37032; Wo Tin Estate
+K54A-U020 22.41229368 113.9705794 菁田&#37032; Ching Tin Estate
+K54A-U030 22.41439481 113.9738808 紫田村 Tsz Tin Tsuen
+K54A-U040 22.41435 113.97701 欣田&#37032; Yan Tin Estate
+K54A-U050 22.4134 113.97902 港鐵兆康站 (北) (輕鐵兆康站) MTR Siu Hong Station (North) (LR Siu Hong Stop)
+Route K54A (Inbound)
+STATION ID STATION LATITUDE STATION LONGITUDE STATION NAME (CHI) STATION NAME (ENG)
+K54A-D010 22.4134 113.97902 港鐵兆康站 (北) (輕鐵兆康站) MTR Siu Hong Station (North) (LR Siu Hong Stop)
+K54A-D020 22.414907 113.977412 兆康苑 Siu Hong Court
+K54A-D030 22.41309916 113.9723357 欣寶路公共運輸交匯處 Yan Po Road Public Transport Interchange
+K54A-D040 22.41197411 113.9703303 菁田&#37032; Ching Tin Estate
+K54A-D050 22.41295362 113.9686386 和田&#37032; Wo Tin Estate
 Route K58 (Outbound)
 STATION ID STATION LATITUDE STATION LONGITUDE STATION NAME (CHI) STATION NAME (ENG)
 K58-U010 22.412815 113.982949 富泰 Fu Tai
 K58-U020 22.412004 113.98378 聚康山莊 Beneville
 K58-U023 22.41059 113.982387 嶺南大學 Lingnan University
 K58-U026 22.408575 113.980046 彩暉花園 Brilliant Garden
-K58-U030 22.410247 113.978583 港鐵兆康站 (南), (輕鐵兆康站)
-MTR Siu Hong Station
-(South), (LR Siu Hong
-Stop)
+K58-U030 22.410247 113.978583 港鐵兆康站 (南), (輕鐵兆康站) MTR Siu Hong Station (South), (LR Siu Hong Stop)
 K58-U040 22.4137 113.976951 兆康苑 Siu Hong Court
 K58-U050 22.41013 113.976505 輕鐵麒麟站 LR Kei Lun Stop
 K58-U060 22.408609 113.975571 屯門醫院 Tuen Mun Hospital
@@ -373,10 +382,31 @@ K58-U170 22.390652 113.978795 屯門官立中學 Tuen Mun Government Secondary S
 K58-U180 22.387795 113.980743 恒順園 Handsome Court
 K58-U190 22.385271 113.981071 恒豐園 Harvest Garden
 K58-U200 22.381705 113.978852 三聖&#37032; Sam Shing Estate
-K58-U210 22.379752 113.980639 青山灣 Castle Peak Bay
+K58-U215 22.378923 113.980763 青山灣 Castle Peak Beach
+K58-U220 22.377877 113.983564 海景花園 Seaview Garden
+K58-U230 22.374926 113.986745 咖啡灣 Cafeteria Beach
+K58-U240 22.373785 113.990848 黃金泳灘 Golden Beach
+K58-U250 22.372048 113.993608 香港黃金海岸 Hong Kong Gold Coast
+K58-U260 22.371605 113.9954 愛琴海岸 Aegean Coast
+K58-U270 22.373878 113.996144 掃管笏變電站 So Kwun Wat Sub-station
+K58-U280 22.375743 113.999829 掃管笏村 So Kwun Wat Tsuen
+K58-U290 22.372023 114.003593 掃管笏 (鄭任安夫人千禧小學) So Kwun Wat (Mrs. Cheng Yam On Millennium School)
+K58-U300 22.374216 114.002295 掃管笏路 So Kwun Wat Road
+K58-U310 22.373866 114.001024 管翠路18號 18 Kwun Chui Road
+K58-U320 22.375123 113.997707 管翠路 Kwun Chui Road
 Route K58 (Inbound)
 STATION ID STATION LATITUDE STATION LONGITUDE STATION NAME (CHI) STATION NAME (ENG)
-K58-D010 22.379752 113.980639 青山灣 Castle Peak Bay
+K58-D001 22.375743 113.999829 掃管笏村 So Kwun Wat Tsuen
+K58-D002 22.372023 114.003593 掃管笏 (鄭任安夫人千禧小學) So Kwun Wat (Mrs. Cheng Yam On Millennium School)
+K58-D003 22.374216 114.002295 掃管笏路 So Kwun Wat Road
+K58-D004 22.373866 114.001024 管翠路18號 18 Kwun Chui Road
+K58-D005 22.375123 113.997707 管翠路 Kwun Chui Road
+K58-D006 22.371473 113.995381 愛琴海岸 Aegean Coast
+K58-D007 22.371294 113.993906 香港黃金海岸 Hong Kong Gold Coast
+K58-D008 22.373653 113.991237 黃金泳灘 Golden Beach
+K58-D009 22.375924 113.985662 咖啡灣 Cafeteria Beach
+K58-D011 22.377941 113.983293 碧翠花園 Bayview Terrace
+K58-D012 22.378954 113.980609 青山灣碼頭 Castle Peak Bay Pier
 K58-D020 22.381189 113.979146 三聖&#37032; Sam Shing Estate
 K58-D030 22.383774 113.97939 胡陳金枝中學 Mrs Aw Boon Haw
 Secondary School
@@ -402,11 +432,8 @@ K58-D200 22.411915 113.983238 倚嶺南庭 South Hillcrest
 K58-D210 22.412815 113.982949 富泰 Fu Tai
 Route K65 (Outbound)
 STATION ID STATION LATITUDE STATION LONGITUDE STATION NAME (CHI) STATION NAME (ENG)
-K65-U010 22.44514396 114.035187 元朗站 (輕鐵元朗站, 港鐵元朗
-站)
-Yuen Long Station (LR
-Yuen Long Stop, MTR
-Yuen Long Station)
+K65-U010 22.44514396 114.035187 元朗站 (輕鐵元朗站, 港鐵元朗站)
+Yuen Long Station (LR Yuen Long Stop, MTR Yuen Long Station)
 K65-U020 22.44451201 114.0315245 又新街 Yau San Street
 K65-U030 22.4446245 114.028421 大棠路 Tai Tong Road
 K65-U040 22.44478103 114.026429 康樂路 Hong Lok Road
@@ -477,7 +504,7 @@ K65A-D070 22.448769 113.994128 錫降圍 Shek Kong Wai
 K65A-D080 22.446708 113.994761 廈村 Ha Tsuen
 K65A-D090 22.446637 113.997152 沙洲里村 Sha Chau Lei Tsuen
 K65A-D100 22.446941 114.00282 天盛苑 (港鐵天水圍站) Tin Shing Court (MTR Tin Shui Wai Station)
-K65A-D110 22.44654 114.0037516 天水圍站 (輕鐵天水圍站) Tin Shui Wai Station (LR Tin Shui Wai Stop) Route K66 (Outbound)
+K65A-D110 22.44654 114.0037516 天水圍站 (輕鐵天水圍站) Tin Shui Wai Station (LR Tin Shui Wai Stop)
 Route K66 (Outbound)
 STATION ID STATION LATITUDE STATION LONGITUDE STATION NAME (CHI) STATION NAME (ENG)
 K66-U010 22.45078121 114.0229286 朗屏 Long Ping
@@ -615,7 +642,7 @@ K74-U080 22.4444 114.02836 開心廣場 Yuen Long Landmark
 K74-U090 22.446625 114.0349444 港鐵元朗站(朗日路) (港鐵元朗站) MTR Yuen Long Station (Long Yat Road) (MTR Yuen Long Station)
 K74-U100 22.444787 114.040379 博愛醫院 Pok Oi Hospital
 K74-D010 22.44436944 114.0436667 東成里 Tung Shing Lei
-K74-D020 22.44403889 114.0439444 東華三院馬振玉中學(近朗善 &#37032;) TWGHs C.Y.Ma Memorial College (near Long Shin Estate)
+K74-D020 22.44403889 114.0439444 東華三院馬振玉中學(近朗善&#37032;) TWGHs C.Y.Ma Memorial College (near Long Shin Estate)
 K74-D030 22.447487 114.026853 大橋村 (港鐵朗屏站) Tai Kiu Tsuen (MTR Long Ping Station)
 K74-D040 22.449502 114.025527 惠州學校 Wai Chow School
 K74-D050 22.451421 114.025317 朗屏&#37032;珠屏樓 Chu Ping House, Long Ping Estate
@@ -627,20 +654,28 @@ K74-U011 22.455322 113.998689 天瑞 Tin Shui
 K74-D100 22.460285 113.997021 天華&#37032; Tin Wah Estate
 K74-D110 22.462123 113.99909 天悅&#37032; Tin Yuet Estate
 K74-U002 22.458553 114.001415 天水圍市中心 Tin Shui Wai Town Centre
-Route K75A (Circular)
+Route K75P (Circular)
 STATION ID STATION LATITUDE STATION LONGITUDE STATION NAME (CHI) STATION NAME (ENG)
-K75A-U010 22.44654 114.0037516 天水圍站 (輕鐵天水圍站) Tin Shui Wai Station (LR Tin Shui Wai Stop)
-K75A-U020 22.446839 114.00307 天盛苑 (港鐵天水圍站) Tin Shing Court (MTR Tin Shui Wai Station)
-K75A-U030 22.440307 113.998965 石&#22487;村 Shek Po Tsuen
-K75A-D010 22.433489 113.99772 輕鐵洪水橋站 LR Hung Shui Kiu Stop
-K75A-D020 22.432897 113.992837 鄉事委員會 Rural Committee
-K75A-D030 22.434526 113.992613 田心 Tin Sam
-K75A-D040 22.436504 113.991851 新李屋村 San Lee Uk Tsuen
-K75A-D050 22.439615 113.991583 新生村 San Sang Tsuen
-K75A-D060 22.443545 113.991309 李屋村 Lee Uk Tsuen
-K75A-D070 22.445107 113.992349 新屋村 San Uk Tsuen
-K75A-D080 22.446257 113.993342 廈村市 Ha Tsuen Shi
-K75A-D090 22.44670803 113.994761 廈村 Ha Tsuen
-K75A-D100 22.44663703 113.997152 沙洲里村 Sha Chau Lei Tsuen
-K75A-D110 22.446928 114.002891 天盛苑 (港鐵天水圍站) Tin Shing Court (MTR Tin Shui Wai Station)
-K75A-U011 22.44654 114.0037516 天水圍站 (輕鐵天水圍站) Tin Shui Wai Station (LR Tin Shui Wai Stop) 
+K75P-U010 22.455356 113.998975 天瑞 Tin Shui
+K75P-U020 22.454494 114.003128 天水圍公園 Tin Shui Wai Park
+K75P-U030 22.452347 114.002244 天耀&#37032;耀盛樓 Yiu Shing House, Tin Yiu Estate
+K75P-U040 22.450039 114.002836 輕鐵天耀站 LR Tin Yiu Stop
+K75P-U050 22.446917 114.003097 天盛苑 (港鐵天水圍站) Tin Shing Court (MTR Tin Shui Wai Station)
+K75P-U060 22.446711 113.998247 石&#22487;路 Shek Po Road
+K75P-U070 22.446108 113.995617 沙洲里村 Sha Chau Lei Tsuen
+K75P-U080 22.446186 113.993353 廈村市 Ha Tsuen Shi
+K75P-U090 22.445111 113.992378 新屋村 San Uk Tsuen
+K75P-U100 22.443717 113.991383 李屋村 Lee Uk Tsuen
+K75P-U110 22.440183 113.991708 新生村 San Sang Tsuen
+K75P-U120 22.436125 113.992242 新李屋村 San Lee Uk Tsuen
+K75P-U130 22.433431 113.992694 田心 Tin Sam
+K75P-U140 22.431597 113.992822 鄉事委員會 Rural Committee
+K75P-D010 22.433889 113.997633 輕鐵洪水橋站 LR Hung Shui Kiu Stop
+K75P-D020 22.436081 113.99985 洪水橋巴士廠 Hung Shui Kiu Bus Depot
+K75P-D030 22.437436 113.999028 洪福&#37032; Hung Fuk Estate
+K75P-D040 22.440381 113.998406 石&#22487;村 Shek Po Tsuen
+K75P-D050 22.446897 114.002789 天盛苑 (港鐵天水圍站) Tin Shing Court (MTR Tin Shui Wai Station)
+K75P-D060 22.449461 114.002956 天水圍警署 Tin Shui Wai Police Station
+K75P-D070 22.452539 114.002228 賞湖居 Sherwood Court
+K75P-D080 22.454522 114.002736 天水圍公園 Tin Shui Wai Park
+K75P-U011 22.455356 113.998975 天瑞 Tin Shui
