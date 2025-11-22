@@ -1,4 +1,4 @@
-import 'package:up_bus_hk_core/isar/models/bus_route.dart';
+import 'package:up_bus_hk_core/isar/models/transit_route.dart';
 
 extension BusRouteX on BusRoute {
   String get fareGroupKey {
