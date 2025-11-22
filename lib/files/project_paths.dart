@@ -34,6 +34,8 @@ class ProjectPath {
 
   static String mtrbDataPath = join(dataDir.path, 'mtrb.txt');
 
+  static String appIsarPath = join(isarDir.path, 'default.isar');
+
   /// Ensures all required folders exist before use.
   static Future<bool> initDirectories() async {
     bool created = false;
