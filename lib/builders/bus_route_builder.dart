@@ -463,7 +463,7 @@ class BusRouteBuilder {
   ) {
     final govRouteToPairStopCount = govRoutes.map(
       (e) => MapEntry(e, _countMatchingStops(route, e)),
-    );
+    ).toList();
     return govRouteToPairStopCount
         .reduce((a, b) => a.value > b.value ? a : b)
         .key;
@@ -485,7 +485,7 @@ class BusRouteBuilder {
           e,
           BuilderUtils.distance(latLong, govStop.latLng.toLatLong()),
         );
-      });
+      }).toList();
       final minDistance = distances.reduce((a, b) => a.value < b.value ? a : b);
       if (minDistance.value <= _stopPairingRadiusMeters) {
         count++;
