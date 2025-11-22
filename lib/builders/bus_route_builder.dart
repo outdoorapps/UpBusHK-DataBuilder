@@ -91,11 +91,13 @@ class BusRouteBuilder {
     await Future.forEach(fareGroups.values, (routes) async {
       if (routes.length == 1) return;
 
-      final notFullyPopulatedRoutes = routes.where(
-        (e) => e.stopFares
-            .sublist(0, e.stopFares.length - 1) // Ignore the last item
-            .any((e) => e.fare == null),
-      );
+      final notFullyPopulatedRoutes = routes
+          .where(
+            (e) => e.stopFares
+                .sublist(0, e.stopFares.length - 1) // Ignore the last item
+                .any((e) => e.fare == null),
+          )
+          .toList();
       if (notFullyPopulatedRoutes.isEmpty) return;
 
       final populatedRoutes = routes
@@ -140,14 +142,14 @@ class BusRouteBuilder {
     final routes = await isar.busRoutes.where().findAll();
     Company.values.forEach((e) => _printMatchCount(routes, e));
 
-    final jointRoutes = routes.where((e) => e.companies.length > 1);
+    final jointRoutes = routes.where((e) => e.companies.length > 1).toList();
     final matchedGovJointRoutesIds = jointRoutes
         .map((e) => e.govRouteKey)
         .whereType<String>()
         .toSet();
-    final unmatchedGovJointRoutes = govJointRoutes.where(
-      (e) => !matchedGovJointRoutesIds.contains(e.key),
-    );
+    final unmatchedGovJointRoutes = govJointRoutes
+        .where((e) => !matchedGovJointRoutesIds.contains(e.key))
+        .toList();
     print(
       'Joint:${matchedGovJointRoutesIds.length} '
       '(Total:${govJointRoutes.length}, '
@@ -156,10 +158,11 @@ class BusRouteBuilder {
     // Log unmatched gov joint routes
     unmatchedGovJointRoutes
         .where((e) => !Patch.accountedJointRoute.contains(e.key))
+        .toList()
         .forEach((e) => print('${e.number},${e.key}'));
 
     // Log routes with missing secondary info
-    final noSecondary = jointRoutes.where((e) => e.jointBound == null);
+    final noSecondary = jointRoutes.where((e) => e.jointBound == null).toList();
     if (noSecondary.isNotEmpty) {
       print('Joint routes missing secondary info: ${noSecondary.length}');
       noSecondary.forEach((e) => print('- ${e.routeId}'));
@@ -167,9 +170,9 @@ class BusRouteBuilder {
   }
 
   static void _printMatchCount(List<BusRoute> routes, Company company) {
-    final routesOfCompany = routes.where(
-      (e) => e.companies.length == 1 && e.companies.first == company,
-    );
+    final routesOfCompany = routes
+        .where((e) => e.companies.length == 1 && e.companies.first == company)
+        .toList();
     final matchCount = routesOfCompany
         .where((e) => e.govRouteKey != null)
         .length;
@@ -272,7 +275,7 @@ class BusRouteBuilder {
               .toList();
 
     // Create the BusStopFare list
-    final List<BusStopFare> busStopFares = _buildStopFares(
+    final busStopFares = _buildStopFares(
       route,
       govRoute: govRoute,
       jointStops: stopFares,
@@ -389,12 +392,11 @@ class BusRouteBuilder {
         .where((e) => _isGovBoundMatch(route, e))
         .toList();
 
-    final matchedGovRoute = switch (boundMatched.length) {
+    return switch (boundMatched.length) {
       0 => null,
       1 => boundMatched.first,
       _ => _getGovRouteWithMostPairingStops(route, boundMatched.toList()),
     };
-    return matchedGovRoute;
   }
 
   static bool _isGovBoundMatch(CompanyBusRoute route, GovBusRoute govRoute) {
