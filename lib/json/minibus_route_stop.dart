@@ -22,6 +22,7 @@ class MinibusRouteStopResponse {
 
   factory MinibusRouteStopResponse.fromJson(Map<String, dynamic> json) =>
       _$MinibusRouteStopResponseFromJson(json);
+
   Map<String, dynamic> toJson() => _$MinibusRouteStopResponseToJson(this);
 }
 
@@ -34,13 +35,11 @@ class MinibusRouteStopData {
   @JsonKey(name: 'data_timestamp')
   final String dataTimestamp;
 
-  MinibusRouteStopData({
-    required this.routeStops,
-    required this.dataTimestamp,
-  });
+  MinibusRouteStopData({required this.routeStops, required this.dataTimestamp});
 
   factory MinibusRouteStopData.fromJson(Map<String, dynamic> json) =>
       _$MinibusRouteStopDataFromJson(json);
+
   Map<String, dynamic> toJson() => _$MinibusRouteStopDataToJson(this);
 }
 
@@ -72,5 +71,6 @@ class MinibusRouteStop {
 
   factory MinibusRouteStop.fromJson(Map<String, dynamic> json) =>
       _$MinibusRouteStopFromJson(json);
+
   Map<String, dynamic> toJson() => _$MinibusRouteStopToJson(this);
 }

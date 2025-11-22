@@ -11,6 +11,7 @@ class NlbRouteStopResponse {
 
   factory NlbRouteStopResponse.fromJson(Map<String, dynamic> json) =>
       _$NlbRouteStopResponseFromJson(json);
+
   Map<String, dynamic> toJson() => _$NlbRouteStopResponseToJson(this);
 }
 
@@ -60,5 +61,6 @@ class NlbStop {
 
   factory NlbStop.fromJson(Map<String, dynamic> json) =>
       _$NlbStopFromJson(json);
+
   Map<String, dynamic> toJson() => _$NlbStopToJson(this);
 }

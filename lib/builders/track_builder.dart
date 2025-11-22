@@ -43,20 +43,25 @@ class TrackBuilder {
         // Skip track not used be any route
         if (!_govRouteKeys.contains(feature.properties.key)) return null;
 
+        final govRouteKey = Track.getGovRouteKey(
+          feature.properties.routeId,
+          feature.properties.routeSeq,
+        );
+
         final hk1980Coordinates = feature.geometry.coordinates
             .expand((e) => e)
             .toList();
         final hk1980Track = RamerDouglasPeucker.simplify(hk1980Coordinates);
 
-        final coordinates = hk1980Track.map((e) => Crs2326.convert(e[0], e[1]));
-        final govRouteKey = Track.getGovRouteKey(
-          feature.properties.routeId,
-          feature.properties.routeSeq,
-        );
+        final flatCoordinates = hk1980Track
+            .map((e) => Crs2326.convert(e[0], e[1]))
+            .expand((e) => e)
+            .toList();
+
         return Track(
           objectId: feature.properties.objectId,
           govRouteKey: govRouteKey,
-          flatCoordinates: coordinates.expand((e) => e).toList(),
+          flatCoordinates: flatCoordinates,
         );
       },
       writeToIsar: (batch) async {

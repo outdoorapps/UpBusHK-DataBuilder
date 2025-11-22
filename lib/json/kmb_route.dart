@@ -23,6 +23,7 @@ class KmbRouteResponse {
 
   factory KmbRouteResponse.fromJson(Map<String, dynamic> json) =>
       _$KmbRouteResponseFromJson(json);
+
   Map<String, dynamic> toJson() => _$KmbRouteResponseToJson(this);
 }
 
@@ -67,7 +68,8 @@ class KmbRoute {
 
   factory KmbRoute.fromJson(Map<String, dynamic> json) =>
       _$KmbRouteFromJson(json);
+
   Map<String, dynamic> toJson() => _$KmbRouteToJson(this);
 
-  String get key => "$route-${bound.label}-$serviceType";
+  String get key => [route, bound.label, serviceType].join('-');
 }

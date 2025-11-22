@@ -47,4 +47,3 @@ class MinibusRouteRegionData {
 
   Map<String, dynamic> toJson() => _$MinibusRouteRegionDataToJson(this);
 }
-

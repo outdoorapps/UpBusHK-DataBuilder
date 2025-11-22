@@ -1,7 +1,7 @@
 import 'dart:math';
 
 class RamerDouglasPeucker {
-  static const double defaultEpsilon = 3; //todo 0.01 / 1000000;
+  static const double defaultEpsilon = 3;
 
   static Point _pointFromCoordinate(List<double> coord) =>
       Point(coord[1], coord[0]);

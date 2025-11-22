@@ -11,6 +11,7 @@ class NlbRouteResponse {
 
   factory NlbRouteResponse.fromJson(Map<String, dynamic> json) =>
       _$NlbRouteResponseFromJson(json);
+
   Map<String, dynamic> toJson() => _$NlbRouteResponseToJson(this);
 }
 
@@ -46,5 +47,6 @@ class NlbRoute {
 
   factory NlbRoute.fromJson(Map<String, dynamic> json) =>
       _$NlbRouteFromJson(json);
+
   Map<String, dynamic> toJson() => _$NlbRouteToJson(this);
 }

@@ -69,5 +69,5 @@ class CtbRoute {
       _$CtbRouteFromJson(json);
   Map<String, dynamic> toJson() => _$CtbRouteToJson(this);
 
-  String key(Bound bound) => "$route-${bound.label}";
+  String key(Bound bound) => [route, bound.label].join('-');
 }

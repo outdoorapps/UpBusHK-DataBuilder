@@ -24,6 +24,7 @@ class KmbRouteStopResponse {
 
   factory KmbRouteStopResponse.fromJson(Map<String, dynamic> json) =>
       _$KmbRouteStopResponseFromJson(json);
+
   Map<String, dynamic> toJson() => _$KmbRouteStopResponseToJson(this);
 }
 
@@ -51,5 +52,6 @@ class KmbRouteStop {
 
   factory KmbRouteStop.fromJson(Map<String, dynamic> json) =>
       _$KmbRouteStopFromJson(json);
+
   Map<String, dynamic> toJson() => _$KmbRouteStopToJson(this);
 }

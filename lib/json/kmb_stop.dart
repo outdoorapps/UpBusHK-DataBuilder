@@ -22,6 +22,7 @@ class KmbStopResponse {
 
   factory KmbStopResponse.fromJson(Map<String, dynamic> json) =>
       _$KmbStopResponseFromJson(json);
+
   Map<String, dynamic> toJson() => _$KmbStopResponseToJson(this);
 }
 
@@ -54,5 +55,6 @@ class KmbStop {
 
   factory KmbStop.fromJson(Map<String, dynamic> json) =>
       _$KmbStopFromJson(json);
+
   Map<String, dynamic> toJson() => _$KmbStopToJson(this);
 }

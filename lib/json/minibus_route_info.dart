@@ -6,7 +6,7 @@ part '../generated/json/minibus_route_info.g.dart';
 
 /// Minibus (GMB) Route Info Response
 @JsonSerializable(explicitToJson: true)
-class MinibusRouteOverviewResponse {
+class MinibusRouteHeaderResponse {
   final String type;
   final String version;
 
@@ -16,17 +16,17 @@ class MinibusRouteOverviewResponse {
   @JsonKey(name: 'data')
   final List<GovMinibusRoute> routes;
 
-  MinibusRouteOverviewResponse({
+  MinibusRouteHeaderResponse({
     required this.type,
     required this.version,
     required this.generatedTimestamp,
     required this.routes,
   });
 
-  factory MinibusRouteOverviewResponse.fromJson(Map<String, dynamic> json) =>
-      _$MinibusRouteOverviewResponseFromJson(json);
+  factory MinibusRouteHeaderResponse.fromJson(Map<String, dynamic> json) =>
+      _$MinibusRouteHeaderResponseFromJson(json);
 
-  Map<String, dynamic> toJson() => _$MinibusRouteOverviewResponseToJson(this);
+  Map<String, dynamic> toJson() => _$MinibusRouteHeaderResponseToJson(this);
 }
 
 /// Route Info Entry

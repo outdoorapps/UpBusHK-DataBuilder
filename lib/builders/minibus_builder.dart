@@ -117,13 +117,14 @@ class MinibusBuilder {
   static Future<(List<MinibusRoute>, Set<MinibusStop>)> _buildBatch(
     Set<String> regionNumberPairs,
   ) async {
-    // 1. Get routes overviews based on region & number
-    final routeOverviews = await _getRouteOverviews(regionNumberPairs);
+    // 1. Get routes headers based on region & number
+    final routeHeaders = await _getRouteHeaders(regionNumberPairs);
 
-    // 2. Separate the routes overviews by bound
-    final routeOverviewToBound = routeOverviews
+    // 2. Separate the routes headers by bound
+    final routeHeaderToBound = routeHeaders
         .whereType<GovMinibusRoute>()
-        .expand((e) => e.directions.map((direction) => MapEntry(e, direction)));
+        .expand((e) => e.directions.map((direction) => MapEntry(e, direction)))
+        .toList();
 
     // 3. Get route stops for each route from the API
     final results =
@@ -131,7 +132,7 @@ class MinibusBuilder {
           MapEntry<GovMinibusRoute, MinibusDirection>,
           (GovMinibusRoute, MinibusDirection, List<MinibusRouteStop>)
         >(
-          items: routeOverviewToBound,
+          items: routeHeaderToBound,
           label: "Building minibus routes",
           worker: (entry) async {
             final govRoute = entry.key;
@@ -205,28 +206,28 @@ class MinibusBuilder {
     return (minibusRoutes, minibusStops);
   }
 
-  /// Get route overviews for the given [regionNumberPairs]. The overviews
-  /// contains route ID, descriptions and origins & destinations for bounds.
-  static Future<List<GovMinibusRoute>> _getRouteOverviews(
+  /// Get route headers for the given [regionNumberPairs]. The headers contains
+  /// route ID, descriptions and origins & destinations for bounds.
+  static Future<List<GovMinibusRoute>> _getRouteHeaders(
     Set<String> regionNumberPairs,
   ) async {
-    final routeOverviews =
+    final routeHeaders =
         await AsyncUtils.mapAsyncWithProgress<String, GovMinibusRoute?>(
           items: regionNumberPairs,
-          label: "Getting minibus route overviews",
+          label: "Getting minibus route headers",
           worker: (key) async {
             final parts = key.split('-');
             final region = parts[0];
             final number = parts[1];
 
-            final response = await WebServices.minibus.getRouteOverview(
+            final response = await WebServices.minibus.getRouteHeader(
               region,
               number,
             );
             return response.routes.firstOrNull;
           },
         );
-    return routeOverviews.whereType<GovMinibusRoute>().toList();
+    return routeHeaders.whereType<GovMinibusRoute>().toList();
   }
 
   static Future<MinibusGeoJson> _readMinibusData() async {
