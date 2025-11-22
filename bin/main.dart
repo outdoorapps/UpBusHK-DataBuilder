@@ -11,13 +11,31 @@ import 'package:up_bus_hk_data_builder/network/web_services.dart';
 import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
 
 void main() async {
-  await Benchmark.executeAsync('Initializing', _init);
-  // await Benchmark.executeAsync('Downloading gov data', _downloadGovData);
+  await Benchmark.executeAsync('Building UpBusHK data', _build);
+}
+
+Future<void> _build() async {
+  await Benchmark.executeAsync(
+    'Initializing',
+    () async => await IsarManager.init(clearPreviousData: true),
+  );
+
+  await Benchmark.executeAsync('Downloading gov data', () async {
+    final urlToPath = {
+      Links.busRouteGeoJsonUrl: ProjectPath.busRoutesGeoJsonPath,
+      Links.busStopsGeoJsonUrl: ProjectPath.busStopsGeoJsonPath,
+      Links.busRouteStopUrl: ProjectPath.busRouteStopJsonPath,
+      Links.minibusRoutesGeoJsonUrl: ProjectPath.minibusDataJsonPath,
+      Links.fareUrl: ProjectPath.busFarePath,
+    };
+    await WebServices.downloadAll(urlToPath);
+  });
 
   await Benchmark.executeAsync(
     'Building company bus routes',
     CompanyRouteBuilder.build,
   );
+
   await Benchmark.executeAsync('Building bus stops', BusStopBuilder.build);
 
   await Benchmark.executeAsync('Building minibus data', MinibusBuilder.build);
@@ -27,19 +45,6 @@ void main() async {
   await Benchmark.executeAsync('Building bus routes', BusRouteBuilder.build);
 
   await Benchmark.executeAsync('Building tracks', TrackBuilder.build);
-}
 
-Future<void> _init() async {
-  await IsarManager.init(clearPreviousData: true);
-}
-
-Future<void> _downloadGovData() async {
-  final urlToPath = {
-    Links.busRouteGeoJsonUrl: ProjectPath.busRoutesGeoJsonPath,
-    Links.busStopsGeoJsonUrl: ProjectPath.busStopsGeoJsonPath,
-    Links.busRouteStopUrl: ProjectPath.busRouteStopJsonPath,
-    Links.minibusRoutesGeoJsonUrl: ProjectPath.minibusDataJsonPath,
-    Links.fareUrl: ProjectPath.busFarePath,
-  };
-  await WebServices.downloadAll(urlToPath);
+  // todo compress to archive
 }

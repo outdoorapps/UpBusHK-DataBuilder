@@ -27,6 +27,7 @@ class BusRouteBuilder {
   static late final Set<String> _jointRouteNumbers;
   static late final Map<int, GovStop> _govStopMap;
   static late final Map<String, BusStop> _busStopMap;
+  static final _matchedGovJointRouteKeys = <String>{};
 
   static Future<void> build({bool clearPreviousData = false}) async {
     if (clearPreviousData) {
@@ -385,6 +386,14 @@ class BusRouteBuilder {
         )
         .findAll();
 
+    // Joint route can only be matched once while other gov routes can be
+    // matched to multiple routes
+    final isJointRoute = potentials.firstOrNull?.isJointRoute == true;
+    if (isJointRoute) {
+      potentials.removeWhere((e) => _matchedGovJointRouteKeys.contains(e.key));
+    }
+    if (potentials.isEmpty) return null;
+
     // 2. Match bound
     // If there are more than one candidates, return the one with the most
     // pairing stops
@@ -392,11 +401,15 @@ class BusRouteBuilder {
         .where((e) => _isGovBoundMatch(route, e))
         .toList();
 
-    return switch (boundMatched.length) {
+    final matchedGovRoute = switch (boundMatched.length) {
       0 => null,
       1 => boundMatched.first,
       _ => _getGovRouteWithMostPairingStops(route, boundMatched.toList()),
     };
+    if (isJointRoute && matchedGovRoute != null) {
+      _matchedGovJointRouteKeys.add(matchedGovRoute.key);
+    }
+    return matchedGovRoute;
   }
 
   static bool _isGovBoundMatch(CompanyBusRoute route, GovBusRoute govRoute) {
@@ -461,9 +474,9 @@ class BusRouteBuilder {
     CompanyBusRoute route,
     List<GovBusRoute> govRoutes,
   ) {
-    final govRouteToPairStopCount = govRoutes.map(
-      (e) => MapEntry(e, _countMatchingStops(route, e)),
-    ).toList();
+    final govRouteToPairStopCount = govRoutes
+        .map((e) => MapEntry(e, _countMatchingStops(route, e)))
+        .toList();
     return govRouteToPairStopCount
         .reduce((a, b) => a.value > b.value ? a : b)
         .key;
