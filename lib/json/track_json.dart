@@ -102,5 +102,5 @@ class TrackProperties {
 
   Map<String, dynamic> toJson() => _$TrackPropertiesToJson(this);
 
-  String get key => [routeId, routeSeq].join('_');
+  String get key => [routeId, routeSeq].join('-');
 }
