@@ -16,7 +16,7 @@ dependencies:
   # Network
   dio: ^5.9.0
   dio_smart_retry: ^7.0.1
-  retrofit: 4.9.0 # todo do not use 4.9.1
+  retrofit: ^4.9.1
 
   # Code generation
   json_annotation: ^4.9.0
