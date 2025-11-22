@@ -43,7 +43,7 @@ class IsarManager {
     );
 
     final isar = await Isar.open(
-      UpBusHkSchema.schemas,
+      UpBusHkSchema.appSchemas,
       directory: ProjectPath.isarDir.path,
     );
 

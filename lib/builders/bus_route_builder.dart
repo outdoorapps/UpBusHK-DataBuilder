@@ -27,7 +27,6 @@ class BusRouteBuilder {
   static late final Set<String> _jointRouteNumbers;
   static late final Map<int, GovStop> _govStopMap;
   static late final Map<String, BusStop> _busStopMap;
-  static final _matchedGovRouteKeys = <String>{};
 
   static Future<void> build({bool clearPreviousData = false}) async {
     if (clearPreviousData) {
@@ -383,21 +382,18 @@ class BusRouteBuilder {
         )
         .findAll();
 
-    // Exclude gov routes that has already been matched to a company bus route
-    potentials.removeWhere((e) => _matchedGovRouteKeys.contains(e.key));
-    if (potentials.isEmpty) return null;
-
     // 2. Match bound
     // If there are more than one candidates, return the one with the most
     // pairing stops
-    final boundMatched = potentials.where((e) => _isGovBoundMatch(route, e));
+    final boundMatched = potentials
+        .where((e) => _isGovBoundMatch(route, e))
+        .toList();
+
     final matchedGovRoute = switch (boundMatched.length) {
       0 => null,
       1 => boundMatched.first,
       _ => _getGovRouteWithMostPairingStops(route, boundMatched.toList()),
     };
-
-    if (matchedGovRoute != null) _matchedGovRouteKeys.add(matchedGovRoute.key);
     return matchedGovRoute;
   }
 
@@ -413,7 +409,6 @@ class BusRouteBuilder {
       govOrigin.latLng,
       _govRouteMatchRadiusMeters,
     );
-    if (!originMatch) return false;
 
     // II. Check if the destinations are the same
     final destMatch = _isLatLngMatch(
@@ -421,19 +416,17 @@ class BusRouteBuilder {
       govDest.latLng,
       _govRouteMatchRadiusMeters,
     );
-    if (!destMatch) return false;
 
     // III. For a circular route, gov route omits the last stop. Check if the
     // company route destination is the same as the gov route origin.
-    if (govRoute.originE == govRoute.destE) {
-      final terminalMatch = _isLatLngMatch(
-        dest.latLng,
-        govOrigin.latLng,
-        _circularRouteMatchingRadiusMeters,
-      );
-      if (terminalMatch) return true;
-    }
-    return true;
+    final terminalMatch = govOrigin.stopNameE == govDest.stopNameE
+        ? _isLatLngMatch(
+            dest.latLng,
+            govOrigin.latLng,
+            _circularRouteMatchingRadiusMeters,
+          )
+        : false;
+    return (originMatch && destMatch) || terminalMatch;
   }
 
   /// Check if two [CompanyBusRoute]s' bounds match with each other. If either
