@@ -249,37 +249,10 @@ class CompanyRouteBuilder {
   }
 
   static Future<List<CompanyBusRoute>> _buildMtrbRoutes() async {
-    final List<CompanyBusRoute> mtrbCompanyBusRoutes = [];
-
-    await Benchmark.executeAsync('Building MTRB routes', () async {
-      final mtrbRouteMap = await MtrbParser.parseMtrbData(
-        ProjectPath.mtrbDataPath,
-      );
-
-      mtrbRouteMap.forEach((routeName, boundMap) {
-        boundMap.forEach((bound, stops) {
-          if (stops.isEmpty) return;
-
-          final origin = stops.first;
-          final dest = stops.last;
-
-          final route = CompanyBusRoute(
-            company: Company.MTRB,
-            number: routeName,
-            bound: bound,
-            originE: origin.nameE,
-            originC: origin.nameC,
-            destE: dest.nameE,
-            destC: dest.nameC,
-            serviceType: null,
-            nlbRouteId: null,
-            stops: stops.map((s) => s.stopId).toList(),
-          );
-          mtrbCompanyBusRoutes.add(route);
-        });
-      });
-    });
-
-    return mtrbCompanyBusRoutes;
+    final (routes, stops) = await Benchmark.executeAsync(
+      'Building MTRB routes',
+      () async => await MtrbParser.parseMtrbData(ProjectPath.mtrbDataPath),
+    );
+    return routes;
   }
 }
