@@ -1,7 +1,9 @@
+import 'package:up_bus_hk_data_builder/builders/bus_route_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/bus_stop_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/company_route_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/gov_bus_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/minibus_builder.dart';
+import 'package:up_bus_hk_data_builder/builders/track_builder.dart';
 import 'package:up_bus_hk_data_builder/files/project_paths.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/network/links.dart';
@@ -9,7 +11,7 @@ import 'package:up_bus_hk_data_builder/network/web_services.dart';
 import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
 
 void main() async {
-  // await Benchmark.executeAsync('Initializing', _init);
+  await Benchmark.executeAsync('Initializing', _init);
   // await Benchmark.executeAsync('Downloading gov data', _downloadGovData);
 
   await Benchmark.executeAsync(
@@ -21,6 +23,10 @@ void main() async {
   await Benchmark.executeAsync('Building minibus data', MinibusBuilder.build);
 
   await Benchmark.executeAsync('Building gov bus data', GovBusBuilder.build);
+
+  await Benchmark.executeAsync('Building bus routes', BusRouteBuilder.build);
+
+  await Benchmark.executeAsync('Building tracks', TrackBuilder.build);
 }
 
 Future<void> _init() async {
