@@ -3,20 +3,20 @@ import 'dart:io';
 
 import 'package:up_bus_hk_core/enums/bound.dart';
 import 'package:up_bus_hk_core/enums/company.dart';
-import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
 import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
+import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
 
 class MtrbParser {
   static const String _TSUEN_CODE = '&#37032;';
   static const String _TSUEN_CHARACTER = '邨';
-  static final _mtrbRouteRegex = RegExp(r'K[0-9]+[A-Z]?|506');
+  static final _mtrbRouteRegex = RegExp(r'^(K[0-9]+[A-Z]*\*?|506)$');
   static final _boundRegex = RegExp(r'(?<=\().+?(?=\))');
   static final _stopIdRegex = RegExp(
-    r'^(K[0-9]+[A-Z]?|506)-[a-z]?[A-Z][0-9]{3}',
+    r'^(K[0-9]+[A-Z]*\*?|506)-[a-z]?[UD][0-9]{3}$',
   );
   static final _chiNameRegex = RegExp(
     r'([\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF])+[^=A-Z]*',
-  ); // "(\\p{IsHan})+[^=A-Z]*"
+  ); // Equal to "(\\p{IsHan})+[^=A-Z]*"
 
   /// Parses the MTR Bus data file into a nested map:
   /// routeNumber -> bound -> List<BusStop>
@@ -31,16 +31,17 @@ class MtrbParser {
     }
 
     final lines = await file.readAsLines(encoding: utf8);
-
     String? number;
     Bound? bound;
 
     for (final line in lines) {
-      if (line.startsWith('Route')) {
+      if (line.startsWith('#')) {
+        // Comments, do nothing
+      } else if (line.startsWith('Route')) {
         number = _mtrbRouteRegex.firstMatch(line)?.group(0);
         final boundText = _boundRegex.firstMatch(line)?.group(0);
         bound = switch (boundText) {
-          'Outbound' || 'Single Direction' => Bound.O,
+          'Outbound' || 'Single Direction' || 'Circular' => Bound.O,
           'Inbound' => Bound.I,
           _ => null,
         };
@@ -81,7 +82,6 @@ class MtrbParser {
         }
       }
     }
-
     return routeMap;
   }
 }
