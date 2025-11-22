@@ -9,9 +9,6 @@ import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
 
 class MtrbParser {
   static final _chineseMatcher = RegExp(r'^[\u4E00-\u9FFF\s\(\)【】0-9、]+');
-  static final _stopIdMatcher = RegExp(
-    r'^(K[0-9]+[A-Z]*\*?|506)-[a-z]?[UD][0-9]{3}$',
-  );
   static const String _TSUEN_CODE = '&#37032;';
   static const String _TSUEN_CHARACTER = '邨';
 
@@ -50,15 +47,14 @@ class MtrbParser {
         }
 
         // Starts new route
-        final parts = line.split(RegExp(r'\s+'));
-        number = parts[1];
-        final type = parts[2].substring(1, parts[2].length - 1);
+        number = line.split(RegExp(r'\s+'))[1];
+        final type = RegExp(r'\(([^)]+)\)').firstMatch(line)?.group(1);
         bound = switch (type) {
           'Outbound' || 'Single Direction' || 'Circular' => Bound.O,
           'Inbound' => Bound.I,
           _ => null,
         };
-      } else if (_stopIdMatcher.hasMatch(line)) {
+      } else if (number != null && line.startsWith(number)) {
         final stop = _parseStopLine(line);
         routeStops.add(stop);
         stops.add(stop);
