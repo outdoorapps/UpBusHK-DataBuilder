@@ -4,17 +4,14 @@ import 'package:path/path.dart';
 
 class ProjectPath {
   // Only works if calling from a child directory of the project root.
-  static final Directory projectRoot = File.fromUri(
-    Platform.script,
-  ).parent.parent;
+  static final projectRoot = File.fromUri(Platform.script).parent.parent;
 
   static final resourcesDir = Directory(join(projectRoot.path, 'resources'));
   static final dataDir = Directory(join(projectRoot.path, 'data'));
 
   static final govDataDir = Directory(join(resourcesDir.path, 'govData'));
-  static final generatedDir = Directory(join(resourcesDir.path, 'generated'));
-  static final debugDir = Directory(join(resourcesDir.path, 'debug'));
   static final isarDir = Directory(join(resourcesDir.path, 'isar'));
+  static final outputDir = Directory(join(resourcesDir.path, 'output'));
 
   static String busRoutesGeoJsonPath = join(
     govDataDir.path,
@@ -39,14 +36,7 @@ class ProjectPath {
   /// Ensures all required folders exist before use.
   static Future<bool> initDirectories() async {
     bool created = false;
-    for (final dir in [
-      resourcesDir,
-      govDataDir,
-      generatedDir,
-      debugDir,
-      isarDir,
-      dataDir,
-    ]) {
+    for (final dir in [resourcesDir, govDataDir, isarDir, dataDir, outputDir]) {
       if (!await dir.exists()) {
         await dir.create(recursive: true);
         stdout.writeln('Created ${dir.path}');
