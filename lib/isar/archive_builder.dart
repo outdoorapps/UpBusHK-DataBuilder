@@ -20,34 +20,62 @@ class ArchiveBuilder {
 
     final now = DateTime.now().toUtc();
     final created = DateFormat(_dateFormat).format(now);
-    final outName = 'UpBusHK-DB_$created.gz';
+    final outName = 'UpBusHK-DB_$created.xz';
     final outPath = join(ProjectPath.outputDir.path, outName);
 
     await isar.writeTxn(() => isar.dBVersions.put(DBVersion(created)));
     final busRouteCount = await isar.busRoutes.where().count();
+    await isar.close();
 
-    final input = InputFileStream(ProjectPath.appIsarPath);
-    final output = OutputFileStream(outPath);
-    GZipEncoder().encodeStream(input, output);
+    final hasXz = await _hasXz();
+    if (!hasXz) throw ('No xz compression installed, terminating');
+
+    final result = await Process.run('tar', [
+      '--format=ustar',
+      '-cJf',
+      outPath,
+      '-C',
+      ProjectPath.isarDir.path,
+      'default.isar'
+    ]);
+
+    if (result.exitCode != 0) {
+      throw Exception('tar -cJf failed:\n${result.stderr}');
+    }
 
     final valid = await _validate(outPath, busRouteCount);
     valid ? print('Archive created: $outPath') : print('Archive corrupted');
   }
 
-  static Future<bool> _validate(String gzipPath, int busRouteCount) async {
-    final archive = InputFileStream(gzipPath);
+  static Future<bool> _hasXz() async {
+    try {
+      final result = await Process.run('tar', ['--version']);
+      return result.exitCode == 0;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  static Future<bool> _validate(String xzPath, int busRouteCount) async {
+    final xzFile = File(xzPath);
+    final inputBytes = await xzFile.readAsBytes();
+    final decodedBytes = XZDecoder().decodeBytes(inputBytes);
+
     final output = OutputFileStream(
       join(ProjectPath.outputDir.path, 'temp.isar'),
     );
-    GZipDecoder().decodeStream(archive, output);
+    output.writeBytes(decodedBytes);
+    await output.close();
+
 
     final tempIsar = await Isar.open(
       UpBusHkSchema.appSchemas,
       directory: ProjectPath.outputDir.path,
-      name: 'temp'
+      name: 'temp',
     );
-
     final routeCountInTemp = await tempIsar.busRoutes.where().count();
+    await tempIsar.close(deleteFromDisk: true);
+
     return routeCountInTemp == busRouteCount;
   }
 }
