@@ -21,7 +21,7 @@ class Benchmark {
   }
 
   static T execute<T>(String description, T Function() action) {
-    print(description);
+    stdout.write('[Running] $description...');
 
     final stopwatch = Stopwatch()..start();
     final result = action();

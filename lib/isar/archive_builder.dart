@@ -13,7 +13,7 @@ import 'isar_manager.dart';
 
 class ArchiveBuilder {
   static const _dateFormat = "yyyyMMdd'T'HHmmss'Z'";
-  static const _xzEncoder = 'xz';
+  static const _encoder = 'xz';
 
   static Future<void> build() async {
     final isarFile = File(ProjectPath.appIsarPath);
@@ -28,40 +28,39 @@ class ArchiveBuilder {
     await isar.close();
 
     final hasXz = await _hasXz();
-    if (!hasXz) throw ('No xz encoder installed');
+    if (!hasXz) throw ('Encoder \'${_encoder}\' not installed');
 
     final result = await Benchmark.executeAsync(
       'Compressing',
-      () => Process.run(_xzEncoder, ['-9', ProjectPath.appIsarPath]),
+      () => Process.run(_encoder, ['-9', '-k', ProjectPath.appIsarPath]),
     );
-
     if (result.exitCode != 0) throw Exception('Failed:\n${result.stderr}');
 
     // Rename/move the output
     final compressedPath = '${ProjectPath.appIsarPath}.xz';
     await File(compressedPath).rename(outPath);
 
-    final valid = await Benchmark.executeAsync(
-      'Validating',
-      () => _validate(outPath, createdAt),
-    );
-    valid ? print('Validated: $outPath') : print('Compress file corrupted');
+    final valid = await _validate(outPath, createdAt);
+    valid ? print('Validated: $outPath') : print('Compressed file corrupted');
   }
 
   static Future<bool> _hasXz() async {
     try {
-      final result = await Process.run(_xzEncoder, ['--version']);
+      final result = await Process.run(_encoder, ['--version']);
       return result.exitCode == 0;
     } catch (_) {
       return false;
     }
   }
 
-  static Future<bool> _validate(String xzPath, String createdAt) async {
+  static Future<bool> _validate(String path, String createdAt) async {
     const temp = 'temp';
-    final xzFile = File(xzPath);
+    final xzFile = File(path);
     final inputBytes = await xzFile.readAsBytes();
-    final decodedBytes = XZDecoder().decodeBytes(inputBytes);
+    final decodedBytes = Benchmark.execute(
+      'Decompressing',
+      () => XZDecoder().decodeBytes(inputBytes),
+    );
 
     // Create temp isar file
     final output = OutputFileStream(
@@ -82,7 +81,7 @@ class ArchiveBuilder {
 
     // Clean up
     await tempIsar.close(deleteFromDisk: true);
-    final lock = await File(join(ProjectPath.outputDir.path, '$temp.isar'));
+    final lock = await File(join(ProjectPath.outputDir.path, '$temp.isar-lck'));
     if (await lock.exists()) await lock.delete();
 
     return valid;
