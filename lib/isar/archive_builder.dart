@@ -25,10 +25,11 @@ class ArchiveBuilder {
 
     await isar.writeTxn(() => isar.dBVersions.put(DBVersion(created)));
     final busRouteCount = await isar.busRoutes.where().count();
+    isar.close();
 
     final input = InputFileStream(ProjectPath.appIsarPath);
     final output = OutputFileStream(outPath);
-    GZipEncoder().encodeStream(input, output);
+    GZipEncoder().encodeStream(input, output, level: 9);
 
     final valid = await _validate(outPath, busRouteCount);
     valid ? print('Archive created: $outPath') : print('Archive corrupted');
@@ -48,6 +49,8 @@ class ArchiveBuilder {
     );
 
     final routeCountInTemp = await tempIsar.busRoutes.where().count();
+    tempIsar.close(deleteFromDisk: true);
+
     return routeCountInTemp == busRouteCount;
   }
 }
