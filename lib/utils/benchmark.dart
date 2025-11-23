@@ -17,11 +17,10 @@ class Benchmark {
     stdout.write(
       '\r[Completed] $description (${BuilderUtils.formatDuration(elapsed)})\n',
     );
-
     return result;
   }
 
-  static void execute<T>(String description, void Function() action) {
+  static T execute<T>(String description, T Function() action) {
     print(description);
 
     final stopwatch = Stopwatch()..start();
@@ -32,7 +31,6 @@ class Benchmark {
     stdout.write(
       '\r[Completed] $description (${BuilderUtils.formatDuration(elapsed)})\n',
     );
-
     return result;
   }
 }
