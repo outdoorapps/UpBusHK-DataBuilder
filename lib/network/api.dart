@@ -80,3 +80,11 @@ abstract class MinibusApi {
   @GET('/stop/{stopId}')
   Future<MinibusStopResponse> getStop(@Path('stopId') int stopId);
 }
+
+@RestApi(baseUrl: "https://epsg.io/")
+abstract class EpsgApi {
+  factory EpsgApi(Dio dio, {String baseUrl}) = _EpsgApi;
+
+  @GET("/{code}.proj4")
+  Future<String> getProj4(@Path("code") int epsgCode);
+}

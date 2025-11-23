@@ -13,6 +13,7 @@ class WebServices {
   static final KmbApi kmb = KmbApi(_dio);
   static final GovApi gov = GovApi(_dio);
   static final MinibusApi minibus = MinibusApi(_dio);
+  static final EpsgApi epsg = EpsgApi(_dio);
 
   static Dio _createDio() {
     final dio = Dio(

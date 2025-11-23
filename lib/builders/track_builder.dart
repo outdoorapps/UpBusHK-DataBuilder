@@ -17,6 +17,7 @@ class TrackBuilder {
     if (clearPreviousData) {
       await isar.writeTxn(() async => isar.tracks.clear());
     }
+    await Crs2326.init();
 
     // Get all distinct gov route keys
     final routes = await isar.busRoutes
