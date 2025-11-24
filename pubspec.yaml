@@ -2,6 +2,9 @@ name: up_bus_hk_data_builder
 description: A data building utility for the UpBusHK project.
 version: 0.1.0
 
+# Prevent accidental publishing to pub.dev
+publish_to: none
+
 environment:
   sdk: '>=3.8.0 <4.0.0'
 
@@ -55,10 +58,3 @@ dev_dependencies:
 
 dependency_overrides:
   analyzer: 8.3.0 # For source_gen 3.0.0
-
-# Optional: specify an entrypoint if needed (for multiple scripts)
-# executables:
-#   data_builder: bin/up_bus_hk_data_builder.dart
-
-# Prevent accidental publishing to pub.dev
-publish_to: none
