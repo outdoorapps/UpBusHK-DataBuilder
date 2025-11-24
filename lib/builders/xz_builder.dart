@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:archive/archive.dart';
 import 'package:crypto/crypto.dart';
-import 'package:intl/intl.dart';
 import 'package:path/path.dart';
+import 'package:up_bus_hk_core/extension/meta_x.dart';
 import 'package:up_bus_hk_core/isar/models/meta.dart';
 import 'package:up_bus_hk_data_builder/files/project_paths.dart';
 import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
@@ -11,7 +11,6 @@ import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
 import '../isar/isar_manager.dart';
 
 class XzBuilder {
-  static const _dateFormat = "yyyyMMdd'T'HHmmss'Z'";
   static const _encoder = 'xz';
 
   /// Build the compressed database file and return the checksum
@@ -20,7 +19,7 @@ class XzBuilder {
     if (!await isarFile.exists()) throw Exception('App isar file not found');
 
     final now = DateTime.now().toUtc();
-    final createdAt = DateFormat(_dateFormat).format(now);
+    final createdAt = MetaX.dataVersionFormat.format(now);
     final outName = 'UpBusHK_v${minAppVersion}_$createdAt.xz';
     final outPath = join(ProjectPath.outputDir.path, outName);
 
@@ -52,7 +51,7 @@ class XzBuilder {
     final checksumFile = File(join(ProjectPath.outputDir.path, 'checksum.txt'));
     await checksumFile.writeAsString('${checksum.trim()}\n$outName');
 
-    return valid? checksum : '';
+    return valid ? checksum : '';
   }
 
   static Future<bool> _hasXz() async {
