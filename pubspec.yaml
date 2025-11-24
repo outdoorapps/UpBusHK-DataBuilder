@@ -37,14 +37,16 @@ dependencies:
   latlong2: ^0.9.1
   dart_hk1980: ^1.0.2
 
+  # Files
+  archive: ^4.0.7
+  crypto: ^3.0.7
+
   # Utils
   path: ^1.9.1
   collection: any
   synchronized: ^3.4.0
   get_it: ^9.0.5
-  archive: ^4.0.7
   intl: any
-
 
 # Developer-only dependencies (for testing, linting, etc.)
 dev_dependencies:

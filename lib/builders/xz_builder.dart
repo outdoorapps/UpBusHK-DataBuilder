@@ -1,11 +1,10 @@
 import 'dart:io';
 
 import 'package:archive/archive.dart';
+import 'package:crypto/crypto.dart';
 import 'package:intl/intl.dart';
-import 'package:isar_community/isar.dart';
 import 'package:path/path.dart';
 import 'package:up_bus_hk_core/isar/models/meta.dart';
-import 'package:up_bus_hk_core/isar/up_bus_hk_schema.dart';
 import 'package:up_bus_hk_data_builder/files/project_paths.dart';
 import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
 
@@ -15,13 +14,14 @@ class XzBuilder {
   static const _dateFormat = "yyyyMMdd'T'HHmmss'Z'";
   static const _encoder = 'xz';
 
-  static Future<void> build(String minAppVersion) async {
+  /// Build the compressed database file and return the checksum
+  static Future<String> build(String minAppVersion) async {
     final isarFile = File(ProjectPath.appIsarPath);
     if (!await isarFile.exists()) throw Exception('App isar file not found');
 
     final now = DateTime.now().toUtc();
     final createdAt = DateFormat(_dateFormat).format(now);
-    final outName = 'UpBusHK-DB_$createdAt.xz'; //todo
+    final outName = 'UpBusHK_v${minAppVersion}_$createdAt.xz';
     final outPath = join(ProjectPath.outputDir.path, outName);
 
     final meta = Meta(minAppVersion: minAppVersion, dataTimestamp: now);
@@ -34,6 +34,8 @@ class XzBuilder {
     final hasXz = await _hasXz();
     if (!hasXz) throw ('Encoder \'${_encoder}\' not installed');
 
+    final bytes = await isarFile.readAsBytes();
+    final checksum = sha256.convert(bytes).toString();
     final result = await Benchmark.executeAsync(
       'Compressing',
       () => Process.run(_encoder, ['-9', '-k', ProjectPath.appIsarPath]),
@@ -44,8 +46,13 @@ class XzBuilder {
     final compressedPath = '${ProjectPath.appIsarPath}.xz';
     await File(compressedPath).rename(outPath);
 
-    final valid = await _validate(outPath, now);
+    final valid = await _validate(outPath, checksum);
     valid ? print('Validated: $outPath') : print('Compressed file corrupted');
+
+    final checksumFile = File(join(ProjectPath.outputDir.path, 'checksum.txt'));
+    await checksumFile.writeAsString('${checksum.trim()}\n$outName');
+
+    return valid? checksum : '';
   }
 
   static Future<bool> _hasXz() async {
@@ -57,36 +64,13 @@ class XzBuilder {
     }
   }
 
-  static Future<bool> _validate(String path, DateTime dataTimestamp) async {
-    const temp = 'temp';
-    final xzFile = File(path);
-    final inputBytes = await xzFile.readAsBytes();
+  static Future<bool> _validate(String path, String expectedCheckSum) async {
+    final inputBytes = await File(path).readAsBytes();
     final decodedBytes = Benchmark.execute(
       'Decompressing',
       () => XZDecoder().decodeBytes(inputBytes),
     );
-
-    // Create temp isar file
-    final output = OutputFileStream(
-      join(ProjectPath.outputDir.path, '$temp.isar'),
-    );
-    output.writeBytes(decodedBytes);
-    await output.close();
-
-    // Validate the data is correct
-    final tempIsar = await Isar.open(
-      UpBusHkSchema.appSchemas,
-      directory: ProjectPath.outputDir.path,
-      name: temp,
-    );
-    final meta = await tempIsar.metas.where().findFirst();
-    final valid = meta?.dataTimestamp == dataTimestamp;
-
-    // Clean up
-    await tempIsar.close(deleteFromDisk: true);
-    final lock = await File(join(ProjectPath.outputDir.path, '$temp.isar-lck'));
-    if (await lock.exists()) await lock.delete();
-
-    return valid;
+    final checksum = sha256.convert(decodedBytes).toString();
+    return checksum == expectedCheckSum;
   }
 }
