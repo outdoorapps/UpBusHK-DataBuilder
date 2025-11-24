@@ -209,6 +209,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.7"
+  dart_hk1980:
+    dependency: "direct main"
+    description:
+      name: dart_hk1980
+      sha256: d8e553f46766a10c85ae8eff2bc59d5d0dec77b13546962d109bf40944eb59ac
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.2"
   dart_style:
     dependency: transitive
     description:
@@ -457,14 +465,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.17.0"
-  mgrs_dart:
-    dependency: transitive
-    description:
-      name: mgrs_dart
-      sha256: "385e7168ecc77eb545220223c49eef8ab249da7bf57f22781c40a04d23fb196f"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.0"
   mime:
     dependency: transitive
     description:
@@ -521,14 +521,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.3"
-  proj4dart:
-    dependency: "direct main"
-    description:
-      name: proj4dart
-      sha256: ddcedc1f7876e62717de43ab3491e2829bdad0b028261805f94aa080967e5859
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.0"
   protobuf:
     dependency: transitive
     description:
@@ -601,14 +593,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
-  simple_sparse_list:
-    dependency: transitive
-    description:
-      name: simple_sparse_list
-      sha256: aa648fd240fa39b49dcd11c19c266990006006de6699a412de485695910fbc1f
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.1.4"
   source_gen:
     dependency: transitive
     description:
@@ -745,23 +729,23 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
-  unicode:
-    dependency: transitive
-    description:
-      name: unicode
-      sha256: "0d99edbd2e74726bed2e4989713c8bec02e5581628e334d8c88c0271593fb402"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.8"
   up_bus_hk_core:
     dependency: "direct main"
     description:
       path: "."
       ref: main
-      resolved-ref: cd2aa608e7cce07108e7532d9c2886c71d41a706
+      resolved-ref: ea6852bbd71f20069d03e25a1c019793cafc22d9
       url: "git@github.com:outdoorapps/UpBusHK-core.git"
     source: git
     version: "0.0.0"
+  vector_math:
+    dependency: transitive
+    description:
+      name: vector_math
+      sha256: d530bd74fea330e6e364cda7a85019c434070188383e1cd8d9777ee586914c5b
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.0"
   vm_service:
     dependency: transitive
     description:
@@ -810,14 +794,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.2.1"
-  wkt_parser:
-    dependency: transitive
-    description:
-      name: wkt_parser
-      sha256: "8a555fc60de3116c00aad67891bcab20f81a958e4219cc106e3c037aa3937f13"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.0"
   xml:
     dependency: "direct main"
     description:

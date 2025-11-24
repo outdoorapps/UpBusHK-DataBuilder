@@ -5,7 +5,7 @@ import 'package:up_bus_hk_data_builder/builders/gov_bus_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/minibus_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/track_builder.dart';
 import 'package:up_bus_hk_data_builder/files/project_paths.dart';
-import 'package:up_bus_hk_data_builder/isar/archive_builder.dart';
+import 'package:up_bus_hk_data_builder/builders/xz_builder.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/network/links.dart';
 import 'package:up_bus_hk_data_builder/network/web_services.dart';
@@ -50,7 +50,7 @@ Future<void> _build() async {
 
   await Benchmark.executeAsync('Building tracks', TrackBuilder.build);
 
-  await Benchmark.executeAsync('Building archive', ArchiveBuilder.build);
+  await Benchmark.executeAsync('Building archive', XzBuilder.build);
 
   // todo uploader
 }

@@ -9,9 +9,9 @@ import 'package:up_bus_hk_core/isar/up_bus_hk_schema.dart';
 import 'package:up_bus_hk_data_builder/files/project_paths.dart';
 import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
 
-import 'isar_manager.dart';
+import '../isar/isar_manager.dart';
 
-class ArchiveBuilder {
+class XzBuilder {
   static const _dateFormat = "yyyyMMdd'T'HHmmss'Z'";
   static const _encoder = 'xz';
 
