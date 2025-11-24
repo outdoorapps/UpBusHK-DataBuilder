@@ -92,7 +92,8 @@ class MtrbParser {
   }
 
   static BusStop _parseStopLine(String line) {
-    final parts = line.split(RegExp(r'\s+'));
+    final cleanedLine = line.replaceAll(_TSUEN_CODE, _TSUEN_CHARACTER);
+    final parts = cleanedLine.split(RegExp(r'\s+'));
 
     final stopId = parts[0];
     final lat = double.tryParse(parts[1]) ?? 0.0;
@@ -102,7 +103,7 @@ class MtrbParser {
     final remainder = parts.sublist(3).join(' ');
 
     final chiMatch = _chineseMatcher.firstMatch(remainder)?.group(0) ?? '';
-    final nameC = chiMatch.trim().replaceAll(_TSUEN_CODE, _TSUEN_CHARACTER);
+    final nameC = chiMatch.trim();
     final nameE = chiMatch.isEmpty
         ? remainder.trim()
         : remainder.substring(chiMatch.length).trim();
