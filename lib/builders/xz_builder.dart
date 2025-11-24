@@ -27,6 +27,9 @@ class XzBuilder {
     await isar.writeTxn(() => isar.dBVersions.put(DBVersion(createdAt)));
     await isar.close();
 
+    // Ensured all isar writes completed
+    await Future.delayed(Duration(milliseconds: 500));
+
     final hasXz = await _hasXz();
     if (!hasXz) throw ('Encoder \'${_encoder}\' not installed');
 

@@ -68,7 +68,6 @@ class TrackBuilder {
           for (final track in batch) {
             await isar.tracks.put(track);
 
-            // Now establish the link
             final route = await isar.busRoutes
                 .where()
                 .govRouteKeyEqualTo(track.govRouteKey)
