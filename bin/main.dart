@@ -11,7 +11,7 @@ import 'package:up_bus_hk_data_builder/network/links.dart';
 import 'package:up_bus_hk_data_builder/network/web_services.dart';
 import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
 
-// todo Updated every time when there are breaking changes
+// todo Updated every time when there are schema updates
 const minAppVersion = '1.3.0';
 
 void main() async {
@@ -50,7 +50,10 @@ Future<void> _build() async {
 
   await Benchmark.executeAsync('Building tracks', TrackBuilder.build);
 
-  await Benchmark.executeAsync('Building archive', XzBuilder.build);
+  await Benchmark.executeAsync(
+    'Building archive',
+    () => XzBuilder.build(minAppVersion),
+  );
 
   // todo uploader
 }
