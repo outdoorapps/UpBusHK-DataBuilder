@@ -10,7 +10,7 @@ import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
 
 import '../isar/isar_manager.dart';
 
-class XzBuilder {
+class ArchiveBuilder {
   static const _encoder = 'xz';
 
   /// Build the compressed database file and return the checksum
@@ -20,8 +20,8 @@ class XzBuilder {
 
     final now = DateTime.timestamp();
     final createdAt = MetaX.dataVersionFormat.format(now);
-    final outName = 'UpBusHK_v${minAppVersion}_$createdAt.xz';
-    final outPath = join(ProjectPath.outputDir.path, outName);
+    final filename = 'UpBusHK_v${minAppVersion}_$createdAt';
+    final outPath = join(ProjectPath.outputDir.path, '$filename.tar.xz');
 
     final meta = Meta(minAppVersion: minAppVersion, dataTimestamp: now);
     await isar.writeTxn(() => isar.metas.put(meta));
@@ -33,23 +33,31 @@ class XzBuilder {
     final hasXz = await _hasXz();
     if (!hasXz) throw ('Encoder \'${_encoder}\' not installed');
 
+    // Get checksum
     final bytes = await isarFile.readAsBytes();
     final checksum = sha256.convert(bytes).toString();
+
+    // 1. Create TAR
+    final tarPath = join(ProjectPath.outputDir.path, '$filename.tar');
+    final length = await isarFile.length();
+
+    final output = OutputFileStream(tarPath);
+    final archive = Archive()
+      ..add(ArchiveFile('$filename.isar', length, bytes));
+    TarEncoder().encode(archive, output: output);
+
+    // 2. Create XZ
     final result = await Benchmark.executeAsync(
       'Compressing',
-      () => Process.run(_encoder, ['-9', '-k', ProjectPath.appIsarPath]),
+      () => Process.run(_encoder, ['-9', tarPath]),
     );
     if (result.exitCode != 0) throw Exception('Failed:\n${result.stderr}');
-
-    // Rename/move the output
-    final compressedPath = '${ProjectPath.appIsarPath}.xz';
-    await File(compressedPath).rename(outPath);
 
     final valid = await _validate(outPath, checksum);
     valid ? print('Validated: $outPath') : print('Compressed file corrupted');
 
     final checksumFile = File(join(ProjectPath.outputDir.path, 'checksum.txt'));
-    await checksumFile.writeAsString('${checksum.trim()}\n$outName');
+    await checksumFile.writeAsString('${checksum.trim()}\n$filename');
 
     return valid ? checksum : '';
   }
@@ -65,10 +73,11 @@ class XzBuilder {
 
   static Future<bool> _validate(String path, String expectedCheckSum) async {
     final inputBytes = await File(path).readAsBytes();
-    final decodedBytes = Benchmark.execute(
-      'Decompressing',
-      () => XZDecoder().decodeBytes(inputBytes),
-    );
+    final decodedBytes = Benchmark.execute('Decompressing', () {
+      final tarBytes = XZDecoder().decodeBytes(inputBytes);
+      final archive = TarDecoder().decodeBytes(tarBytes);
+      return archive.first.content;
+    });
     final checksum = sha256.convert(decodedBytes).toString();
     return checksum == expectedCheckSum;
   }
