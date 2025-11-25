@@ -18,7 +18,10 @@ class ArchiveBuilder {
     final isarFile = File(ProjectPath.appIsarPath);
     if (!await isarFile.exists()) throw Exception('App isar file not found');
 
-    final now = DateTime.timestamp();
+    final now = DateTime.fromMillisecondsSinceEpoch(
+      DateTime.timestamp().millisecondsSinceEpoch ~/ 1000 * 1000,
+      isUtc: true,
+    ); // Round down to the nearest seconds
     final createdAt = MetaX.dataVersionFormat.format(now);
     final filename = 'UpBusHK_v${minAppVersion}_$createdAt';
     final outPath = join(ProjectPath.outputDir.path, '$filename.tar.xz');
