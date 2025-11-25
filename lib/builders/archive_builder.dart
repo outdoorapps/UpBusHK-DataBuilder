@@ -49,7 +49,7 @@ class ArchiveBuilder {
     // 2. Create XZ
     final result = await Benchmark.executeAsync(
       'Compressing',
-      () => Process.run(_encoder, ['-9', tarPath]),
+      () => Process.run(_encoder, ['-9', '-e', tarPath]),
     );
     if (result.exitCode != 0) throw Exception('Failed:\n${result.stderr}');
 
