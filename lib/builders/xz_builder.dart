@@ -18,7 +18,7 @@ class XzBuilder {
     final isarFile = File(ProjectPath.appIsarPath);
     if (!await isarFile.exists()) throw Exception('App isar file not found');
 
-    final now = DateTime.now().toUtc();
+    final now = DateTime.timestamp();
     final createdAt = MetaX.dataVersionFormat.format(now);
     final outName = 'UpBusHK_v${minAppVersion}_$createdAt.xz';
     final outPath = join(ProjectPath.outputDir.path, outName);
