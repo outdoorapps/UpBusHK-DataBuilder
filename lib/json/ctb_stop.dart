@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:up_bus_hk_data_builder/json/json_converters.dart';
 
 part '../generated/json/ctb_stop.g.dart';
 
@@ -11,6 +12,7 @@ class CtbStopResponse {
   @JsonKey(name: 'generated_timestamp')
   final String generatedTimestamp;
 
+  @CtbStopConverter()
   final CtbStop? data;
 
   CtbStopResponse({
@@ -59,6 +61,16 @@ class CtbStop {
 
   factory CtbStop.fromJson(Map<String, dynamic> json) =>
       _$CtbStopFromJson(json);
+
+  factory CtbStop.empty(String stopId) => CtbStop(
+    stop: stopId,
+    nameTc: '',
+    nameEn: '',
+    lat: '',
+    long: '',
+    nameSc: '',
+    dataTimestamp: '',
+  );
 
   Map<String, dynamic> toJson() => _$CtbStopToJson(this);
 }

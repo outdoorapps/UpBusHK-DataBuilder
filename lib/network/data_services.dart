@@ -21,10 +21,11 @@ class DataServices {
     return response?.stops ?? [];
   }
 
-  static Future<CtbStop?> getCtbStop(String number) async {
+  static Future<CtbStop?> getCtbStop(String stopId) async {
     final response = await WebServices.safeApiCall(
-      () => WebServices.gov.getCtbStop(number),
+      () => WebServices.gov.getCtbStop(stopId),
     );
+    if (response != null && response.data == null) return CtbStop.empty(stopId);
     return response?.data;
   }
 

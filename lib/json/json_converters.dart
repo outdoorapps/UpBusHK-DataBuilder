@@ -1,6 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:up_bus_hk_core/enums/region.dart';
 import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
+import 'package:up_bus_hk_data_builder/json/ctb_stop.dart';
 import 'package:up_bus_hk_data_builder/json/track_json.dart';
 
 class LatLngConverter implements JsonConverter<LatLng, dynamic> {
@@ -109,4 +110,20 @@ class TrackGeometryConverter
   Map<String, dynamic> toJson(TrackGeometry geom) {
     return {'type': geom.type, 'coordinates': geom.coordinates};
   }
+}
+
+class CtbStopConverter implements JsonConverter<CtbStop?, Object?> {
+  const CtbStopConverter();
+
+  @override
+  CtbStop? fromJson(Object? json) {
+    if (json is Map<String, dynamic>) {
+      if (json.isEmpty) return null;
+      return CtbStop.fromJson(json);
+    }
+    return null;
+  }
+
+  @override
+  Object? toJson(CtbStop? object) => object?.toJson();
 }
