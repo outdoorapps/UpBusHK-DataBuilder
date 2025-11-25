@@ -42,9 +42,9 @@ class MinibusGeometry {
 
   @LatLngConverter()
   @JsonKey(name: 'coordinates')
-  final LatLng latLng;
+  final List<double> longLat;
 
-  MinibusGeometry({required this.type, required this.latLng});
+  MinibusGeometry({required this.type, required this.longLat});
 
   factory MinibusGeometry.fromJson(Map<String, dynamic> json) =>
       _$MinibusGeometryFromJson(json);

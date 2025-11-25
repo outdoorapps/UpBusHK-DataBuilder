@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
 import 'package:up_bus_hk_core/isar/models/minibus_stop.dart';
 import 'package:up_bus_hk_data_builder/extension/string_x.dart';
 import 'package:up_bus_hk_data_builder/json/minibus_geo_json.dart';
@@ -26,11 +27,14 @@ class MinibusStopBuilder {
       }
 
       final properties = stopWithShortestChiTName.properties;
+      final lat = stopWithShortestChiTName.geometry.longLat[1];
+      final long = stopWithShortestChiTName.geometry.longLat[0];
+
       return MinibusStop(
         stopId: '${properties.stopId}',
         nameE: properties.stopNameE.trim(),
         nameC: chiTName,
-        latLng: stopWithShortestChiTName.geometry.latLng,
+        latLng: LatLng(lat: lat, long: long),
       );
     }).toList();
   }
