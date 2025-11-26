@@ -54,7 +54,7 @@ Future<void> _build() async {
   await Benchmark.executeAsync('Building tracks', TrackBuilder.build);
 
   final valid = await Benchmark.executeAsync('Validating', Validator.validate);
-  valid ? print('Database validated') : throw Exception('Database invalid');
+  if (!valid) return;
 
   await Benchmark.executeAsync(
     'Building archive',

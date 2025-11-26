@@ -46,11 +46,13 @@ class Validator {
     // Check if all minibus routes have been included
     final response = await WebServices.minibus.getRoutesByRegion();
     response.data.routesByRegion.forEach((region, numbers) {
-      if (minibusRoutes.none(
-        (r) => r.region == region && r.number == numbers,
-      )) {
-        missingMinibusRoutes.add('$region-$numbers');
-      }
+      numbers.forEach((number) {
+        if (minibusRoutes.none(
+          (r) => r.region == region && r.number == number,
+        )) {
+          missingMinibusRoutes.add('$region-$numbers');
+        }
+      });
     });
 
     // Check if all minibus stops have been included
@@ -76,12 +78,15 @@ class Validator {
     if (emptyMinibusStops.isNotEmpty)
       print('Invalid minibus stops: $emptyMinibusStops');
 
-    return missingRoutes.isEmpty &&
+    final valid =
+        missingRoutes.isEmpty &&
         missingBusStops.isEmpty &&
         emptyBusStops.isEmpty &&
         missingMinibusRoutes.isEmpty &&
         missingMinibusStops.isEmpty &&
         emptyMinibusStops.isEmpty;
+    valid ? print('Database validated') : print('Database invalid');
+    return valid;
   }
 
   static bool _routeMatch(CompanyBusRoute companyBusRoute, BusRoute busRoute) {
@@ -96,7 +101,7 @@ class Validator {
         : true;
 
     final nlbRouteIdMatches = companyBusRoute.company == Company.NLB
-        ? companyBusRoute.number == busRoute.nlbRouteId
+        ? companyBusRoute.nlbRouteId == busRoute.nlbRouteId
         : true;
 
     return companyMatches &&
