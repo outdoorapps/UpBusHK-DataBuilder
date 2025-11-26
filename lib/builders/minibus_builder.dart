@@ -8,7 +8,7 @@ import 'package:up_bus_hk_core/isar/models/transit_route.dart';
 import 'package:up_bus_hk_data_builder/builders/minibus_route_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/minibus_stop_builder.dart';
 import 'package:up_bus_hk_data_builder/extension/string_x.dart';
-import 'package:up_bus_hk_data_builder/files/project_paths.dart';
+import 'package:up_bus_hk_data_builder/files/project_path.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/json/minibus_geo_json.dart';
 import 'package:up_bus_hk_data_builder/json/minibus_route_info.dart';
@@ -231,7 +231,7 @@ class MinibusBuilder {
   }
 
   static Future<MinibusGeoJson> _readMinibusData() async {
-    final file = File(ProjectPath.minibusDataJsonPath);
+    final file = File(ProjectPath.minibusDataJson);
     final jsonString = await file.readAsString();
     final jsonData = jsonDecode(jsonString) as Map<String, dynamic>;
     return MinibusGeoJson.fromJson(jsonData);

@@ -5,7 +5,7 @@ import 'package:isar_community/isar.dart';
 import 'package:up_bus_hk_core/isar/models/track.dart';
 import 'package:up_bus_hk_core/isar/models/transit_route.dart';
 import 'package:up_bus_hk_data_builder/builders/gov_feature_parser.dart';
-import 'package:up_bus_hk_data_builder/files/project_paths.dart';
+import 'package:up_bus_hk_data_builder/files/project_path.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/json/track_json.dart';
 import 'package:up_bus_hk_data_builder/utils/ramer_douglas_peucker.dart';
@@ -35,7 +35,7 @@ class TrackBuilder {
 
   static Future<void> _parseTracks() async {
     await GovFeatureParser.parseData<Track>(
-      File(ProjectPath.busRoutesGeoJsonPath),
+      File(ProjectPath.busRoutesGeoJson),
       label: 'Parsing tracks',
       fromJson: (itemJson) {
         final feature = TrackFeature.fromJson(itemJson);

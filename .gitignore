@@ -13,3 +13,4 @@ generated/
 /bin/libisar.*
 debug/
 /bin/test.dart
+service-account.json

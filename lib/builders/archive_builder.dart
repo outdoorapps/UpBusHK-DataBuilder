@@ -5,7 +5,7 @@ import 'package:crypto/crypto.dart';
 import 'package:path/path.dart';
 import 'package:up_bus_hk_core/isar/models/meta.dart';
 import 'package:up_bus_hk_core/utils/utils.dart';
-import 'package:up_bus_hk_data_builder/files/project_paths.dart';
+import 'package:up_bus_hk_data_builder/files/project_path.dart';
 import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
 
 import '../isar/isar_manager.dart';
@@ -15,7 +15,7 @@ class ArchiveBuilder {
 
   /// Build the compressed database file and return the checksum
   static Future<String> build(String minAppVersion) async {
-    final isarFile = File(ProjectPath.appIsarPath);
+    final isarFile = File(ProjectPath.appIsar);
     if (!await isarFile.exists()) throw Exception('App isar file not found');
 
     final timestamp = DateTime.fromMillisecondsSinceEpoch(

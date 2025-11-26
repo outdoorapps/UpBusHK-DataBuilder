@@ -42,9 +42,7 @@ dependencies:
   crypto: ^3.0.7
 
   # Firebase
-  firebase_core: ^4.2.1
-  firebase_storage: ^13.0.4
-  firebase_database: ^12.1.0
+  firebase_admin: ^0.3.1
 
   # Utils
   path: ^1.9.1

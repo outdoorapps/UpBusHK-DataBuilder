@@ -3,7 +3,7 @@ import 'package:up_bus_hk_core/enums/bound.dart';
 import 'package:up_bus_hk_core/enums/company.dart';
 import 'package:up_bus_hk_core/isar/builder_models/company_bus_route.dart';
 import 'package:up_bus_hk_data_builder/builders/mtrb_parser.dart';
-import 'package:up_bus_hk_data_builder/files/project_paths.dart';
+import 'package:up_bus_hk_data_builder/files/project_path.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/json/ctb_route.dart';
 import 'package:up_bus_hk_data_builder/json/kmb_route.dart';
@@ -251,7 +251,7 @@ class CompanyRouteBuilder {
   static Future<List<CompanyBusRoute>> _buildMtrbRoutes() async {
     final (routes, stops) = await Benchmark.executeAsync(
       'Building MTRB routes',
-      () async => await MtrbParser.parseMtrbData(ProjectPath.mtrbDataPath),
+      () async => await MtrbParser.parseMtrbData(ProjectPath.mtrbData),
     );
     return routes;
   }

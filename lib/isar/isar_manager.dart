@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:get_it/get_it.dart';
 import 'package:isar_community/isar.dart';
 import 'package:up_bus_hk_core/isar/up_bus_hk_schema.dart';
-import 'package:up_bus_hk_data_builder/files/project_paths.dart';
+import 'package:up_bus_hk_data_builder/files/project_path.dart';
 
 /// For final app use
 Isar get isar => GetIt.I<Isar>(instanceName: IsarManager.defaultIsarName);

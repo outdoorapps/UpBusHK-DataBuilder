@@ -12,7 +12,7 @@ import 'package:up_bus_hk_core/isar/builder_models/gov_stop_coordinate.dart';
 import 'package:up_bus_hk_core/isar/embedded/gov_stop_fare.dart';
 import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
 import 'package:up_bus_hk_data_builder/builders/gov_feature_parser.dart';
-import 'package:up_bus_hk_data_builder/files/project_paths.dart';
+import 'package:up_bus_hk_data_builder/files/project_path.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/json/gov_route_stop_json.dart';
 import 'package:up_bus_hk_data_builder/json/gov_stop_coordinate_json.dart';
@@ -136,7 +136,7 @@ class GovBusBuilder {
 
   static Future<void> _parseRouteStops() async {
     await GovFeatureParser.parseData<GovRouteStop>(
-      File(ProjectPath.busRouteStopJsonPath),
+      File(ProjectPath.busRouteStopJson),
       label: 'Parsing gov bus route-stops',
       fromJson: (itemJson) =>
           GovRouteStopJson.fromJson(itemJson).toGovRouteStop(),
@@ -147,7 +147,7 @@ class GovBusBuilder {
 
   static Future<void> _parseStops() async {
     await GovFeatureParser.parseData<GovStopCoordinate>(
-      File(ProjectPath.busStopsGeoJsonPath),
+      File(ProjectPath.busStopsGeoJson),
       label: 'Parsing gov bus stop coordinates',
       fromJson: (itemJson) =>
           GovStopCoordinateJson.fromJson(itemJson).toGovStopCoordinate(),
@@ -164,7 +164,7 @@ class GovBusBuilder {
     // Clear existing data
     await builderIsar.writeTxn(() => builderIsar.busFares.clear());
 
-    final file = File(ProjectPath.busFarePath);
+    final file = File(ProjectPath.busFare);
     final batch = <BusFare>[];
 
     // Define the write queue

@@ -5,7 +5,7 @@ import 'package:up_bus_hk_data_builder/builders/company_route_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/gov_bus_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/minibus_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/track_builder.dart';
-import 'package:up_bus_hk_data_builder/files/project_paths.dart';
+import 'package:up_bus_hk_data_builder/files/project_path.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/network/links.dart';
 import 'package:up_bus_hk_data_builder/network/web_services.dart';
@@ -26,11 +26,11 @@ Future<void> _build() async {
 
   await Benchmark.executeAsync('Downloading gov data', () async {
     final urlToPath = {
-      Links.busRouteGeoJsonUrl: ProjectPath.busRoutesGeoJsonPath,
-      Links.busStopsGeoJsonUrl: ProjectPath.busStopsGeoJsonPath,
-      Links.busRouteStopUrl: ProjectPath.busRouteStopJsonPath,
-      Links.minibusRoutesGeoJsonUrl: ProjectPath.minibusDataJsonPath,
-      Links.fareUrl: ProjectPath.busFarePath,
+      Links.busRouteGeoJsonUrl: ProjectPath.busRoutesGeoJson,
+      Links.busStopsGeoJsonUrl: ProjectPath.busStopsGeoJson,
+      Links.busRouteStopUrl: ProjectPath.busRouteStopJson,
+      Links.minibusRoutesGeoJsonUrl: ProjectPath.minibusDataJson,
+      Links.fareUrl: ProjectPath.busFare,
     };
     await WebServices.downloadAll(urlToPath);
   });
