@@ -8,6 +8,7 @@ class ProjectPath {
 
   static final resourcesDir = Directory(join(projectRoot.path, 'resources'));
   static final dataDir = Directory(join(projectRoot.path, 'data'));
+  static final secretsDir = Directory(join(projectRoot.path, 'secrets'));
 
   static final govDataDir = Directory(join(resourcesDir.path, 'govData'));
   static final isarDir = Directory(join(resourcesDir.path, 'isar'));
@@ -34,15 +35,19 @@ class ProjectPath {
   static String appIsarPath = join(isarDir.path, 'default.isar');
 
   /// Ensures all required folders exist before use.
-  static Future<bool> initDirectories() async {
-    bool created = false;
-    for (final dir in [resourcesDir, govDataDir, isarDir, dataDir, outputDir]) {
+  static Future<void> initDirectories() async {
+    for (final dir in [
+      resourcesDir,
+      dataDir,
+      secretsDir,
+      govDataDir,
+      isarDir,
+      outputDir,
+    ]) {
       if (!await dir.exists()) {
         await dir.create(recursive: true);
         stdout.writeln('Created ${dir.path}');
-        created = true;
       }
     }
-    return created;
   }
 }

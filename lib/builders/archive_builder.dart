@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:archive/archive.dart';
 import 'package:crypto/crypto.dart';
 import 'package:path/path.dart';
-import 'package:up_bus_hk_core/extension/meta_x.dart';
 import 'package:up_bus_hk_core/isar/models/meta.dart';
+import 'package:up_bus_hk_core/utils/utils.dart';
 import 'package:up_bus_hk_data_builder/files/project_paths.dart';
 import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
 
@@ -18,15 +18,15 @@ class ArchiveBuilder {
     final isarFile = File(ProjectPath.appIsarPath);
     if (!await isarFile.exists()) throw Exception('App isar file not found');
 
-    final now = DateTime.fromMillisecondsSinceEpoch(
+    final timestamp = DateTime.fromMillisecondsSinceEpoch(
       DateTime.timestamp().millisecondsSinceEpoch ~/ 1000 * 1000,
       isUtc: true,
     ); // Round down to the nearest seconds
-    final createdAt = MetaX.dataVersionFormat.format(now);
-    final filename = 'UpBusHK_v${minAppVersion}_$createdAt';
+    final formattedTimestamp = Utils.dataVersionFormat.format(timestamp);
+    final filename = 'UpBusHK_v${minAppVersion}_$formattedTimestamp';
     final outPath = join(ProjectPath.outputDir.path, '$filename.tar.xz');
 
-    final meta = Meta(minAppVersion: minAppVersion, dataTimestamp: now);
+    final meta = Meta(minAppVersion: minAppVersion, timestamp: timestamp);
     await isar.writeTxn(() => isar.metas.put(meta));
     await isar.close();
 
@@ -76,7 +76,7 @@ class ArchiveBuilder {
 
   static Future<bool> _validate(String path, String expectedCheckSum) async {
     final inputBytes = await File(path).readAsBytes();
-    final decodedBytes = Benchmark.execute('Decompressing', () {
+    final decodedBytes = Benchmark.execute('Extracting', () {
       final tarBytes = XZDecoder().decodeBytes(inputBytes);
       final archive = TarDecoder().decodeBytes(tarBytes);
       return archive.first.content;

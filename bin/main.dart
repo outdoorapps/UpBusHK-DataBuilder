@@ -1,3 +1,4 @@
+import 'package:up_bus_hk_data_builder/builders/archive_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/bus_route_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/bus_stop_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/company_route_builder.dart';
@@ -5,7 +6,6 @@ import 'package:up_bus_hk_data_builder/builders/gov_bus_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/minibus_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/track_builder.dart';
 import 'package:up_bus_hk_data_builder/files/project_paths.dart';
-import 'package:up_bus_hk_data_builder/builders/xz_builder.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/network/links.dart';
 import 'package:up_bus_hk_data_builder/network/web_services.dart';
@@ -19,10 +19,10 @@ void main() async {
 }
 
 Future<void> _build() async {
-  await Benchmark.executeAsync(
-    'Initializing',
-    () async => await IsarManager.init(clearPreviousData: true),
-  );
+  await Benchmark.executeAsync('Initializing', () async {
+    await ProjectPath.initDirectories();
+    await IsarManager.init(clearPreviousData: true);
+  });
 
   await Benchmark.executeAsync('Downloading gov data', () async {
     final urlToPath = {
@@ -52,7 +52,7 @@ Future<void> _build() async {
 
   await Benchmark.executeAsync(
     'Building archive',
-    () => XzBuilder.build(minAppVersion),
+    () => ArchiveBuilder.build(minAppVersion),
   );
 
   // todo uploader
