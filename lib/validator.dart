@@ -13,10 +13,10 @@ class Validator {
     final companyBusRoutes = await builderIsar.companyBusRoutes
         .where()
         .findAll();
-    final busRoutes = await builderIsar.busRoutes.where().findAll();
-    final busStops = await builderIsar.busStops.where().findAll();
-    final minibusRoutes = await builderIsar.minibusRoutes.where().findAll();
-    final minibusStops = await builderIsar.minibusStops.where().findAll();
+    final busRoutes = await isar.busRoutes.where().findAll();
+    final busStops = await isar.busStops.where().findAll();
+    final minibusRoutes = await isar.minibusRoutes.where().findAll();
+    final minibusStops = await isar.minibusStops.where().findAll();
 
     final expectedBusStopIds = <String>{};
     final expectedMinibusStopIds = <String>{};

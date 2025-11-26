@@ -102,7 +102,9 @@ class BusStopBuilder {
     final emptyStops = allStops
         .where((e) => e.nameE.isEmpty && e.nameC.isEmpty)
         .toList();
-    print('Empty CTB stops: ${emptyStops.map((e) => e.stopId).toList()}');
+    if(emptyStops.isNotEmpty) {
+      print('Empty CTB stops: ${emptyStops.map((e) => e.stopId).toList()}');
+    }
     allStops.sort((a, b) => a.stopId.compareTo(b.stopId));
     return allStops;
   }
