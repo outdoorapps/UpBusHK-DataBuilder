@@ -47,28 +47,32 @@ class Uploader {
       checksum: checksum,
     );
 
-    // 1. Upload database file
-    final uploaded = await Benchmark.executeAsync(
-      'Uploading database file',
-      () => _upload(firebase, databaseFile),
-    );
-    if (!uploaded) throw Exception('Failed to upload database file');
+    try {
+      // 1. Upload database file
+      final uploaded = await Benchmark.executeAsync(
+        'Uploading database file',
+        () => _upload(firebase, databaseFile),
+      );
+      if (!uploaded) throw Exception('Failed to upload database file');
 
-    // 2. Register database version
-    final registered = await Benchmark.executeAsync(
-      'Registering database change',
-      () => _register(firebase, databaseInfo),
-    );
-    if (!registered) throw Exception('Failed to register database change');
+      // 2. Register database version
+      final registered = await Benchmark.executeAsync(
+        'Registering database change',
+        () => _register(firebase, databaseInfo),
+      );
+      if (!registered) throw Exception('Failed to register database change');
 
-    // 3. Remove old database file
-    final cleanedUp = await Benchmark.executeAsync(
-      'Deleting old database files',
-      () => _deleteOldFiles(firebase, databaseFilename),
-    );
-    if (!cleanedUp) throw Exception('Failed to register database change');
-
-    await firebase.delete(); // Terminate properly
+      // 3. Remove old database file
+      final cleanedUp = await Benchmark.executeAsync(
+        'Deleting old database files',
+        () => _deleteOldFiles(firebase, databaseFilename),
+      );
+      if (!cleanedUp) throw Exception('Failed to delete old database files');
+    } catch (e) {
+      print(e);
+    } finally {
+      await firebase.delete(); // Terminate properly
+    }
   }
 
   static Future<bool> _upload(App firebase, File databaseFile) async {
