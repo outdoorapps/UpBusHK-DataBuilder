@@ -10,6 +10,11 @@ import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
 import 'package:version/version.dart';
 
 class Uploader {
+  // e.g. UpBusHK_v1.3.0_20251124%082530Z.tar.xz
+  static final _databaseFileRegex = RegExp(
+    r"^UpBusHK_v\d+\.\d+\.\d+_\d{8}T\d{6}Z\.tar\.xz$",
+  );
+
   static Future<void> upload() async {
     // Setup service account credentials
     final credential = Credentials.applicationDefault();
@@ -56,7 +61,13 @@ class Uploader {
     );
     if (!registered) throw Exception('Failed to register database change');
 
-    // 3. Remove old database file todo
+    // 3. Remove old database file
+    final cleanedUp = await Benchmark.executeAsync(
+      'Deleting old database files',
+      () => _deleteOldFiles(firebase, databaseFilename),
+    );
+    if (!cleanedUp) throw Exception('Failed to register database change');
+    // todo terminate properly
   }
 
   static Future<bool> _upload(App firebase, File databaseFile) async {
@@ -75,7 +86,29 @@ class Uploader {
   static Future<bool> _register(App firebase, DatabaseInfo databaseInfo) async {
     try {
       final ref = firebase.database().ref(FirebasePath.databaseInfo);
-      ref.set(databaseInfo.toMap());
+      await ref.set(databaseInfo.toMap());
+    } catch (e) {
+      print(e);
+      return false;
+    }
+    return true;
+  }
+
+  static Future<bool> _deleteOldFiles(App firebase, String keepFile) async {
+    try {
+      final bucket = firebase.storage().bucket();
+      final filesToDelete = <String>{};
+      await for (final entry in bucket.list()) {
+        if (entry.isDirectory) continue;
+
+        final name = entry.name;
+        if (name == keepFile || !_databaseFileRegex.hasMatch(name)) continue;
+
+        filesToDelete.add(name);
+      }
+      await Future.wait(filesToDelete.map((name) => bucket.delete(name)));
+
+      filesToDelete.forEach((e) => print('Removed: $e'));
     } catch (e) {
       print(e);
       return false;
@@ -83,5 +116,3 @@ class Uploader {
     return true;
   }
 }
-
-void main() {}
