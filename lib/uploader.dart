@@ -67,7 +67,8 @@ class Uploader {
       () => _deleteOldFiles(firebase, databaseFilename),
     );
     if (!cleanedUp) throw Exception('Failed to register database change');
-    // todo terminate properly
+
+    await firebase.delete(); // Terminate properly
   }
 
   static Future<bool> _upload(App firebase, File databaseFile) async {
