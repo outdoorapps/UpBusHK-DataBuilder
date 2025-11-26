@@ -120,7 +120,7 @@ class GovBusBuilder {
           latLng:
               govStopCoordinate?.latLng ??
               Patch.govStopIdToLatLng[e.stopId] ?? // Try patching it
-              LatLng.empty(),
+              LatLng(),
           stopNameE: e.stopNameE,
           stopNameC: e.stopNameC,
         );

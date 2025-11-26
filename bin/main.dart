@@ -9,7 +9,9 @@ import 'package:up_bus_hk_data_builder/files/project_path.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/network/links.dart';
 import 'package:up_bus_hk_data_builder/network/web_services.dart';
+import 'package:up_bus_hk_data_builder/uploader.dart';
 import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
+import 'package:up_bus_hk_data_builder/validator.dart';
 
 // todo Updated every time when there are schema updates
 const minAppVersion = '1.3.0';
@@ -35,6 +37,7 @@ Future<void> _build() async {
     await WebServices.downloadAll(urlToPath);
   });
 
+  // These have to execute in specific order
   await Benchmark.executeAsync(
     'Building company bus routes',
     CompanyRouteBuilder.build,
@@ -50,10 +53,15 @@ Future<void> _build() async {
 
   await Benchmark.executeAsync('Building tracks', TrackBuilder.build);
 
+  //todo validator
+  final valid = await Benchmark.executeAsync('Validating', Validator.validate);
+
+  if (!valid) throw Exception('Database invalid');
+
   await Benchmark.executeAsync(
     'Building archive',
     () => ArchiveBuilder.build(minAppVersion),
   );
 
-  // todo uploader
+  await Benchmark.executeAsync('Uploading database', Uploader.upload);
 }

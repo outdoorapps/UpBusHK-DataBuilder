@@ -66,7 +66,7 @@ class BusStopBuilder {
       final long = double.tryParse(e.lng);
       final latLng = lat != null && long != null
           ? LatLng(lat: lat, long: long)
-          : LatLng.empty();
+          : LatLng();
 
       return BusStop(
         company: Company.KMB,
@@ -119,7 +119,7 @@ class BusStopBuilder {
         final long = double.tryParse(ctbStop.long);
         final latLng = lat != null && long != null
             ? LatLng(lat: lat, long: long)
-            : LatLng.empty();
+            : LatLng();
 
         return BusStop(
           company: Company.CTB,
@@ -150,7 +150,7 @@ class BusStopBuilder {
               final long = double.tryParse(s.longitude);
               final latLng = lat != null && long != null
                   ? LatLng(lat: lat, long: long)
-                  : LatLng.empty();
+                  : LatLng();
 
               return BusStop(
                 company: Company.NLB,
