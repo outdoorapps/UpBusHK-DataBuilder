@@ -2,14 +2,18 @@ import 'package:isar_community/isar.dart';
 import 'package:up_bus_hk_core/enums/bound.dart';
 import 'package:up_bus_hk_core/enums/company.dart';
 import 'package:up_bus_hk_core/isar/builder_models/company_bus_route.dart';
+import 'package:up_bus_hk_core/isar/builder_models/gov_stop.dart';
 import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
+import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
 import 'package:up_bus_hk_core/isar/models/transit_route.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 
 class Patch {
   static final govStopIdToLatLng = {
     // Newly added 竹園村 stop for KMB route 268 and 76
+    // Newly added 啟德體育園 stop for SP routes
     10000362: LatLng(lat: 22.47576, long: 114.05647),
+    10000309: LatLng(lat: 22.322875, long: 114.193579),
   };
 
   static final stopIdToLatLng = {
@@ -100,7 +104,7 @@ class Patch {
         e.stopId = ctbStopId;
         e.jointStopId = kmbStopId;
       });
-      await isar.busRoutes.put(r);
+      await builderIsar.writeTxn(() => isar.busRoutes.put(r));
     });
   }
 }
