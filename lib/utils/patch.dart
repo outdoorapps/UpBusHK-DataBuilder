@@ -104,7 +104,7 @@ class Patch {
           e.jointStopId = kmbStopId;
         }
       });
-      await builderIsar.writeTxn(() => isar.busRoutes.put(r));
+      await isar.writeTxn(() => isar.busRoutes.put(r));
     });
   }
 }
