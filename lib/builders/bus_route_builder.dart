@@ -75,8 +75,8 @@ class BusRouteBuilder {
     await _buildRoutes(nlbCompanyRoutes);
     await _buildRoutes(mtrbCompanyRoutes);
     await _patchFares();
+    await Patch.patchBusRoutes();
     await _printStats(govJointRoutes);
-    // todo 107P use CTB as primary reference
   }
 
   static Future<void> _patchFares() async {

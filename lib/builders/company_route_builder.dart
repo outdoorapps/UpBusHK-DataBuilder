@@ -29,7 +29,7 @@ class CompanyRouteBuilder {
     final nlbRoutes = await _buildNlbRoutes();
     final mtrbRoutes = await _buildMtrbRoutes();
 
-    await Patch.patchRoutes();
+    await Patch.patchCompanyRoutes();
 
     final companyRoutes = [
       ...kmbRoutes,

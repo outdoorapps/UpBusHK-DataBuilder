@@ -3,6 +3,7 @@ import 'package:up_bus_hk_core/enums/bound.dart';
 import 'package:up_bus_hk_core/enums/company.dart';
 import 'package:up_bus_hk_core/isar/builder_models/company_bus_route.dart';
 import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
+import 'package:up_bus_hk_core/isar/models/transit_route.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 
 class Patch {
@@ -20,7 +21,7 @@ class Patch {
     '8774-1', // Likely an obsolete route
   };
 
-  static Future<void> patchRoutes() async {
+  static Future<void> patchCompanyRoutes() async {
     // "60C1F7910C07C52B" for 115,I,1 KOWLOON CITY FERRY BUS TERMINUS (KC949)
     // need no matching with a CTB stop, KMB included two consecutive
     // terminating stops. This, the last one, is redundant.
@@ -83,5 +84,23 @@ class Patch {
         builderIsar.companyBusRoutes.put(route110Outbound);
       });
     }
+  }
+
+  static Future<void> patchBusRoutes() async {
+    // 107P use CTB as primary reference
+    final route107Ps = await isar.busRoutes
+        .filter()
+        .numberEqualTo('107P')
+        .findAll();
+    await Future.forEach(route107Ps, (r) async {
+      r.stopFares.forEach((e) {
+        final kmbStopId = e.stopId;
+        final ctbStopId = e.jointStopId!;
+
+        e.stopId = ctbStopId;
+        e.jointStopId = kmbStopId;
+      });
+      await isar.busRoutes.put(r);
+    });
   }
 }
