@@ -11,6 +11,7 @@ import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
 import '../isar/isar_manager.dart';
 
 class ArchiveBuilder {
+  static const _extension = '.tar.xz';
   static const _encoder = 'xz';
 
   /// Build the compressed database file and return the checksum
@@ -24,7 +25,7 @@ class ArchiveBuilder {
     ); // Round down to the nearest seconds
     final formattedTimestamp = Utils.dataVersionFormat.format(timestamp);
     final filename = 'UpBusHK_v${minAppVersion}_$formattedTimestamp';
-    final outPath = join(ProjectPath.outputDir.path, '$filename.tar.xz');
+    final outPath = join(ProjectPath.outputDir.path, '$filename$_extension');
 
     final meta = Meta(minAppVersion: minAppVersion, timestamp: timestamp);
     await isar.writeTxn(() => isar.metas.put(meta));
@@ -76,12 +77,24 @@ class ArchiveBuilder {
 
   static Future<bool> _validate(String path, String expectedCheckSum) async {
     final inputBytes = await File(path).readAsBytes();
+    final expectedFilename = basename(path).replaceAll(_extension, '.isar');
+    String filename = '';
+
     final decodedBytes = Benchmark.execute('Extracting', () {
       final tarBytes = XZDecoder().decodeBytes(inputBytes);
       final archive = TarDecoder().decodeBytes(tarBytes);
-      return archive.first.content;
+      final entry = archive.first;
+      filename = entry.name;
+      return entry.content;
     });
     final checksum = sha256.convert(decodedBytes).toString();
-    return checksum == expectedCheckSum;
+
+    final filenameValid = expectedFilename == filename;
+    final checksumValid = checksum == expectedCheckSum;
+    if (!filenameValid)
+      print('Filename mismatch. Expected:$expectedFilename, Actual:$filename');
+    if (!checksumValid) print('Checksum mismatch');
+
+    return filenameValid && checksumValid;
   }
 }
