@@ -2,9 +2,7 @@ import 'package:isar_community/isar.dart';
 import 'package:up_bus_hk_core/enums/bound.dart';
 import 'package:up_bus_hk_core/enums/company.dart';
 import 'package:up_bus_hk_core/isar/builder_models/company_bus_route.dart';
-import 'package:up_bus_hk_core/isar/builder_models/gov_stop.dart';
 import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
-import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
 import 'package:up_bus_hk_core/isar/models/transit_route.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 
@@ -99,10 +97,12 @@ class Patch {
     await Future.forEach(route107Ps, (r) async {
       r.stopFares.forEach((e) {
         final kmbStopId = e.stopId;
-        final ctbStopId = e.jointStopId!;
+        final ctbStopId = e.jointStopId;
 
-        e.stopId = ctbStopId;
-        e.jointStopId = kmbStopId;
+        if (ctbStopId != null) {
+          e.stopId = ctbStopId;
+          e.jointStopId = kmbStopId;
+        }
       });
       await builderIsar.writeTxn(() => isar.busRoutes.put(r));
     });
