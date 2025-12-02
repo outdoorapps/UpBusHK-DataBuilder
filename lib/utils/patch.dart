@@ -192,4 +192,23 @@ class Patch {
       await isar.writeTxn(() => isar.busRoutes.put(r));
     });
   }
+
+  static Future<void> patchBusStops() async {
+    await Future.forEach(Patch.busStopsPatch, (s) async {
+      final stop = await isar.busStops
+          .where()
+          .stopIdEqualTo(s.stopId)
+          .findFirst();
+      if (stop == null) {
+        await isar.writeTxn(() => isar.busStops.put(s));
+      } else {
+        if (stop.nameE.isEmpty ||
+            stop.nameE.isEmpty ||
+            !stop.latLng.isValid()) {
+          s.id = stop.id;
+          await isar.writeTxn(() => isar.busStops.put(s));
+        }
+      }
+    });
+  }
 }

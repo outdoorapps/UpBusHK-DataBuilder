@@ -46,13 +46,7 @@ class BusStopBuilder {
     await isar.writeTxn(() async => await isar.busStops.putAll(busStops));
 
     // Patch missing stops
-    await Future.forEach(Patch.busStopsPatch, (s) async {
-      final exist = await isar.busStops
-          .where()
-          .stopIdEqualTo(s.stopId)
-          .isNotEmpty();
-      if (!exist) await isar.writeTxn(() => isar.busStops.put(s));
-    });
+    await Patch.patchBusStops();
 
     final companyBusRoutes = await builderIsar.companyBusRoutes
         .where()
