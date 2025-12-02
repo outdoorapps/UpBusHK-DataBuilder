@@ -139,6 +139,19 @@ class Patch {
           }
         });
 
+    // Route 107P has a KMB provided stop that is likely cancelled and not
+    // found on the CTB joint route.
+    companyRoutes
+        .where(
+          (e) =>
+              e.number == '107P' &&
+              e.bound == Bound.I &&
+              e.company == Company.KMB,
+        )
+        .firstOrNull
+        ?.stops
+        .remove('B7B39A88DD40D6CA');
+
     // Merge CTB route 110 outbound with inbound to make a single circular route
     final route110Inbound = companyRoutes
         .where(
