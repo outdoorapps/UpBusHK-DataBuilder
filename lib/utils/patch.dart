@@ -139,15 +139,19 @@ class Patch {
         .boundEqualTo(Bound.O)
         .companyEqualTo(Company.CTB)
         .findFirst();
+
     if (route110Inbound != null && route110Outbound != null) {
-      final outboundStops = route110Outbound.stops;
+      final circularStops = route110Outbound.stops.toList();
       final inboundStops = route110Inbound.stops;
-      final startIndex = inboundStops.indexOf(outboundStops.last);
+      final startIndex = inboundStops.indexOf(route110Outbound.stops.last);
       if (startIndex != -1 && startIndex < inboundStops.length) {
-        outboundStops.addAll(
+        circularStops.addAll(
           inboundStops.sublist(startIndex + 1, inboundStops.length),
         );
       }
+      final route110Circular = route110Outbound.copyWith(stops: circularStops);
+      route110Circular.id = route110Outbound.id;
+
       await builderIsar.writeTxn(() async {
         builderIsar.companyBusRoutes.delete(route110Inbound.id);
         builderIsar.companyBusRoutes.put(route110Outbound);
