@@ -88,6 +88,20 @@ class Patch {
       nameC: '青衣站',
       latLng: LatLng(lat: 22.35975, long: 114.10776),
     ),
+    BusStop(
+      company: Company.CTB,
+      stopId: '003888',
+      nameE: 'Telford Plaza, Wai Yip Street',
+      nameC: '德福廣場, 偉業街',
+      latLng: LatLng(lat: 22.3230236, long: 114.2113867),
+    ),
+    BusStop(
+      company: Company.CTB,
+      stopId: '003908',
+      nameE: 'Telford Plaza, Wai Yip Street',
+      nameC: '德福廣場, 偉業街',
+      latLng: LatLng(lat: 22.3230087, long: 114.2116055),
+    ),
   };
 
   static Future<void> patchCompanyRoutes() async {
