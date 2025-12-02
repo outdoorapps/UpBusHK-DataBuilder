@@ -42,24 +42,24 @@ class BusStopBuilder {
       _buildMtrbStops,
     );
 
+    final busStops = [...kmbStops, ...ctbStops, ...nlbStops, ...mtrbStops];
+    await isar.writeTxn(() async => await isar.busStops.putAll(busStops));
+
     // Patch missing stops
     await Future.forEach(Patch.busStopsPatch, (s) async {
       final exist = await isar.busStops
           .where()
           .stopIdEqualTo(s.stopId)
           .isNotEmpty();
-      if (!exist) {
-        isar.writeTxn(() => isar.busStops.put(s));
-      }
+      if (!exist) await isar.writeTxn(() => isar.busStops.put(s));
     });
-
-    final busStops = [...kmbStops, ...ctbStops, ...nlbStops, ...mtrbStops];
-    await isar.writeTxn(() async => await isar.busStops.putAll(busStops));
 
     final companyBusRoutes = await builderIsar.companyBusRoutes
         .where()
         .findAll();
-    _validateStops(companyBusRoutes, busStops);
+    final isarBusStops = await isar.busStops.where().findAll();
+
+    _validateStops(companyBusRoutes, isarBusStops);
 
     print(
       '- KMB stops: ${kmbStops.length}'
