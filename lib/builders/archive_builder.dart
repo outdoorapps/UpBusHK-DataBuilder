@@ -5,7 +5,6 @@ import 'package:crypto/crypto.dart';
 import 'package:path/path.dart';
 import 'package:up_bus_hk_core/format/archive_format.dart';
 import 'package:up_bus_hk_core/isar/models/meta.dart';
-import 'package:up_bus_hk_core/utils/utils.dart';
 import 'package:up_bus_hk_data_builder/files/project_path.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
@@ -22,8 +21,7 @@ class ArchiveBuilder {
       DateTime.timestamp().millisecondsSinceEpoch ~/ 1000 * 1000,
       isUtc: true,
     ); // Round down to the nearest seconds
-    final formattedTimestamp = Utils.dataVersionFormat.format(timestamp);
-    final filename = 'UpBusHK_v${minAppVersion}_$formattedTimestamp';
+    final filename = ArchiveFormat.getArchiveName(minAppVersion, timestamp);
     final outPath = join(
       ProjectPath.outputDir.path,
       '$filename${ArchiveFormat.archiveExtension}',
