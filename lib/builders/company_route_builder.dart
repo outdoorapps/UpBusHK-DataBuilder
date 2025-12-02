@@ -29,14 +29,13 @@ class CompanyRouteBuilder {
     final nlbRoutes = await _buildNlbRoutes();
     final mtrbRoutes = await _buildMtrbRoutes();
 
-    await Patch.patchCompanyRoutes();
-
     final companyRoutes = [
       ...kmbRoutes,
       ...ctbRoutes,
       ...nlbRoutes,
       ...mtrbRoutes,
     ];
+    await Patch.patchCompanyRoutes(companyRoutes);
     companyRoutes.sort((a, b) => a.number.compareTo(b.number));
     await builderIsar.writeTxn(
       () async => builderIsar.companyBusRoutes.putAll(companyRoutes),
