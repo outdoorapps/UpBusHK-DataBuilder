@@ -8,7 +8,7 @@ import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
 import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
 
 class MtrbParser {
-  static final _chineseMatcher = RegExp(r'^[\u4E00-\u9FFF\s\(\)【】0-9、]+');
+  static final _chineseMatcher = RegExp(r'^[\u4E00-\u9FFF\s()【】0-9、]+');
   static const String _TSUEN_CODE = '&#37032;';
   static const String _TSUEN_CHARACTER = '邨';
 

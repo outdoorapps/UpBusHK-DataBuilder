@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:archive/archive.dart';
 import 'package:crypto/crypto.dart';
 import 'package:path/path.dart';
+import 'package:up_bus_hk_core/format/archive_format.dart';
 import 'package:up_bus_hk_core/isar/models/meta.dart';
 import 'package:up_bus_hk_core/utils/utils.dart';
 import 'package:up_bus_hk_data_builder/files/project_path.dart';
@@ -10,7 +11,6 @@ import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
 
 class ArchiveBuilder {
-  static const _extension = '.tar.xz';
   static const _encoder = 'xz';
 
   /// Build the compressed database file and return the checksum
@@ -24,7 +24,10 @@ class ArchiveBuilder {
     ); // Round down to the nearest seconds
     final formattedTimestamp = Utils.dataVersionFormat.format(timestamp);
     final filename = 'UpBusHK_v${minAppVersion}_$formattedTimestamp';
-    final outPath = join(ProjectPath.outputDir.path, '$filename$_extension');
+    final outPath = join(
+      ProjectPath.outputDir.path,
+      '$filename${ArchiveFormat.archiveExtension}',
+    );
 
     final meta = Meta(minAppVersion: minAppVersion, timestamp: timestamp);
     await isar.writeTxn(() => isar.metas.put(meta));
@@ -76,7 +79,9 @@ class ArchiveBuilder {
 
   static Future<bool> _validate(String path, String expectedCheckSum) async {
     final inputBytes = await File(path).readAsBytes();
-    final expectedFilename = basename(path).replaceAll(_extension, '.isar');
+    final expectedFilename = basename(
+      path,
+    ).replaceAll(ArchiveFormat.archiveExtension, '.isar');
     String filename = '';
 
     final decodedBytes = Benchmark.execute('Extracting', () {

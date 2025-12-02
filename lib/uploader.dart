@@ -5,16 +5,12 @@ import 'package:firebase_admin/firebase_admin.dart';
 import 'package:path/path.dart';
 import 'package:up_bus_hk_core/firebase/database_info.dart';
 import 'package:up_bus_hk_core/firebase/firebase_path.dart';
+import 'package:up_bus_hk_core/format/archive_format.dart';
 import 'package:up_bus_hk_data_builder/files/project_path.dart';
 import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
 import 'package:version/version.dart';
 
 class Uploader {
-  // e.g. UpBusHK_v1.3.0_20251124%082530Z.tar.xz
-  static final _databaseFileRegex = RegExp(
-    r"^UpBusHK_v\d+\.\d+\.\d+_\d{8}T\d{6}Z\.tar\.xz$",
-  );
-
   static Future<void> upload() async {
     // Setup service account credentials
     final credential = Credentials.applicationDefault();
@@ -39,8 +35,12 @@ class Uploader {
     );
 
     final parts = databaseFilename.split('_');
-    final minAppVersion = Version.parse(parts[1].replaceAll('v', ''));
-    final timestamp = DateTime.parse(parts[2].replaceAll('.tar.xz', ''));
+    final minAppVersion = Version.parse(
+      ArchiveFormat.versionRegex.firstMatch(parts[1])?.group(1) ?? '',
+    );
+    final timestamp = DateTime.parse(
+      ArchiveFormat.timeStampRegex.firstMatch(parts[1])?.group(1) ?? '',
+    );
     final databaseInfo = DatabaseInfo(
       timestamp: timestamp,
       minAppVersion: minAppVersion,
@@ -107,7 +107,8 @@ class Uploader {
         if (entry.isDirectory) continue;
 
         final name = entry.name;
-        if (name == keepFile || !_databaseFileRegex.hasMatch(name)) continue;
+        if (name == keepFile || !ArchiveFormat.archiveRegex.hasMatch(name))
+          continue;
 
         filesToDelete.add(name);
       }
