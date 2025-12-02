@@ -238,18 +238,14 @@ class BusRouteBuilder {
         final potentialStop = _busStopMap[j]!;
         final latLong2 = potentialStop.latLng.toLatLong();
         return MapEntry(j, BuilderUtils.distance(latLong1, latLong2));
-      });
+      }).toList();
 
       // Find the closest stop
       final closest = distances.reduce((a, b) => a.value < b.value ? a : b);
       final closestStopId = closest.key;
-      final closestDistance = closest.value;
+      final jointStopId = closestStopId;
+      jointStops.remove(closestStopId); // Remove id to avoid double matching
 
-      String? jointStopId;
-      if (closestDistance <= _stopPairingRadiusMeters) {
-        jointStopId = closestStopId;
-        jointStops.remove(closestStopId); // Remove id to avoid double matching
-      }
       return BusStopFare(stopId: stop, jointStopId: jointStopId);
     }).toList();
 
