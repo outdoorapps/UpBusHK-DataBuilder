@@ -29,24 +29,21 @@ class Uploader {
     final checksumFile = File(join(ProjectPath.outputDir.path, 'checksum.txt'));
     final lines = await checksumFile.readAsLines(encoding: utf8);
     final checksum = lines.first;
-    final databaseFilename = lines.last;
+    final databaseFilename = '${lines.last}${ArchiveFormat.archiveExtension}';
     final databaseFile = File(
       join(ProjectPath.outputDir.path, databaseFilename),
     );
-
-    final parts = databaseFilename.split('_');
     final minAppVersion = Version.parse(
-      ArchiveFormat.versionRegex.firstMatch(parts[1])?.group(1) ?? '',
+      ArchiveFormat.versionRegex.firstMatch(databaseFilename)?.group(1) ?? '',
     );
     final timestamp = DateTime.parse(
-      ArchiveFormat.timeStampRegex.firstMatch(parts[1])?.group(1) ?? '',
+      ArchiveFormat.timeStampRegex.firstMatch(databaseFilename)?.group(1) ?? '',
     );
     final databaseInfo = DatabaseInfo(
       timestamp: timestamp,
       minAppVersion: minAppVersion,
       checksum: checksum,
     );
-
     try {
       // 1. Upload database file
       final uploaded = await Benchmark.executeAsync(
@@ -68,10 +65,10 @@ class Uploader {
         () => _deleteOldFiles(firebase, databaseFilename),
       );
       if (!cleanedUp) throw Exception('Failed to delete old database files');
-    } catch (e) {
-      print(e);
+    } catch (e, st) {
+      print('$e\n$st');
     } finally {
-      await firebase.delete(); // Terminate properly
+      firebase.delete(); // Terminate properly
     }
   }
 
@@ -82,7 +79,8 @@ class Uploader {
         basename(databaseFile.path),
         bytes,
       );
-    } catch (e) {
+    } catch (e, st) {
+      print('$e\n$st');
       return false;
     }
     return true;
@@ -92,8 +90,8 @@ class Uploader {
     try {
       final ref = firebase.database().ref(FirebasePath.databaseInfo);
       await ref.set(databaseInfo.toMap());
-    } catch (e) {
-      print(e);
+    } catch (e, st) {
+      print('$e\n$st');
       return false;
     }
     return true;
@@ -115,8 +113,8 @@ class Uploader {
       await Future.wait(filesToDelete.map((name) => bucket.delete(name)));
 
       filesToDelete.forEach((e) => print('Removed: $e'));
-    } catch (e) {
-      print(e);
+    } catch (e, st) {
+      print('$e\n$st');
       return false;
     }
     return true;
