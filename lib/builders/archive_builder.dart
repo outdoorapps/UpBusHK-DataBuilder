@@ -6,9 +6,8 @@ import 'package:path/path.dart';
 import 'package:up_bus_hk_core/isar/models/meta.dart';
 import 'package:up_bus_hk_core/utils/utils.dart';
 import 'package:up_bus_hk_data_builder/files/project_path.dart';
+import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
-
-import '../isar/isar_manager.dart';
 
 class ArchiveBuilder {
   static const _extension = '.tar.xz';

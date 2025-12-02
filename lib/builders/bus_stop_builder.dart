@@ -42,6 +42,17 @@ class BusStopBuilder {
       _buildMtrbStops,
     );
 
+    // Patch missing stops
+    await Future.forEach(Patch.busStopsPatch, (s) async {
+      final exist = await isar.busStops
+          .where()
+          .stopIdEqualTo(s.stopId)
+          .isNotEmpty();
+      if (!exist) {
+        isar.writeTxn(() => isar.busStops.put(s));
+      }
+    });
+
     final busStops = [...kmbStops, ...ctbStops, ...nlbStops, ...mtrbStops];
     await isar.writeTxn(() async => await isar.busStops.putAll(busStops));
 
@@ -102,7 +113,7 @@ class BusStopBuilder {
     final emptyStops = allStops
         .where((e) => e.nameE.isEmpty && e.nameC.isEmpty)
         .toList();
-    if(emptyStops.isNotEmpty) {
+    if (emptyStops.isNotEmpty) {
       print('Empty CTB stops: ${emptyStops.map((e) => e.stopId).toList()}');
     }
     allStops.sort((a, b) => a.stopId.compareTo(b.stopId));

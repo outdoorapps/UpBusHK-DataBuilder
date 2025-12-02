@@ -3,6 +3,7 @@ import 'package:up_bus_hk_core/enums/bound.dart';
 import 'package:up_bus_hk_core/enums/company.dart';
 import 'package:up_bus_hk_core/isar/builder_models/company_bus_route.dart';
 import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
+import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
 import 'package:up_bus_hk_core/isar/models/transit_route.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 
@@ -21,6 +22,72 @@ class Patch {
 
   static final accountedJointRoute = {
     '8774-1', // Likely an obsolete route
+  };
+
+  static final busStopsPatch = {
+    BusStop(
+      company: Company.KMB,
+      stopId: '65E74D034898D16E',
+      nameE: 'TO KWA WAN (MOK CHEONG STREET)',
+      nameC: '土瓜灣(木廠街)',
+      latLng: LatLng(lat: 22.323, long: 114.19007),
+    ),
+    BusStop(
+      company: Company.KMB,
+      stopId: '4C61A1E387593CAF',
+      nameE: 'DIAMOND HILL (FUNG TAK ROAD)',
+      nameC: '鑽石山(鳳德道)',
+      latLng: LatLng(lat: 22.34147, long: 114.20274),
+    ),
+    BusStop(
+      company: Company.KMB,
+      stopId: 'B3F486EAD0CE8187',
+      nameE: 'TAI WAI STATION',
+      nameC: '大圍站',
+      latLng: LatLng(lat: 22.37395, long: 114.17916),
+    ),
+    BusStop(
+      company: Company.KMB,
+      stopId: 'F493236404A4FABF',
+      nameE: 'YOHO MALL (YUEN LONG)',
+      nameC: '元朗 形點',
+      latLng: LatLng(lat: 22.44502, long: 114.03738),
+    ),
+    BusStop(
+      company: Company.KMB,
+      stopId: '96E1024FD71C979F',
+      nameE: 'THE MILLS',
+      nameC: '荃灣南豐紗廠',
+      latLng: LatLng(lat: 22.37447, long: 114.11009),
+    ),
+    BusStop(
+      company: Company.KMB,
+      stopId: '14736645499B5526',
+      nameE: 'STANLEY PLAZA',
+      nameC: '赤柱廣場',
+      latLng: LatLng(lat: 22.21978, long: 114.20984),
+    ),
+    BusStop(
+      company: Company.KMB,
+      stopId: 'DF71339A693A2EA0',
+      nameE: 'REPULSE BAY (BEACH ROAD)',
+      nameC: '淺水灣(海灘道)',
+      latLng: LatLng(lat: 22.23576, long: 114.19824),
+    ),
+    BusStop(
+      company: Company.KMB,
+      stopId: '5C6754BD37D3F4D0',
+      nameE: 'TUNG CHUNG STATION BUS TERMINUS',
+      nameC: '東涌站巴士總站',
+      latLng: LatLng(lat: 22.29026, long: 113.94056),
+    ),
+    BusStop(
+      company: Company.KMB,
+      stopId: 'A8DC6F85E7043234',
+      nameE: 'TSING YI STATION',
+      nameC: '青衣站',
+      latLng: LatLng(lat: 22.35975, long: 114.10776),
+    ),
   };
 
   static Future<void> patchCompanyRoutes() async {
