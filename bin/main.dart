@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:up_bus_hk_data_builder/builders/archive_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/bus_route_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/bus_stop_builder.dart';
@@ -11,12 +13,14 @@ import 'package:up_bus_hk_data_builder/network/links.dart';
 import 'package:up_bus_hk_data_builder/network/web_services.dart';
 import 'package:up_bus_hk_data_builder/uploader.dart';
 import 'package:up_bus_hk_data_builder/utils/benchmark.dart';
+import 'package:up_bus_hk_data_builder/utils/no_keep_alive_http_overrides.dart';
 import 'package:up_bus_hk_data_builder/validator.dart';
 
 // todo Updated every time when there are schema updates
 const minAppVersion = '1.3.0';
 
 void main() async {
+  HttpOverrides.global = NoKeepAliveHttpOverrides();
   await Benchmark.executeAsync('Building UpBusHK data', _build);
 }
 
