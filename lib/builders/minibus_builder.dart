@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
-import 'package:up_bus_hk_core/isar/models/minibus_stop.dart';
+import 'package:up_bus_hk_core/isar/models/stop.dart';
 import 'package:up_bus_hk_core/isar/models/transit_route.dart';
 import 'package:up_bus_hk_data_builder/builders/minibus_route_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/minibus_stop_builder.dart';

@@ -1,6 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
-import 'package:up_bus_hk_core/isar/models/minibus_stop.dart';
+import 'package:up_bus_hk_core/isar/models/stop.dart';
 import 'package:up_bus_hk_data_builder/extension/string_x.dart';
 import 'package:up_bus_hk_data_builder/json/minibus_geo_json.dart';
 import 'package:up_bus_hk_data_builder/network/data_services.dart';

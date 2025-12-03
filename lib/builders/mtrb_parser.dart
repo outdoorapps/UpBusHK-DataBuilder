@@ -5,7 +5,7 @@ import 'package:up_bus_hk_core/enums/bound.dart';
 import 'package:up_bus_hk_core/enums/company.dart';
 import 'package:up_bus_hk_core/isar/builder_models/company_bus_route.dart';
 import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
-import 'package:up_bus_hk_core/isar/models/bus_stop.dart';
+import 'package:up_bus_hk_core/isar/models/stop.dart';
 
 class MtrbParser {
   static final _chineseMatcher = RegExp(r'^[\u4E00-\u9FFF\s()【】0-9、]+');

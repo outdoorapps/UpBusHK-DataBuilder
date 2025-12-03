@@ -30,16 +30,16 @@ Future<void> _build() async {
     await IsarManager.init(clearPreviousData: true);
   });
 
-  await Benchmark.executeAsync('Downloading gov data', () async {
-    final urlToPath = {
-      Links.busRouteGeoJsonUrl: ProjectPath.busRoutesGeoJson,
-      Links.busStopsGeoJsonUrl: ProjectPath.busStopsGeoJson,
-      Links.busRouteStopUrl: ProjectPath.busRouteStopJson,
-      Links.minibusRoutesGeoJsonUrl: ProjectPath.minibusDataJson,
-      Links.fareUrl: ProjectPath.busFare,
-    };
-    await WebServices.downloadAll(urlToPath);
-  });
+  // await Benchmark.executeAsync('Downloading gov data', () async {
+  //   final urlToPath = {
+  //     Links.busRouteGeoJsonUrl: ProjectPath.busRoutesGeoJson,
+  //     Links.busStopsGeoJsonUrl: ProjectPath.busStopsGeoJson,
+  //     Links.busRouteStopUrl: ProjectPath.busRouteStopJson,
+  //     Links.minibusRoutesGeoJsonUrl: ProjectPath.minibusDataJson,
+  //     Links.fareUrl: ProjectPath.busFare,
+  //   };
+  //   await WebServices.downloadAll(urlToPath);
+  // });
 
   // These have to execute in specific order
   await Benchmark.executeAsync(
@@ -65,5 +65,5 @@ Future<void> _build() async {
     () => ArchiveBuilder.build(minAppVersion),
   );
 
-  await Benchmark.executeAsync('Uploading database', Uploader.upload);
+  // await Benchmark.executeAsync('Uploading database', Uploader.upload);
 }
