@@ -17,22 +17,19 @@ class ProjectPath {
     govDataDir.path,
     'BusRoute_GEOJSON.zip',
   );
-
   static String busStopsGeoJson = join(
     govDataDir.path,
     'CoordinateofBusStopLocation_GEOJSON.zip',
   );
-
   static String busRouteStopJson = join(govDataDir.path, 'JSON_BUS.json');
-
   static String minibusDataJson = join(govDataDir.path, 'JSON_GMB.json');
-
   static String busFare = join(govDataDir.path, 'FARE_BUS.xml');
-
   static String mtrbData = join(dataDir.path, 'mtrb.txt');
-
   static String mtrData = join(govDataDir.path, 'mtr_lines_and_stations.csv');
-
+  static String mtrStationsLocations = join(
+    dataDir.path,
+    'MTR-stations-locations.csv',
+  );
   static String appIsar = join(isarDir.path, 'default.isar');
 
   /// Ensures all required folders exist before use.
