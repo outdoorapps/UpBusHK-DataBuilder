@@ -6,15 +6,18 @@ import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
 import 'package:up_bus_hk_core/isar/embedded/station_sequence.dart';
 import 'package:up_bus_hk_core/isar/models/mtr_station.dart';
 import 'package:up_bus_hk_data_builder/files/project_path.dart';
+import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/utils/patch.dart';
 
 class MtrStationBuilder {
-  static Future<void> build() async {
+  static Future<void> build({bool clearPreviousData = false}) async {
     final stationIdToLatLng = await _getLocationMap();
 
-    final file = File(ProjectPath.mtrData);
+    final file = File(ProjectPath.mtrLineAndStations);
     if (!await file.exists()) {
-      throw Exception('MTR data file not found: ${ProjectPath.mtrData}');
+      throw Exception(
+        'MTR data file not found: ${ProjectPath.mtrLineAndStations}',
+      );
     }
 
     final mtrStations = <MtrStation>[];
@@ -56,19 +59,19 @@ class MtrStationBuilder {
     mtrStations.addAll(Patch.mtrStationsPatch);
     mtrStations..sort((a, b) => a.stationId.compareTo(b.stationId));
 
-    // todo patch racecourse
-    mtrStations.forEach((s) => print(s));
-
-    // groupBy(mtrStations, (s) => s.nameE).forEach((line, stations) {
-    //   if(stations.length > 1)print(line);
-    // });
+    isar.writeTxn(() async {
+      if (clearPreviousData) await isar.mtrStations.clear();
+      await isar.mtrStations.putAll(mtrStations);
+    });
   }
 
   static Future<Map<int, LatLng>> _getLocationMap() async {
     final stationIdToLatLng = <int, LatLng>{};
     final file = File(ProjectPath.mtrStationsLocations);
     if (!await file.exists()) {
-      throw Exception('MTR location file not found: ${ProjectPath.mtrData}');
+      throw Exception(
+        'MTR location file not found: ${ProjectPath.mtrLineAndStations}',
+      );
     }
 
     final csvText = await file.readAsString();

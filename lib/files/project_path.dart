@@ -25,7 +25,10 @@ class ProjectPath {
   static String minibusDataJson = join(govDataDir.path, 'JSON_GMB.json');
   static String busFare = join(govDataDir.path, 'FARE_BUS.xml');
   static String mtrbData = join(dataDir.path, 'mtrb.txt');
-  static String mtrData = join(govDataDir.path, 'mtr_lines_and_stations.csv');
+  static String mtrLineAndStations = join(
+    govDataDir.path,
+    'mtr_lines_and_stations.csv',
+  );
   static String mtrStationsLocations = join(
     dataDir.path,
     'MTR-stations-locations.csv',

@@ -9,4 +9,6 @@ class Links {
       'https://static.data.gov.hk/td/routes-fares-geojson/JSON_GMB.json';
   static const fareUrl =
       'https://static.data.gov.hk/td/routes-fares-xml/FARE_BUS.xml';
+  static const mtrLineAndStationsUrl =
+      'https://opendata.mtr.com.hk/data/mtr_lines_and_stations.csv';
 }

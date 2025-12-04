@@ -6,6 +6,7 @@ import 'package:up_bus_hk_data_builder/builders/bus_stop_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/company_route_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/gov_bus_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/minibus_builder.dart';
+import 'package:up_bus_hk_data_builder/builders/mtr_station_builder.dart';
 import 'package:up_bus_hk_data_builder/builders/track_builder.dart';
 import 'package:up_bus_hk_data_builder/files/project_path.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
@@ -30,16 +31,17 @@ Future<void> _build() async {
     await IsarManager.init(clearPreviousData: true);
   });
 
-  // await Benchmark.executeAsync('Downloading gov data', () async {
-  //   final urlToPath = {
-  //     Links.busRouteGeoJsonUrl: ProjectPath.busRoutesGeoJson,
-  //     Links.busStopsGeoJsonUrl: ProjectPath.busStopsGeoJson,
-  //     Links.busRouteStopUrl: ProjectPath.busRouteStopJson,
-  //     Links.minibusRoutesGeoJsonUrl: ProjectPath.minibusDataJson,
-  //     Links.fareUrl: ProjectPath.busFare,
-  //   };
-  //   await WebServices.downloadAll(urlToPath);
-  // });
+  await Benchmark.executeAsync('Downloading gov data', () async {
+    final urlToPath = {
+      Links.busRouteGeoJsonUrl: ProjectPath.busRoutesGeoJson,
+      Links.busStopsGeoJsonUrl: ProjectPath.busStopsGeoJson,
+      Links.busRouteStopUrl: ProjectPath.busRouteStopJson,
+      Links.minibusRoutesGeoJsonUrl: ProjectPath.minibusDataJson,
+      Links.fareUrl: ProjectPath.busFare,
+      Links.mtrLineAndStationsUrl: ProjectPath.mtrLineAndStations,
+    };
+    await WebServices.downloadAll(urlToPath);
+  });
 
   // These have to execute in specific order
   await Benchmark.executeAsync(
@@ -57,6 +59,11 @@ Future<void> _build() async {
 
   await Benchmark.executeAsync('Building tracks', TrackBuilder.build);
 
+  await Benchmark.executeAsync(
+    'Building MTR stations',
+    MtrStationBuilder.build,
+  );
+
   final valid = await Benchmark.executeAsync('Validating', Validator.validate);
   if (!valid) return;
 
@@ -65,5 +72,5 @@ Future<void> _build() async {
     () => ArchiveBuilder.build(minAppVersion),
   );
 
-  // await Benchmark.executeAsync('Uploading database', Uploader.upload);
+  await Benchmark.executeAsync('Uploading database', Uploader.upload);
 }
