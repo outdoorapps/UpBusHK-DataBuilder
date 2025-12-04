@@ -3,7 +3,6 @@ import 'package:up_bus_hk_core/enums/bound.dart';
 import 'package:up_bus_hk_core/enums/company.dart';
 import 'package:up_bus_hk_core/isar/builder_models/company_bus_route.dart';
 import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
-import 'package:up_bus_hk_core/isar/models/mtr_station.dart';
 import 'package:up_bus_hk_core/isar/models/stop.dart';
 import 'package:up_bus_hk_core/isar/models/transit_route.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
@@ -109,7 +108,7 @@ class Patch {
     MtrStation(
       lines: ['EAL'],
       stationCode: 'RAC',
-      stationId: 70,
+      stopId: '70',
       nameE: 'Racecourse',
       nameC: '馬場',
       latLng: LatLng(lat: 22.400927922134766, long: 114.20322309941018),

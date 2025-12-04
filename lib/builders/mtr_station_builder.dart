@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:up_bus_hk_core/isar/embedded/lat_lng.dart';
 import 'package:up_bus_hk_core/isar/embedded/station_sequence.dart';
-import 'package:up_bus_hk_core/isar/models/mtr_station.dart';
+import 'package:up_bus_hk_core/isar/models/stop.dart';
 import 'package:up_bus_hk_data_builder/files/project_path.dart';
 import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 import 'package:up_bus_hk_data_builder/utils/patch.dart';
@@ -29,24 +29,22 @@ class MtrStationBuilder {
       if (parts.any((e) => e.isEmpty)) return; // skip empty lines
 
       final line = parts[0];
-      final stationId = int.parse(parts[3]);
+      final stopId = parts[3];
       final sequence = StationSequence(
         direction: parts[1],
         seq: double.parse(parts[6]).toInt(),
       );
 
-      final existing = mtrStations.firstWhereOrNull(
-        (s) => s.stationId == stationId,
-      );
+      final existing = mtrStations.firstWhereOrNull((s) => s.stopId == stopId);
       if (existing == null) {
         mtrStations.add(
           MtrStation(
             lines: [line],
             stationCode: parts[2],
-            stationId: stationId,
+            stopId: stopId,
             nameE: parts[5],
             nameC: parts[4],
-            latLng: stationIdToLatLng[stationId] ?? LatLng(),
+            latLng: stationIdToLatLng[stopId] ?? LatLng(),
             sequences: [sequence],
           ),
         );
@@ -57,7 +55,8 @@ class MtrStationBuilder {
     });
 
     mtrStations.addAll(Patch.mtrStationsPatch);
-    mtrStations..sort((a, b) => a.stationId.compareTo(b.stationId));
+    mtrStations
+      ..sort((a, b) => int.parse(a.stopId).compareTo(int.parse(b.stopId)));
 
     isar.writeTxn(() async {
       if (clearPreviousData) await isar.mtrStations.clear();
