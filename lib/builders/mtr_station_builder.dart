@@ -51,7 +51,7 @@ class MtrStationBuilder {
           ),
         );
       } else {
-        existing.lines.add(line);
+        if (!existing.lines.contains(line)) existing.lines.add(line);
         existing.sequences.add(sequence);
       }
     });
