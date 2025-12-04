@@ -58,14 +58,14 @@ class MtrStationBuilder {
     mtrStations
       ..sort((a, b) => int.parse(a.stopId).compareTo(int.parse(b.stopId)));
 
-    isar.writeTxn(() async {
+    await isar.writeTxn(() async {
       if (clearPreviousData) await isar.mtrStations.clear();
       await isar.mtrStations.putAll(mtrStations);
     });
   }
 
-  static Future<Map<int, LatLng>> _getLocationMap() async {
-    final stationIdToLatLng = <int, LatLng>{};
+  static Future<Map<String, LatLng>> _getLocationMap() async {
+    final stationIdToLatLng = <String, LatLng>{};
     final file = File(ProjectPath.mtrStationsLocations);
     if (!await file.exists()) {
       throw Exception(
@@ -78,7 +78,7 @@ class MtrStationBuilder {
     lines.forEach((line) {
       final l = line.replaceAll('"', '');
       final parts = l.split(',');
-      final stationId = int.parse(parts[0]);
+      final stationId = parts[0];
       final lat = double.parse(parts[2]);
       final lng = double.parse(parts[3].trim());
       stationIdToLatLng[stationId] = LatLng(lat: lat, long: lng);
