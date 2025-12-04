@@ -31,6 +31,8 @@ class ProjectPath {
 
   static String mtrbData = join(dataDir.path, 'mtrb.txt');
 
+  static String mtrData = join(govDataDir.path, 'mtr_lines_and_stations.csv');
+
   static String appIsar = join(isarDir.path, 'default.isar');
 
   /// Ensures all required folders exist before use.
