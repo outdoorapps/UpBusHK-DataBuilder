@@ -58,7 +58,11 @@ class ArchiveBuilder {
     if (result.exitCode != 0) throw Exception('Failed:\n${result.stderr}');
 
     final valid = await _validate(outPath, checksum);
-    valid ? print('Validated: $outPath') : print('Compressed file corrupted');
+    final size = await File(outPath).length();
+    final formattedSize = _formatBytes(size);
+    valid
+        ? print('Validated: $outPath ($formattedSize)')
+        : print('Compressed file corrupted');
 
     final checksumFile = File(join(ProjectPath.outputDir.path, 'checksum.txt'));
     await checksumFile.writeAsString('${checksum.trim()}\n$filename');
@@ -98,5 +102,11 @@ class ArchiveBuilder {
     if (!checksumValid) print('Checksum mismatch');
 
     return filenameValid && checksumValid;
+  }
+
+  static String _formatBytes(int bytes) {
+    if (bytes < 1024) return '$bytes B';
+    if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(2)} KB';
+    return '${(bytes / (1024 * 1024)).toStringAsFixed(2)} MB';
   }
 }
