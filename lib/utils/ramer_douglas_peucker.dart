@@ -1,69 +1,87 @@
 import 'dart:math';
 
 class RamerDouglasPeucker {
-  static const double defaultEpsilon = 2;
-
-  static Point _pointFromCoordinate(List<double> coord) =>
-      Point(coord[1], coord[0]);
-
-  static List<List<double>> simplify(
+  /// Simplifies a WGS84 polyline using epsilon in **meters**.
+  ///
+  /// Input format: [ [lat, lng], [lat, lng], ... ]
+  static List<List<double>> simplifyWGS84(
     List<List<double>> coordinates, {
-    double epsilon = defaultEpsilon,
+    required double epsilonInMeters,
   }) {
     if (coordinates.length < 3) return coordinates;
 
+    // Convert all lat/lng into Web Mercator meters
+    final mercator = coordinates.map(_projectWebMercator).toList();
+
+    // Run meter-based RDP on projected points
+    final simplifiedMercator = _rdp(mercator, epsilonInMeters);
+
+    // Convert back into lat/lng
+    return simplifiedMercator.map(_unprojectWebMercator).toList();
+  }
+
+  /// Convert lat/lng into Web Mercator meters
+  static _Point _projectWebMercator(List<double> latLng) {
+    final lat = latLng[0];
+    final lng = latLng[1];
+
+    const earthRadius = 6378137.0;
+
+    final x = earthRadius * lng * pi / 180;
+    final y = earthRadius * log(tan(pi / 4 + (lat * pi / 180) / 2));
+
+    return _Point(x, y);
+  }
+
+  /// Convert Web Mercator meters back to lat/lng
+  static List<double> _unprojectWebMercator(_Point p) {
+    const earthRadius = 6378137.0;
+    final lng = (p.x / earthRadius) * 180 / pi;
+    final lat = (2 * atan(exp(p.y / earthRadius)) - pi / 2) * 180 / pi;
+    return [lat, lng];
+  }
+
+  /// Standard RDP but operating in **meters** (projected space).
+  static List<_Point> _rdp(List<_Point> points, double epsilon) {
+    if (points.length < 3) return points;
+
     double dmax = 0.0;
     int index = 0;
-    final end = coordinates.length;
+    final end = points.length - 1;
 
-    // Find point with maximum distance
-    for (int i = 1; i < end - 1; i++) {
-      final d = perpendicularDistance(
-        _pointFromCoordinate(coordinates[i]),
-        _pointFromCoordinate(coordinates[0]),
-        _pointFromCoordinate(coordinates[end - 1]),
-      );
+    for (int i = 1; i < end; i++) {
+      final d = _perpendicularDistance(points[i], points[0], points[end]);
       if (d > dmax) {
-        index = i;
         dmax = d;
+        index = i;
       }
     }
 
-    // If max distance is greater than epsilon, recursively simplify
     if (dmax > epsilon) {
-      final rec1 = simplify(
-        coordinates.sublist(0, index + 1),
-        epsilon: epsilon,
-      );
-      final rec2 = simplify(coordinates.sublist(index, end), epsilon: epsilon);
-
-      // Combine (drop duplicate midpoint)
+      final rec1 = _rdp(points.sublist(0, index + 1), epsilon);
+      final rec2 = _rdp(points.sublist(index, points.length), epsilon);
       return [...rec1.sublist(0, rec1.length - 1), ...rec2];
     }
-
-    // Return endpoints
-    return [coordinates.first, coordinates.last];
+    return [points.first, points.last];
   }
 
-  static double perpendicularDistance(Point p, Point start, Point end) {
+  /// Perpendicular distance in **meters** since inputs are in projected Mercator.
+  static double _perpendicularDistance(_Point p, _Point start, _Point end) {
     final dx = end.x - start.x;
     final dy = end.y - start.y;
 
     if (dx == 0 && dy == 0) {
-      return (p.x - start.x).abs() + (p.y - start.y).abs();
+      return sqrt(pow(p.x - start.x, 2) + pow(p.y - start.y, 2));
     }
-
-    final numerator = (dy * p.x - dx * p.y + end.x * start.y - end.y * start.x)
-        .abs();
-    final denominator = sqrt(dx * dx + dy * dy);
-
-    return numerator / denominator;
+    return ((dy * p.x - dx * p.y + end.x * start.y - end.y * start.x).abs()) /
+        sqrt(dx * dx + dy * dy);
   }
 }
 
-class Point {
+/// Simple 2D point class
+class _Point {
   final double x;
   final double y;
 
-  Point(this.x, this.y);
+  _Point(this.x, this.y);
 }

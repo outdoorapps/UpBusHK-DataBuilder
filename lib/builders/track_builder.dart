@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:dart_hk1980/dart_hk1980.dart';
 import 'package:isar_community/isar.dart';
 import 'package:up_bus_hk_core/isar/models/track.dart';
 import 'package:up_bus_hk_core/isar/models/transit_route.dart';
@@ -47,20 +46,19 @@ class TrackBuilder {
           feature.properties.routeSeq,
         );
 
-        final hk1980Coordinates = feature.geometry.coordinates
-            .expand((e) => e)
+        final latLngCoordinates = feature.geometry.coordinates
+            .expand((e) => e) // Flatten list
+            .map((lngLat) => [lngLat[1], lngLat[0]]) // Convert to latLng format
             .toList();
-        final hk1980Track = RamerDouglasPeucker.simplify(hk1980Coordinates);
-
-        final flatCoordinates = hk1980Track
-            .map((e) => Hk1980Converter.toWgs84(easting: e[0], northing: e[1]))
-            .expand((e) => e)
-            .toList();
+        final wgs84Track = RamerDouglasPeucker.simplifyWGS84(
+          latLngCoordinates,
+          epsilonInMeters: 2,
+        );
 
         return Track(
           objectId: feature.properties.objectId,
           govRouteKey: govRouteKey,
-          flatCoordinates: flatCoordinates,
+          flatCoordinates: wgs84Track.expand((e) => e).toList(),
         );
       },
       writeToIsar: (batch) async {
