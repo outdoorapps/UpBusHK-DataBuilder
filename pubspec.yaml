@@ -35,7 +35,6 @@ dependencies:
 
   # Locations
   latlong2: ^0.9.1
-  dart_hk1980: ^1.0.2
 
   # Files
   archive: ^4.0.7
