@@ -9,10 +9,10 @@ import 'package:up_bus_hk_data_builder/isar/isar_manager.dart';
 
 class Patch {
   static final govStopIdToLatLng = {
-    // Newly added 竹園村 stop for KMB route 268 and 76
-    // Newly added 啟德體育園 stop for SP routes
-    10000362: LatLng(lat: 22.47576, long: 114.05647),
-    10000309: LatLng(lat: 22.322875, long: 114.193579),
+    10000309: LatLng(lat: 22.322875, long: 114.193579), // 啟德體育園
+    10000373: LatLng(lat: 22.433926, long: 114.062252), // 錦上路站停車場
+    10000374: LatLng(lat: 22.433945, long: 114.062295), // 錦上路站停車場
+    10000375: LatLng(lat: 22.424549, long: 114.075797), // 大窩村 (YL661a)
   };
 
   static final stopIdToLatLng = {
