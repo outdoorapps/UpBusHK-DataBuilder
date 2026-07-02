@@ -8,7 +8,8 @@ publish_to: none
 environment:
   sdk: '>=3.8.0 <4.0.0'
 
-isar_version: &isar_version 3.3.0
+isar_version: &isar_version 3.3.2
+copy_with_version: &copy_with_version 15.0.1
 
 dependencies:
   up_bus_hk_core:
@@ -24,24 +25,24 @@ dependencies:
   # Code generation
   json_annotation: ^4.9.0
   freezed_annotation: ^3.1.0
-  copy_with_extension: ^9.0.0
+  copy_with_extension: *copy_with_version
 
   # Storage
   isar_community: *isar_version
 
   # Parsing
-  xml: ^6.6.1
+  xml: ^7.0.1
   json_events: ^1.2.2
 
   # Locations
-  latlong2: ^0.9.1
+  latlong2: ^0.10.1
 
   # Files
-  archive: ^4.0.7
+  archive: ^4.0.9
   crypto: ^3.0.7
 
   # Firebase
-  firebase_admin: ^0.3.1
+  firebase_admin: ^0.3.1+4
 
   # Utils
   path: ^1.9.1
@@ -59,10 +60,7 @@ dev_dependencies:
   # Code generation
   build_runner: ^2.6.0
   isar_community_generator: *isar_version
-  json_serializable: ^6.11.1
+  json_serializable: ^6.14.0
   freezed: ^3.2.1
-  copy_with_extension_gen: ^9.0.0
+  copy_with_extension_gen: *copy_with_version
   retrofit_generator: ^10.0.1
-
-dependency_overrides:
-  analyzer: 8.3.0 # For source_gen 3.0.0
